@@ -1,0 +1,21 @@
+{
+  "name": "@tww3-brawl/sdk",
+  "version": "0.1.0",
+  "description": "SDK package for TWW3 Brawl",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch --skipLibCheck",
+    "test": "jest",
+    "lint": "eslint src"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "private": true,
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "type": "commonjs"
+} 

@@ -9,6 +9,9 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
   },
+  "dependencies": {
+    "@tww3-brawl/sdk": "workspace:*"
+  },
   "devDependencies": {
     "nuxt": "^3.15.0"
   }
