@@ -7,5 +7,7 @@ export default defineNuxtConfig({
     // et doit être converti en format compatible avec le bundle Nuxt
     transpile: ['@tww3-brawl/sdk']
   },
-  compatibilityDate: '2024-12-30'
+
+  compatibilityDate: '2024-12-30',
+  modules: ['nuxt-quasar-ui']
 })

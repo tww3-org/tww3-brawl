@@ -1,18 +1,26 @@
 <template>
-  <div class="container mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-4">Bienvenue sur TWW3 Brawl</h1>
-    <p>Page d'accueil de l'application</p>
+  <div class="q-pa-md">
+    <div class="q-gutter-y-md">
+      <SelectUnit v-model="unit1" />
+      <SelectUnit v-model="unit2" />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { helloWorld } from '@tww3-brawl/sdk';
+import { ref, watch } from 'vue'
 
-onMounted(() => {
-  console.log(helloWorld());
-});
+const unit1 = ref('unit1')
+const unit2 = ref('unit2')
 
-definePageMeta({
-  title: 'Accueil'
+watch(unit1, (newValue) => {
+  console.log('Unit 1 changed:', newValue)
 })
-</script> 
+
+watch(unit2, (newValue) => {
+  console.log('Unit 2 changed:', newValue)
+})
+</script>
+
+<style scoped>
+</style> 
