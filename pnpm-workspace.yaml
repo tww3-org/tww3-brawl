@@ -1,3 +1,5 @@
 packages:
   # tous les packages dans les sous-dossiers de packages/
-  - 'packages/*' 
+  - 'packages/*'
+  # toutes les applications dans le dossier apps/
+  - 'apps/*' 
