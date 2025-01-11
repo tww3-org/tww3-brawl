@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "Monorepo TWW3 Brawl",
-  "packageManager": "pnpm@9.12.3",
+  "packageManager": "pnpm@8.15.9",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "app": "pnpm --filter @tww3-brawl/responsive-app",
@@ -14,10 +14,10 @@
   "license": "ISC",
   "engines": {
     "node": ">=18.0.0",
-    "pnpm": ">=9.12.3"
+    "pnpm": ">=8.15.9"
   },
   "workspaces": [
     "apps/*",
     "packages/*"
   ]
-} 
+}
