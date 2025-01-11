@@ -19,5 +19,9 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "devDependencies": {
+    "@nx/workspace": "^20.3.1",
+    "nx": "^20.3.1"
+  }
 }

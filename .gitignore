@@ -24,3 +24,11 @@ pnpm-debug.log*
 .vscode
 *.swp
 *.swo
+
+# NX
+.nx/
+tmp/
+.temp
+**/coverage/
+**/.nyc_output/
+.nxignore
