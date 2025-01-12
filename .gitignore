@@ -32,3 +32,6 @@ tmp/
 **/coverage/
 **/.nyc_output/
 .nxignore
+
+# Scripts
+scripts/_temp
