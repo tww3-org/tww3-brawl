@@ -22,7 +22,11 @@
   ],
   "devDependencies": {
     "@nx/workspace": "^20.3.1",
+    "@supabase/supabase-js": "^2.47.12",
+    "@types/node": "^22.10.5",
     "adm-zip": "^0.5.16",
+    "dotenv": "^16.4.7",
+    "mime-types": "^2.1.35",
     "nx": "^20.3.1",
     "supabase": "^2.2.1"
   }
