@@ -4,11 +4,17 @@
       <SelectUnit v-model="unit1" />
       <SelectUnit v-model="unit2" />
     </div>
+
+    <div class="q-gutter-y-md">
+      <UnitCard orientation="left" />
+      <UnitCard orientation="right" />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import UnitCard from '~/components/UnitCard.vue'
 
 const unit1 = ref('unit1')
 const unit2 = ref('unit2')
