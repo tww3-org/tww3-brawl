@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "Monorepo TWW3 Brawl",
-  "packageManager": "pnpm@8.15.9",
+  "packageManager": "pnpm@8.15.9+sha512.499434c9d8fdd1a2794ebf4552b3b25c0a633abcee5bb15e7b5de90f32f47b513aca98cd5cfd001c31f0db454bc3804edccd578501e4ca293a6816166bbd9f81",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "app": "pnpm --filter @tww3-brawl/responsive-app",
@@ -28,6 +28,7 @@
     "dotenv": "^16.4.7",
     "mime-types": "^2.1.35",
     "nx": "^20.3.1",
+    "pnpm": "8.15.9",
     "supabase": "^2.2.1"
   }
 }
