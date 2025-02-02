@@ -1,11 +1,7 @@
 <template>
+  <h1 class="title">TWW3 Brawl</h1>
   <div class="q-pa-md">
-    <div class="q-gutter-y-md">
-      <SelectUnit v-model="unit1" />
-      <SelectUnit v-model="unit2" />
-    </div>
-
-    <div class="q-gutter-y-md">
+    <div class="q-gutter-y-md row justify-center items-center">
       <UnitCard orientation="left" />
       <UnitCard orientation="right" />
     </div>
@@ -29,4 +25,7 @@ watch(unit2, (newValue) => {
 </script>
 
 <style scoped>
-</style> 
+h1 {
+  text-align: center;
+}
+</style>
