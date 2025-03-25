@@ -41,6 +41,9 @@ importers:
       '@quasar/extras':
         specifier: ^1.16.15
         version: 1.16.17
+      '@tww3-brawl/gql':
+        specifier: workspace:*
+        version: link:../../packages/gql
       '@tww3-brawl/sdk':
         specifier: workspace:*
         version: link:../../packages/sdk
