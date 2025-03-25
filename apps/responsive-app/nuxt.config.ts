@@ -1,5 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-export default defineNuxtConfig({
+import type { NuxtConfig } from 'nuxt/schema'
+
+const config: NuxtConfig = {
   devtools: { enabled: true },
 
   build: {
@@ -9,5 +11,23 @@ export default defineNuxtConfig({
   },
 
   compatibilityDate: '2024-12-30',
-  modules: ['nuxt-quasar-ui']
-})
+  modules: ['nuxt-quasar-ui'],
+  
+  quasar: {
+    extras: {
+      fontIcons: ['material-icons'],
+    },
+    config: {
+      brand: {
+        primary: '#1976D2',
+        secondary: '#26A69A',
+        accent: '#9C27B0',
+        dark: '#1d1d1d',
+      },
+      dark: 'auto'
+    },
+    plugins: []
+  }
+}
+
+export default defineNuxtConfig(config)
