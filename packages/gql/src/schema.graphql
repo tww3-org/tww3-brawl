@@ -1,0 +1,914 @@
+directive @cacheControl(maxAge: Int, scope: CacheControlScope) on FIELD_DEFINITION | OBJECT | INTERFACE
+
+"""A Boolean that will also convert Strings"""
+scalar StringBoolean
+
+type Query {
+  ping: String
+  versions: [gameVersion]
+  tww(tww_version: String!): tww
+}
+
+type gameVersion {
+  game: String
+  id: String
+  name: String
+}
+
+type tww {
+  rules: [rule]
+  tww_version: ID
+  game_version: gameVersion!
+  units(offset: Int!, size: Int!, includeQb: Boolean, includeSummoned: Boolean, includeBosses: Boolean, includeSouthenRealms: Boolean, includeKislev: Boolean, query: String): [main_unit]
+  unit(id: String): main_unit
+  factions(include_non_mp: StringBoolean): [faction]
+  faction(id: String): faction
+  unit_stats: [unit_stat]
+  abilities(offset: Int!, size: Int!, special_ability_group: String, query: String, noGroupsOnly: Boolean): [ability]
+  ability(id: String): ability
+  fatigue_effects: [unit_fatigue_effect]
+  fatigue_morale_effects: [kvp]
+  unit_experience_bonuses: [unit_experience_bonus]
+  campaign_difficulty_handicap_effects: [campaign_difficulty_handicap_effect]
+  unit_stats_land_experience_bonuses: [unit_stats_land_experience_bonuse]
+  ui_tagged_images: [ui_tagged_image]
+  kv(name: String!): [kvp]
+  character_trait_levels: [character_trait_level]
+  unit_stat_localisations: [unit_stat_localisation]
+  attributes: [attribute]
+  special_ability_groups: [special_ability_group]
+  ui_text_replacements: [ui_text_replacement]
+  unit_stat_to_size_scaling_values: [unit_stat_to_size_scaling_value]
+}
+
+type ui_tagged_image {
+  key: ID
+  image_path: String
+}
+
+type unit_stats_land_experience_bonuse {
+  xp_level: Int
+  fatigue: Int
+  mp_fixed_cost: Int
+  mp_experience_cost_multiplier: Float
+  additional_melee_cp: Int
+  additional_missile_cp: Int
+}
+
+type kvp {
+  key: ID
+  value: Float
+  description: String
+}
+
+type rule {
+  key: ID
+  value: Float
+  description: String
+}
+
+type melee_weapon {
+  key: ID
+  bonus_v_cavalry: Int
+  bonus_v_large: Int
+  bonus_v_infantry: Int
+  damage: Int
+  ap_damage: Int
+  first_strike: Int
+  weapon_length: Float
+  melee_weapon_type: String
+  splash_attack_target_size: String
+  splash_attack_max_attacks: Int
+  splash_attack_power_multiplier: Float
+  ignition_amount: Int
+  is_magical: StringBoolean
+  contact_phase: phase
+  collision_attack_max_targets: Int
+  collision_attack_max_targets_cooldown: Int
+  melee_attack_interval: Float
+  building_damage: Int
+}
+
+type explosion {
+  key: ID
+  detonation_radius: Float
+  detonation_duration: Float
+  detonation_speed: Int
+  detonation_damage: Int
+  shrapnel_type: String
+  shrapnel_amount: Int
+  distance_from_target: Int
+  contact_phase_effect: phase
+  ignition_amount: Int
+  is_magical: StringBoolean
+  detonation_damage_ap: Int
+  detonation_force: Int
+}
+
+type projectile {
+  key: ID
+  category: String
+  shot_type: String
+  explosion: explosion
+  projectile_number: Int
+  effective_range: Int
+  minimum_range: Int
+  max_elevation: Int
+  muzzle_velocity: Int
+  marksmanship_bonus: Float
+  spread: Float
+  damage: Int
+  ap_damage: Int
+  can_bounce: StringBoolean
+  collision_radius: Float
+  base_reload_time: Float
+  calibration_distance: Float
+  calibration_area: Float
+  bonus_v_infantry: Int
+  bonus_v_cavalry: Int
+  bonus_v_large: Int
+  overhead_stat_effect: phase
+  shockwave_radius: Float
+  can_damage_buildings: StringBoolean
+  contact_stat_effect: phase
+  gravity: Float
+  burst_size: Int
+  burst_shot_delay: Float
+  mass: Int
+  homing_param: String
+  ignition_amount: Int
+  is_magical: StringBoolean
+  can_target_airborne: StringBoolean
+  fixed_elevation: Int
+  projectile_penetration: projectile_penetration
+  expiry_range: Int
+  is_beam_launch_burst: StringBoolean
+  expire_on_impact: StringBoolean
+  can_roll: StringBoolean
+  trail_always_on: StringBoolean
+  shots_per_volley: Int
+}
+
+type projectile_penetration {
+  key: String
+  entity_size_cap: String
+  max_penetration: Int
+  description: String
+}
+
+type missile_weapon {
+  key: ID
+  default_projectile: projectile
+  use_secondary_ammo_pool: StringBoolean
+}
+
+type unit_shield_type {
+  key: ID
+  parry_chance: Int
+  material: String
+}
+
+type bullet_point_generator {
+  bullet_point_enum: String
+  text_override: String
+  unit_class: String
+  unit_stat: String
+  unit_stat_threshold: Int
+}
+
+type unit_class {
+  key: ID
+  onscreen: String
+  sort_priority: Int
+  bullet_point_generators: [bullet_point_generator]
+}
+
+type armour {
+  key: ID
+  armour_value: Int
+}
+
+type land_unit {
+  key: String
+  accuracy: Int
+  category: String
+  charge_bonus: Int
+  dismounted_charge_bonus: Int
+  dismounted_melee_attack: Int
+  historical_description_text: String
+  melee_attack: Int
+  melee_defence: Int
+  ground_stat_effect_group: ground_type_stat_effect_group
+  morale: Int
+  bonus_hit_points: Int
+  short_description_text: String
+  visibility_spotting_range_min: Int
+  visibility_spotting_range_max: Int
+  attribute_group: String
+  spot_dist_tree: Int
+  spot_dist_scrub: Int
+  reload: Int
+  hiding_scalar: Float
+  secondary_ammo: Int
+  primary_ammo: Int
+  damage_mod_flame: Int
+  damage_mod_flames: Int
+  damage_mod_magic: Int
+  damage_mod_physical: Int
+  damage_mod_missile: Int
+  damage_mod_missiles: Int
+  damage_mod_all: Int
+  num_engines: Int
+  num_mounts: Int
+  ai_usage_group: String
+  can_skirmish: StringBoolean
+  onscreen_name: String
+  armour: armour
+  unit_class: unit_class
+  mount: mount
+  primary_melee_weapon: melee_weapon
+  primary_missile_weapon: missile_weapon
+  shield: unit_shield_type
+  attributes: [attribute]
+  abilities: [ability]
+  special_ability_groups: [special_ability_group]
+  battle_entity: battle_entity
+  engine: engine
+  officers: land_unit_officers
+  variant: unit_variant
+  articulated_vehicle_entity: battle_entity
+}
+
+type ground_type_stat_effect_group {
+  group_name: String
+  onscreen_name: String
+  stat_effects: [ground_type_to_stat_effect]
+}
+
+type ground_type_to_stat_effect {
+  ground_type: String
+  affected_stat: String
+  multiplier: Float
+  affected_group: String
+}
+
+type attribute {
+  key: ID
+  bullet_text: String
+  imbued_effect_text: String
+}
+
+type mount {
+  key: ID
+  battle_entity: battle_entity
+  variant: String
+}
+
+type engine {
+  key: ID
+  engine_type: String
+  missile_weapon: missile_weapon
+  battle_entity: battle_entity
+}
+
+type land_unit_officers {
+  officer_1: battle_personality
+  additionnal_personalities: [battle_personality]
+}
+
+type battle_mount {
+  base_unit: String
+  mounted_unit: String
+  icon_name: String
+  mount_name: String
+  localised_description: String
+}
+
+type battle_personality {
+  key: ID
+  type: String
+  missile_type: projectile
+  variant: unit_variant
+  battle_entity: battle_entity
+  rider_attachment_point: String
+  battle_entity_stats: battle_entity_stats
+  autonomous_rider_hero: StringBoolean
+}
+
+type battle_entity_stats {
+  primary_melee_weapon: melee_weapon
+  primary_missile_weapon: missile_weapon
+}
+
+type battle_entity {
+  key: ID
+  type: String
+  walk_speed: Float
+  run_speed: Float
+  acceleration: Float
+  deceleration: Float
+  charge_speed: Float
+  crawl_speed: Int
+  charge_distance_commence_run: Float
+  charge_distance_adopt_charge_pose: Float
+  charge_distance_pick_target: Float
+  shape: String
+  radius: Float
+  mass: Float
+  height: Float
+  fire_arc_close: Float
+  turn_speed: Float
+  hit_points: Int
+  min_turning_speed: Float
+  fly_speed: Float
+  flying_charge_speed: Float
+  size: String
+  strafe_speed: Float
+  combat_reaction_radius: Float
+  entity_effects: String
+  hit_reactions_ignore_chance: Float
+  knock_interrupts_ignore_chance: Float
+}
+
+type special_ability_group {
+  ability_group: ID
+  icon_path: String
+  special_edition_mask: Int
+  sort_order: Int
+  is_naval: StringBoolean
+  colour_r: Int
+  colour_g: Int
+  colour_b: Int
+  button_name: String
+  abilities: [ability]
+  name: String
+  is_composite_group: StringBoolean
+}
+
+type ability {
+  key: ID
+  supercedes_ability: StringBoolean
+  requires_effect_enabling: StringBoolean
+  icon_name: String
+  uniqueness: String
+  is_unit_upgrade: StringBoolean
+  is_hidden_in_ui: StringBoolean
+  name: String
+  tooltip: String
+  type: ability_type
+  unit_special_ability: special_ability
+  overpower_option: ability
+  phases: [phase]
+  special_ability_groups: [special_ability_group]
+  additional_ui_effects: [additional_ui_effect]
+}
+
+type additional_ui_effect {
+  key: ID
+  localised_text: String
+  sort_order: Int
+}
+
+type invalid_usage_flag {
+  flag_key: ID
+  flag_description: String
+  alt_description: String
+}
+
+type special_ability {
+  key: ID
+  active_time: Float
+  recharge_time: Float
+  num_uses: Int
+  effect_range: Int
+  affect_self: StringBoolean
+  num_effected_friendly_units: Int
+  num_effected_enemy_units: Int
+  update_targets_every_frame: StringBoolean
+  initial_recharge: Float
+  target_friends: StringBoolean
+  target_enemies: StringBoolean
+  target_ground: StringBoolean
+  target_intercept_range: Int
+  assume_specific_behaviour: String
+  clear_current_order: StringBoolean
+  wind_up_time: Float
+  passive: StringBoolean
+  unique_id: Int
+  wind_up_stance: String
+  mana_cost: Int
+  min_range: Int
+  targetting_aoe: String
+  passive_aoe: String
+  active_aoe: String
+  activation_effect: String
+  vortex: vortex
+  miscast_chance: Float
+  ai_usage: String
+  special_ability_display: String
+  additional_melee_cp: Float
+  additional_missile_cp: Float
+  bombardment: projectile_bombardments
+  spawned_unit: land_unit
+  miscast_explosion: explosion
+  parent_ability: special_ability
+  activated_projectile: projectile
+  phases: [phase]
+  invalid_targets: [String!]
+  invalid_usages: [String!]
+  auto_deactivate_flags: [invalid_usage_flag!]
+}
+
+type projectile_bombardments {
+  arrival_window: Float
+  bombardment_key: ID
+  num_projectiles: Int
+  radius_spread: Float
+  start_time: Float
+  launch_source: String
+  launch_height: Int
+  launch_height_underground: Int
+  projectile_type: projectile
+}
+
+type vortex {
+  change_max_angle: Int
+  contact_effect: phase
+  damage: Int
+  damage_ap: Int
+  duration: Float
+  expansion_speed: Float
+  goal_radius: Float
+  infinite_height: StringBoolean
+  move_change_freq: Float
+  movement_speed: Float
+  start_radius: Float
+  vortex_key: ID
+  ignition_amount: Int
+  is_magical: StringBoolean
+  detonation_force: Int
+  launch_source: String
+  building_collision: String
+  height_off_ground: Float
+  delay: Float
+  num_vortexs: Int
+}
+
+type phase {
+  id: ID
+  onscreen_name: String
+  duration: Float
+  effect_type: String
+  requested_stance: String
+  unbreakable: StringBoolean
+  cant_move: StringBoolean
+  freeze_fatigue: StringBoolean
+  fatigue_change_ratio: Float
+  inspiration_aura_change_mod: Float
+  ability_recharge_change: Float
+  hp_change_frequency: Float
+  heal_amount: Float
+  damage_chance: Float
+  damage_amount: Int
+  max_damaged_entities: Int
+  resurrect: StringBoolean
+  mana_regen_mod: Float
+  mana_max_depletion_mod: Float
+  imbue_magical: StringBoolean
+  imbue_ignition: Float
+  imbue_contact: phase
+  phase_display: String
+  stat_effects: [stat_effect]
+  attribute_effects: [attribute_effect]
+}
+
+type stat_effect {
+  phase: ID
+  stat: String
+  value: Float
+  how: String
+}
+
+type attribute_effect {
+  phase: ID
+  attribute: String
+  attribute_type: String
+}
+
+type ability_type {
+  key: String
+  icon: String
+  onscreen_name: String
+}
+
+type unit_variant {
+  unit: ID
+  faction: String
+  name: String
+  variant: String
+  unit_card: String
+  unit_card_url: String
+}
+
+type ui_unit_group {
+  icon: String
+  key: ID
+  parent_group: ui_unit_group_parent
+  name: String
+  tooltip: String
+}
+
+type ui_unit_group_parent {
+  key: ID
+  onscreen_name: String
+  icon: String
+  order: Int
+  mp_cap: Int
+}
+
+type battle_set_piece_armies_character {
+  character_level: Int
+  character_name: ID
+  forename: String
+  magic_lore: String
+  num_men: Int
+  surname: String
+  unit_type: String
+  agent_type: String
+  agent_subtype: String
+  portrait: String
+  character_model: Int
+  skillset: String
+  male: StringBoolean
+  ancillaries: [ancillary]
+}
+
+type ancillary {
+  key: ID
+  onscreen_name: String
+  applies_to: String
+  transferrable: StringBoolean
+  unique_to_world: StringBoolean
+  unique_to_faction: StringBoolean
+  precedence: Int
+  legendary_item: StringBoolean
+  uniqueness_score: Int
+  turns_before_swap_allowed: Int
+  randomly_dropped: StringBoolean
+  provided_bodyguard_unit: String
+  provided_banner: banner
+  subcategory: String
+  category: String
+  type: String
+  ancillary_effects: [ancillary_effect]
+}
+
+type ancillary_effect {
+  value: Float
+  effect_scope: String
+  effect: effect
+}
+
+type banner {
+  banner: ID
+  effect_bundle: effect_bundle
+}
+
+type effect_bundle {
+  key: ID
+  localised_title: String
+  localised_description: String
+  ui_icon: String
+  bundle_target: String
+  priority: Int
+  effect_bundle_effects: [effect_bundle_effect]
+}
+
+type effect_bundle_effect {
+  effect: effect
+  value: Int
+  effect_scope: String
+  advancement_stage: String
+}
+
+type agent_action {
+  ability: ability
+  localised_action_name: String
+  localised_action_description: String
+  unique_id: String
+  critical_success_proportion_modifier: Float
+  opportune_failure_proportion_modifier: Float
+  critical_failure_proportion_modifier: Float
+  chance_of_success: Int
+  icon_path: String
+  show_action_info_in_ui: StringBoolean
+  subculture: subculture
+  succeed_always_override: StringBoolean
+  order: Int
+}
+
+type effect {
+  effect: ID
+  icon: String
+  priority: Int
+  description: String
+  icon_negative: String
+  category: String
+  is_positive_value_good: StringBoolean
+  agent_actions: [effect_bonus]
+  phases: [effect_bonus]
+  attributes: [effect_bonus]
+  abilities: [effect_bonus]
+}
+
+union effect_bonus_value = agent_action | phase | ability | attribute_effect
+
+type effect_bonus {
+  bonus_value_id: String
+  value: effect_bonus_value
+}
+
+type main_unit {
+  unit: ID
+  land_unit: land_unit
+  num_men: Int
+  multiplayer_cost: Int
+  weight: String
+  recruitment_cost: Int
+  upkeep_cost: Int
+  create_time: Int
+  campaign_cap: Int
+  multiplayer_cap: Int
+  caste: String
+  unique_index: Int
+  ui_unit_group: ui_unit_group
+  tier: Int
+  is_high_threat: StringBoolean
+  campaign_mount: campaign_mount
+  mount_name: String
+  battle_mounts: [battle_mount]
+  melee_cp: Float
+  missile_cp: Float
+  is_monstrous: StringBoolean
+  campaign_factions(include_non_mp: StringBoolean): [faction]
+  factions(include_non_mp: StringBoolean): [faction]
+  custom_battle_permissions: [unit_custom_battle_permission]
+  bullet_points: [bullet_point]
+  is_naval: StringBoolean
+  unit_sets: [unit_set]
+  agent_subtype: agent_subtype
+  can_siege: StringBoolean
+  barrier_health: Float
+}
+
+type unit_set {
+  key: ID!
+  use_unit_exp_level_range: StringBoolean
+  min_unit_exp_level_inclusive: Int
+  max_unit_exp_level_inclusive: Int
+  special_category: String
+}
+
+type unit_custom_battle_permission {
+  faction: String
+  general_unit: StringBoolean
+  unit: String
+  siege_unit_attacker: StringBoolean
+  siege_unit_defender: StringBoolean
+  general_portrait: String
+  general_uniform: String
+  set_piece_character: battle_set_piece_armies_character
+  campaign_exclusive: StringBoolean
+}
+
+type campaign_mount {
+  model: String
+  variant: String
+  scale: Float
+  actor: String
+}
+
+type bullet_point {
+  key: ID
+  state: String
+  sort_order: Int
+  onscreen_name: String
+  tooltip: String
+}
+
+type unit_fatigue_effect {
+  key: ID
+  fatigue_threshold: Int
+  fatigue_level: String
+  scalar_speed: Float
+  stat_melee_attack: Float
+  stat_reloading: Float
+  stat_armour: Float
+  stat_charge_bonus: Float
+  stat_melee_damage_ap: Float
+  stat_melee_defense: Float
+  stat_melee_defence: Float
+}
+
+type unit_experience_bonus {
+  stat: ID
+  value: Int
+  growth_rate: Float
+  growth_scalar: Float
+}
+
+type military_group {
+  name: String
+}
+
+type faction {
+  key: ID
+  subculture: subculture
+  screen_name: String
+  screen_adjective: String
+  is_rebel: StringBoolean
+  mp_available: StringBoolean
+  flags_path: String
+  flags_url: String
+  name_group: String
+  primary_colour_hex: String
+  secondary_colour_hex: String
+  military_group: String
+  can_be_horde: StringBoolean
+  faction_swapping_id: String
+  is_waaagh_faction: StringBoolean
+  is_quest_faction: StringBoolean
+  units(groupHeroesAndLords: StringBoolean): [main_unit]
+}
+
+type subculture {
+  subculture: String
+  name: String
+  culture: culture
+}
+
+type culture {
+  key: String
+  name: String
+}
+
+type unit_stat {
+  key: ID
+  max_value: Int
+  campaign_only: StringBoolean
+  sort_order: Int
+  localisation: String
+  icon: String
+}
+
+type campaign_difficulty_handicap_effect {
+  key: ID
+  campaign_difficulty_handicap: Int
+  human: StringBoolean
+  effect: effect
+  effect_scope: String
+  effect_value: String
+  optional_campaign_key: String
+}
+
+type character_trait_level {
+  key: ID!
+  onscreen_name: String
+  character_trait: character_trait
+  level: Int
+  threshold_points: Int
+  colour_text: String
+  explanation_text: String
+  removal_text: String
+  trait_level_effects: [trait_level_effect]
+}
+
+type trait_level_effect {
+  effect: effect
+  value: Float
+  effect_scope: String
+}
+
+type character_trait {
+  key: ID!
+  no_going_back_level: Int
+  hidden: StringBoolean!
+  precedence: Int
+  category: trait_category
+  author: String
+  comment: String
+  ui_priority: Int
+  antitrait: String
+}
+
+type trait_category {
+  category: ID!
+  icon_path: String
+}
+
+type agent_subtype {
+  key: ID!
+  auto_generate: StringBoolean
+  is_caster: StringBoolean
+  small_icon: String
+  associated_unit_override: String!
+  audio_voiceover_actor_group: String
+  show_in_ui: StringBoolean
+  cap: Int
+  has_female_name: StringBoolean
+  can_gain_xp: StringBoolean
+  loyality_is_applicable: StringBoolean
+  contributes_to_agent_cap: StringBoolean
+  onscreen_name_override: String
+  description_text_override: String
+  character_skill_node_set: character_skill_node_set
+}
+
+type character_skill_node_set {
+  agent_key: String
+  campaign_key: String
+  faction_key: String
+  key: String
+  subculture: String
+  for_army: StringBoolean
+  for_navy: StringBoolean
+  agent_subtype_key: String
+  enc_title: String
+  character_skill_nodes: [character_skill_node]
+}
+
+type character_skill_node {
+  campaign_key: String
+  character_skill_key: String
+  character_skill_node_set_key: String
+  faction_key: String
+  indent: Int
+  key: ID!
+  tier: Int
+  subculture: String
+  points_on_creation: Int
+  required_num_parents: Int
+  visible_in_ui: StringBoolean
+}
+
+type character_skill {
+  image_path: String
+  key: ID
+  localised_description: String
+  localised_name: String
+  unlocked_at_rank: Int
+  is_background_skill: StringBoolean
+  is_female_only_background_skill: StringBoolean
+  is_male_only_background_skill: StringBoolean
+  background_weighting: Int
+  influence_cost: Int
+}
+
+type character_skill_category {
+  key: ID
+  max_incident: Int
+  min_incident: Int
+  order: Int
+  col_r: Int
+  col_g: Int
+  col_b: Int
+  agent_subtype_override: String
+}
+
+type character_skill_level_detail {
+  campaign_key: ID
+  faction_key: ID
+  image_path: String
+  level: Int
+  skill_key: String
+  subculture_key: String
+  unlocked_at_rank: Int
+  localised_name: String
+  localised_description: String
+}
+
+type unit_stat_localisation {
+  stat_key: ID
+  onscreen_name: String
+  tooltip_text: String
+}
+
+type ui_text_replacement {
+  key: ID
+  localised_text: String
+}
+
+type unit_stat_to_size_scaling_value {
+  stat: ID
+  size: String
+  single_entity_value: Float
+  multi_entity_value: Float
+}
+
+enum CacheControlScope {
+  PUBLIC
+  PRIVATE
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload

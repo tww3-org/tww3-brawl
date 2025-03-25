@@ -1,0 +1,29 @@
+{
+  "name": "@tww3-brawl/gql",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "gen-client": "genql --endpoint https://broker.twwstats.com/graphql --output ./src && tsup",
+    "gen-client-ps1": "genql --endpoint https://broker.twwstats.com/graphql --output ./src && tsup"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@genql/cli": "6.3.2",
+    "tsup": "8.0.1"
+  }
+}
