@@ -56,6 +56,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import type Unit from '~/server/types/Unit';
+import { unitHealth } from "@tww3-brawl/sdk";
 
 interface TableColumn {
   name: string;
@@ -63,6 +64,23 @@ interface TableColumn {
   field: string | ((row: any) => any);
   sortable?: boolean;
   align?: 'left' | 'right' | 'center';
+}
+
+// Adapter pour convertir les données GraphQL au format UnitHealthProps
+function adaptUnitForHealth(unit: any) {
+  return {
+    caste: unit.caste,
+    num_men: unit.num_men,
+    land_unit: unit.land_unit ? {
+      num_engines: unit.land_unit.num_engines,
+      engine: unit.land_unit.engine,
+      articulated_vehicle_entity: unit.land_unit.articulated_vehicle_entity,
+      num_mounts: unit.land_unit.num_mounts,
+      mount: unit.land_unit.mount,
+      battle_entity: unit.land_unit.battle_entity,
+      bonus_hit_points: unit.land_unit.bonus_hit_points
+    } : undefined
+  };
 }
 
 // Récupérer le client GraphQL
@@ -86,16 +104,20 @@ const columns: TableColumn[] = [
   { name: 'attack_interval', label: 'Intervalle Attaque', field: 'attack_interval', sortable: true, align: 'right' },
   { name: 'damage', label: 'Dégâts (N/P)', field: (row: Unit) => `${row.damage?.normal || 0}/${row.damage?.piercing || 0}`, sortable: true, align: 'right' },
   { name: 'damage_bonus', label: 'Bonus (L/I)', field: (row: Unit) => `${row.damage?.bonus_v_large || 0}/${row.damage?.bonus_v_infantry || 0}`, sortable: true, align: 'right' },
-  { name: 'resistance', label: 'Résistances (P/M/F/W)', field: (row: Unit) => 
-    `${row.resistance?.physical || 0}/${row.resistance?.magical || 0}/${row.resistance?.fire || 0}/${row.resistance?.ward_save || 0}`, 
-    sortable: true, align: 'right' },
-  { name: 'special', label: 'Spécial', field: (row: Unit) => {
-    const specials = [];
-    if (row.damage?.is_magical) specials.push('Magique');
-    if (row.damage?.is_fire) specials.push('Feu');
-    if (row.is_large) specials.push('Large');
-    return specials.join(', ');
-  }, sortable: true }
+  {
+    name: 'resistance', label: 'Résistances (P/M/F/W)', field: (row: Unit) =>
+      `${row.resistance?.physical || 0}/${row.resistance?.magical || 0}/${row.resistance?.fire || 0}/${row.resistance?.ward_save || 0}`,
+    sortable: true, align: 'right'
+  },
+  {
+    name: 'special', label: 'Spécial', field: (row: Unit) => {
+      const specials = [];
+      if (row.damage?.is_magical) specials.push('Magique');
+      if (row.damage?.is_fire) specials.push('Feu');
+      if (row.is_large) specials.push('Large');
+      return specials.join(', ');
+    }, sortable: true
+  }
 ];
 
 // Récupérer les versions disponibles
@@ -143,12 +165,31 @@ async function fetchUnitsByFaction() {
           },
           units: {
             unit: true,
+            caste: true,
+            num_men: true,
             land_unit: {
               onscreen_name: true,
               bonus_hit_points: true,
+              num_engines: true,
+              num_mounts: true,
               battle_entity: {
                 hit_points: true,
-                size: true
+                size: true,
+                type: true
+              },
+              articulated_vehicle_entity: {
+                hit_points: true
+              },
+              engine: {
+                battle_entity: {
+                  hit_points: true,
+                  type: true
+                }
+              },
+              mount: {
+                battle_entity: {
+                  hit_points: true
+                }
               },
               armour: {
                 armour_value: true
@@ -164,8 +205,7 @@ async function fetchUnitsByFaction() {
               },
               melee_attack: true,
               melee_defence: true
-            },
-            num_men: true
+            }
           }
         }
       }
@@ -174,18 +214,18 @@ async function fetchUnitsByFaction() {
     if (result?.tww?.factions) {
       // Transformer les données pour correspondre à l'interface Unit
       factions.value = (result.tww.factions || [])
-        .filter((faction): faction is NonNullable<typeof faction> => 
+        .filter((faction): faction is NonNullable<typeof faction> =>
           faction !== null && faction.units !== null && faction.units.length > 0)
         .map(faction => ({
           ...faction,
           units: (faction.units || [])
-            .filter((unit): unit is NonNullable<typeof unit> => 
+            .filter((unit): unit is NonNullable<typeof unit> =>
               unit !== null && unit.land_unit !== null)
             .map(unit => ({
               ...unit,
               health: {
-                unit: Math.round((unit.land_unit?.bonus_hit_points || 0) * (unit.num_men || 1)),
-                entity: Math.round((unit.land_unit?.bonus_hit_points || 0))
+                unit: unitHealth(adaptUnitForHealth(unit)),
+                entity: Math.round((unit.land_unit?.battle_entity?.hit_points || 0))
               },
               armor: unit.land_unit?.armour?.armour_value || 0,
               attack: unit.land_unit?.melee_attack || 0,

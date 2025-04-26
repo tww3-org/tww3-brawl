@@ -2,8 +2,8 @@
   "name": "@tww3-brawl/sdk",
   "version": "0.1.0",
   "description": "SDK package for TWW3 Brawl",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch --skipLibCheck",
@@ -14,8 +14,11 @@
   "author": "",
   "license": "ISC",
   "private": true,
+  "dependencies": {
+    "@tww3-brawl/gql": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^5.3.3"
   },
   "type": "commonjs"
-} 
+}
