@@ -1,0 +1,108 @@
+import type { Client } from '@tww3-brawl/gql';
+
+// Re-export le type Client du package gql pour faciliter l'importation
+export type GraphQLClient = Client;
+
+/**
+ * Représente une version du jeu
+ */
+export interface Version {
+  id: string;
+  name: string;
+  game: string;
+}
+
+/**
+ * Représente une faction du jeu
+ */
+export interface Faction {
+  key: string;
+  screen_name: string;
+  subculture?: {
+    name: string;
+  };
+}
+
+/**
+ * Représente une unité du jeu
+ */
+export interface Unit {
+  unit: string;
+  caste: string;
+  num_men: number;
+  land_unit?: {
+    onscreen_name: string;
+    bonus_hit_points: number;
+    battle_entity?: {
+      hit_points: number;
+      size: string;
+      type: string;
+    };
+    armour?: {
+      armour_value: number;
+    };
+    melee_attack?: number;
+    melee_defence?: number;
+    primary_melee_weapon?: {
+      damage: number;
+      ap_damage: number;
+      bonus_v_large: number;
+      bonus_v_infantry: number;
+      melee_attack_interval: number;
+      is_magical: boolean;
+      ignition_amount: number;
+    };
+  };
+  health?: {
+    unit: number;
+    entity: number;
+  };
+  armor?: number;
+  attack?: number;
+  defense?: number;
+  attack_interval?: number;
+  damage?: {
+    normal: number;
+    piercing: number;
+    is_magical: boolean;
+    is_fire: boolean;
+    bonus_v_large: number;
+    bonus_v_infantry: number;
+  };
+  resistance?: {
+    physical: number;
+    magical: number;
+    fire: number;
+    ward_save: number;
+  };
+  is_large?: boolean;
+}
+
+/**
+ * Interface pour les calculs de santé des unités
+ */
+export interface UnitHealthProps {
+  caste?: string | null;
+  num_men?: number | null;
+  land_unit?: {
+    num_engines?: number | null;
+    engine?: {
+      battle_entity?: {
+        hit_points?: number | null;
+      } | null;
+    } | null;
+    articulated_vehicle_entity?: {
+      hit_points?: number | null;
+    } | null;
+    num_mounts?: number | null;
+    mount?: {
+      battle_entity?: {
+        hit_points?: number | null;
+      } | null;
+    } | null;
+    battle_entity?: {
+      hit_points?: number | null;
+    } | null;
+    bonus_hit_points?: number | null;
+  } | null;
+}
