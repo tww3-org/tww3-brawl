@@ -92,7 +92,5 @@ export function unitHealth(unit: Partial<main_unit>) {
       unit_size: 'normal', // Default to normal size
     };
   };
-
-  console.log('DEBUG hp', hp * unitSizeMultiplier[globalSettings().unit_size]);
   return Math.round(hp * unitSizeMultiplier[globalSettings().unit_size]);
 }

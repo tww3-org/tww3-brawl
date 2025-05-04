@@ -12,32 +12,17 @@ import type { Ref } from 'vue';
  * @returns Objet Query avec les données des unités
  */
 export function useUnits(
-  versionId: string | Ref<string>,
-  factionKey: string | Ref<string>,
+  versionId: Ref<string>,
+  factionKey: Ref<string>,
   client?: GraphQLClient
 ) {
   // Utilise le client fourni ou celui de Nuxt par défaut
   const graphqlClient = client || useGraphQLClient();
 
-  // Extrait les valeurs si ce sont des refs
-  const getVersionId = () =>
-    typeof versionId === 'string' ? versionId : versionId.value;
-  const getFactionKey = () =>
-    typeof factionKey === 'string' ? factionKey : factionKey.value;
-
   return useQuery<Unit[]>({
     // Structure en tableau pour une invalidation propre du cache hiérarchique
-    queryKey: [
-      'tww',
-      'versions',
-      getVersionId(),
-      'factions',
-      getFactionKey(),
-      'units',
-    ],
-    // Ne pas exécuter la requête si aucun versionId ou factionKey n'est fourni
-    enabled: !!getVersionId() && !!getFactionKey(),
-    queryFn: () => fetchUnits(graphqlClient, getVersionId(), getFactionKey()),
+    queryKey: ['tww', 'versions', versionId, 'factions', factionKey, 'units'],
+    queryFn: () => fetchUnits(graphqlClient, versionId.value, factionKey.value),
     // Cache pour 30 minutes
     staleTime: 30 * 60 * 1000,
   });
