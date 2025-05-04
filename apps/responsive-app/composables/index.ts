@@ -2,4 +2,4 @@
 export * from './useGraphQLClient';
 export * from './useVersions';
 export * from './useFactions';
-// export * from './useUnits.ts.old';
+export * from './useUnits';

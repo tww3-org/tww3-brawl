@@ -1,28 +1,6 @@
-import type { GraphQLClient, Unit, UnitHealthProps } from '../types';
+import { main_unit } from '@tww3-brawl/gql';
+import type { GraphQLClient, Unit } from '../types';
 import { unitHealth } from '../utils';
-
-/**
- * Adapter pour convertir les données GraphQL au format UnitHealthProps
- * @param unit Unité à adapter
- * @returns Unité formatée pour le calcul de santé
- */
-function adaptUnitForHealth(unit: Record<string, any>): UnitHealthProps {
-  return {
-    caste: unit.caste,
-    num_men: unit.num_men,
-    land_unit: unit.land_unit
-      ? {
-          num_engines: unit.land_unit.num_engines,
-          engine: unit.land_unit.engine,
-          articulated_vehicle_entity: unit.land_unit.articulated_vehicle_entity,
-          num_mounts: unit.land_unit.num_mounts,
-          mount: unit.land_unit.mount,
-          battle_entity: unit.land_unit.battle_entity,
-          bonus_hit_points: unit.land_unit.bonus_hit_points,
-        }
-      : null,
-  };
-}
 
 /**
  * Récupère la liste des unités disponibles pour une faction et une version spécifiques
@@ -46,13 +24,9 @@ export async function fetchUnits(
         __args: {
           tww_version: versionId,
         },
-        factions: {
+        faction: {
           __args: {
-            filter: {
-              key: {
-                _eq: factionKey,
-              },
-            },
+            id: factionKey,
           },
           key: true,
           screen_name: true,
@@ -107,11 +81,11 @@ export async function fetchUnits(
       },
     });
 
-    if (!result?.tww?.factions || result.tww.factions.length === 0) {
+    if (!result?.tww?.faction) {
       return [];
     }
 
-    const faction = result.tww.factions[0];
+    const faction = result.tww.faction;
     if (!faction?.units || faction.units.length === 0) {
       return [];
     }
@@ -182,7 +156,7 @@ export async function fetchUnits(
               }
             : undefined,
           health: {
-            unit: unitHealth(adaptUnitForHealth(unit)),
+            unit: unitHealth(unit as Partial<main_unit>),
             entity: Math.round(unit.land_unit?.battle_entity?.hit_points || 0),
           },
           armor: Number(unit.land_unit?.armour?.armour_value || 0),

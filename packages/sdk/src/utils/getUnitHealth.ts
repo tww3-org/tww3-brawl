@@ -1,44 +1,7 @@
 import { main_unit } from '@tww3-brawl/gql';
 
-// Type détaillé pour les propriétés de battle_entity utilisées
-type BattleEntityProps = {
-  hit_points?: number;
-  type?: string;
-};
-
-// Type détaillé pour engine
-type EngineProps = {
-  battle_entity?: BattleEntityProps;
-};
-
-// Type détaillé pour mount
-type MountProps = {
-  battle_entity?: BattleEntityProps;
-};
-
-// Type détaillé pour articulated_vehicle_entity
-type ArticulatedVehicleProps = {
-  hit_points?: number;
-};
-
-// Type détaillé pour land_unit incluant uniquement les propriétés utilisées
-type LandUnitProps = {
-  num_engines?: number;
-  engine?: EngineProps | null;
-  articulated_vehicle_entity?: ArticulatedVehicleProps;
-  num_mounts?: number;
-  mount?: MountProps | null;
-  battle_entity?: BattleEntityProps;
-  bonus_hit_points?: number;
-};
-
-// Type raffiné qui combine Pick et définition précise des propriétés imbriquées
-type UnitHealthProps = Pick<main_unit, 'caste' | 'num_men'> & {
-  land_unit?: LandUnitProps;
-};
-
 // All credit to this function goes to
-export function unitHealth(unit: UnitHealthProps) {
+export function unitHealth(unit: Partial<main_unit>) {
   const lu = unit.land_unit;
 
   if (!lu) {
@@ -49,9 +12,11 @@ export function unitHealth(unit: UnitHealthProps) {
 
   const engine_count = lu?.num_engines || 0;
   const engine_hp =
-    lu?.engine !== null ? lu.engine?.battle_entity?.hit_points || 0 : 0;
+    lu?.engine !== undefined ? lu.engine?.battle_entity?.hit_points || 0 : 0;
   const engine_type =
-    lu?.engine !== null ? lu.engine?.battle_entity?.type || null : null;
+    lu?.engine !== undefined
+      ? lu.engine?.battle_entity?.type || undefined
+      : undefined;
 
   const av_hp = lu?.articulated_vehicle_entity
     ? lu.articulated_vehicle_entity.hit_points || 0
@@ -59,7 +24,7 @@ export function unitHealth(unit: UnitHealthProps) {
 
   const mount_count = lu?.num_mounts || 0;
   const mount_hp =
-    lu?.mount !== null ? lu.mount?.battle_entity?.hit_points || 0 : 0;
+    lu?.mount !== undefined ? lu.mount?.battle_entity?.hit_points || 0 : 0;
 
   const unit_count = unit.num_men || 0;
   const unit_hp = lu?.battle_entity?.hit_points || 0;
