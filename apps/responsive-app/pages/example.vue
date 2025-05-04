@@ -14,23 +14,27 @@
                 :disable="!selectedVersion || factionsLoading" label="Faction" dense outlined />
         </div>
 
-        <!-- Liste des unités -->
-        <div v-if="selectedFaction">
-            <h3 class="q-mb-sm">Unités de la faction: {{ selectedFaction.label }}</h3>
-            <q-table :rows="units || []" :columns="columns" :loading="unitsLoading" row-key="unit" dense
-                :pagination="{ rowsPerPage: 25 }" />
-        </div>
     </div>
 </template>
 
 <script setup lang="ts">
+
+
+// <!-- Liste des unités -->
+// <div v-if="selectedFaction">
+//     <h3 class="q-mb-sm">Unités de la faction: {{ selectedFaction.label }}</h3>
+//     <q-table :rows="units || []" :columns="columns" :loading="unitsLoading" row-key="unit" dense
+//         :pagination="{ rowsPerPage: 25 }" />
+// </div>
+
 import { ref, computed, watch } from 'vue';
-import { useVersions, useFactions, useUnits } from '~/composables';
+import { useVersions, useFactions } from '~/composables';
+import type { Faction } from '@tww3-brawl/sdk';
 
 // Version sélectionnée
-const selectedVersion = ref(null);
+const selectedVersion = ref<{ label: string; value: string } | null>(null);
 // Faction sélectionnée
-const selectedFaction = ref(null);
+const selectedFaction = ref<{ label: string; value: string } | null>(null);
 
 // Récupération des versions
 const { data: versions, isLoading: versionsLoading } = useVersions();
@@ -45,38 +49,25 @@ const versionOptions = computed(() => {
 });
 
 // ID de version pour la requête de factions
-const versionId = computed(() => selectedVersion.value?.value || '');
+const versionId = computed(() => selectedVersion.value?.value ?? '');
 
 // Récupération des factions pour la version sélectionnée
-const { data: factions, isLoading: factionsLoading } = useFactions(versionId);
+const { data: factions, isLoading: factionsLoading, refetch: refetchFactions } = useFactions(versionId);
 
 // Options pour le select de factions
 const factionOptions = computed(() => {
     if (!factions.value) return [];
-    return factions.value.map(f => ({
+    return factions.value.map((f: Faction) => ({
         label: f.screen_name || f.key,
         value: f.key
     }));
 });
 
-// Clé de faction pour la requête d'unités
-const factionKey = computed(() => selectedFaction.value?.value || '');
-
-// Récupération des unités pour la faction et version sélectionnées
-const { data: units, isLoading: unitsLoading } = useUnits(versionId, factionKey);
-
-// Colonnes pour le tableau des unités
-const columns = [
-    { name: 'unit', label: 'ID', field: 'unit', sortable: true },
-    { name: 'name', label: 'Nom', field: row => row.land_unit?.onscreen_name, sortable: true },
-    { name: 'health', label: 'PV', field: row => row.health?.unit, sortable: true, align: 'right' },
-    { name: 'armor', label: 'Armure', field: 'armor', sortable: true, align: 'right' },
-    { name: 'attack', label: 'Attaque', field: 'attack', sortable: true, align: 'right' },
-    { name: 'defense', label: 'Défense', field: 'defense', sortable: true, align: 'right' },
-];
-
 // Réinitialiser la faction sélectionnée quand la version change
-watch(versionId, () => {
-    selectedFaction.value = null;
+watch(() => selectedVersion.value?.value, () => {
+    if (selectedVersion.value?.value) {
+        refetchFactions()
+    }
 });
+
 </script>

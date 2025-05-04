@@ -16,7 +16,7 @@ export function useFactions(
 ) {
   // Utilise le client fourni ou celui de Nuxt par défaut
   const graphqlClient = client || useGraphQLClient();
-
+  console.log('versionId', versionId);
   // Extrait la valeur si c'est une ref
   const getVersionId = () =>
     typeof versionId === 'string' ? versionId : versionId.value;
