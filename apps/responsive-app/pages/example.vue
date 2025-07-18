@@ -30,7 +30,7 @@
 
 import { ref, computed, watch } from 'vue';
 import { useVersions, useFactions, useUnits } from '~/composables';
-import type { Faction } from '@tww3-brawl/sdk';
+import type { Faction, Unit } from '@tww3-brawl/sdk';
 
 // Version sélectionnée
 const selectedVersion = ref<{ label: string; value: string } | null>(null);
@@ -83,8 +83,9 @@ const { data: units, isLoading: unitsLoading, refetch: refetchUnits } = useUnits
 // Colonnes pour le tableau des unités
 const columns = [
     { name: 'unit', label: 'ID', field: 'unit', sortable: true },
-    { name: 'name', label: 'Nom', field: row => row.land_unit?.onscreen_name, sortable: true },
-    { name: 'health', label: 'PV', field: row => row.health?.unit, sortable: true, align: 'right' },
+    { name: 'category', label: 'Catégorie', field: (row: Unit) => row.caste, sortable: true },
+    { name: 'name', label: 'Nom', field: (row: Unit) => row.land_unit?.onscreen_name, sortable: true },
+    { name: 'health', label: 'PV', field: (row: Unit) => row.health?.unit, sortable: true, align: 'right' },
     { name: 'armor', label: 'Armure', field: 'armor', sortable: true, align: 'right' },
     { name: 'attack', label: 'Attaque', field: 'attack', sortable: true, align: 'right' },
     { name: 'defense', label: 'Défense', field: 'defense', sortable: true, align: 'right' },

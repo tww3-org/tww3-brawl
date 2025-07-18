@@ -24,7 +24,7 @@ const config: NuxtConfig = {
         accent: '#9C27B0',
         dark: '#1d1d1d',
       },
-      dark: 'auto'
+      dark: false
     },
     plugins: []
   }
