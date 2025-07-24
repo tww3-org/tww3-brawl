@@ -50,7 +50,39 @@
           </q-carousel>
         </q-card-section>
         <q-card-actions class="text-primary" align="between">
-          <q-btn label="Précédent" flat dense @click="carouselRef?.previous()" />
+          <q-btn
+            v-if="step === 'version'"
+            label="Fermer"
+            flat
+            dense
+            @click="dialogVisible = false"
+          />
+          <q-btn
+            v-else
+            label="Précédent"
+            flat
+            dense
+            @click="carouselRef?.previous()"
+          />
+
+          <q-btn
+            v-if="step !== 'unit'"
+            :disable="(step === 'version' && !selectedVersion) || (step === 'faction' && !selectedFaction)"
+            label="Suivant"
+            color="primary"
+            flat
+            dense
+            @click="carouselRef?.next()"
+          />
+          <q-btn
+            v-else
+            :disable="!selectedUnit"
+            label="Finir"
+            color="primary"
+            flat
+            dense
+            @click="() => { dialogVisible = false; if(selectedUnit) emit('update:modelValue', selectedUnit.value) }"
+          />
         </q-card-actions>
       </q-card>
     </q-dialog>
