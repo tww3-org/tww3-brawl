@@ -18,6 +18,7 @@ export interface Version {
 export interface Faction {
   key: string;
   screen_name: string;
+  flags_url?: string;
   subculture?: {
     name: string;
   };

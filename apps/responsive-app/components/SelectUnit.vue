@@ -31,8 +31,24 @@
                   label="Faction"
                   dense outlined
                 />
+                <div v-if="factions && step === 'faction'" class="faction-icons-row">
+                  <div
+                    v-for="faction in factions"
+                    :key="faction.key"
+                    class="faction-icon-container"
+                    :class="{ selected: selectedFaction && selectedFaction.value === faction.key }"
+                    @click="selectedFaction = { label: faction.screen_name || faction.key, value: faction.key }"
+                  >
+                    <img
+                      v-if="getFactionPortrait(versionId, faction)"
+                      :src="getFactionPortrait(versionId, faction)"
+                      :alt="faction.screen_name || faction.key"
+                      class="faction-icon"
+                    />
+                    <div class="faction-label">{{ faction.subculture?.name || faction.key }}</div>
+                  </div>
+                </div>
               </div>
-
             </q-carousel-slide>
 
             <q-carousel-slide name="unit" key="unit">
@@ -95,6 +111,7 @@ import type { QCarousel } from 'quasar';
 import { useVersions } from '~/composables/useVersions';
 import { useFactions } from '~/composables/useFactions';
 import { useUnits } from '~/composables/useUnits';
+import { getFactionPortrait } from '@tww3-brawl/sdk/src/utils/getFactionPortrait';
 
 const carouselRef = ref<QCarousel | null>(null);
 const step = ref<'version' | 'faction' | 'unit'>('version');
@@ -178,5 +195,41 @@ watch(selectedUnit, (val) => {
 .custom{
   width: 800px;
   max-width: 90dvw;
+}
+.faction-icons-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+.faction-icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 0.5rem;
+  transition: box-shadow 0.2s, background 0.2s;
+}
+.faction-icon-container.selected {
+  background: #e3f2fd;
+  box-shadow: 0 0 0 2px #1976d2;
+}
+.faction-icon {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  margin-bottom: 0.25rem;
+}
+.faction-label {
+  font-size: 0.85rem;
+  text-align: center;
+  max-width: 70px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

@@ -31,6 +31,7 @@ export async function fetchFactions(
         factions: {
           key: true,
           screen_name: true,
+          flags_url: true,
           subculture: {
             name: true,
           },
@@ -53,6 +54,7 @@ export async function fetchFactions(
         factions.push({
           key: faction.key,
           screen_name: faction.screen_name,
+          flags_url: faction.flags_url || undefined,
           subculture:
             faction.subculture && typeof faction.subculture.name === 'string'
               ? { name: faction.subculture.name }
