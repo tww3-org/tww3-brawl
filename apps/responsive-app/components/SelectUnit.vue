@@ -4,9 +4,9 @@
     <q-btn round flat color="grey" icon="settings" />
     <q-dialog v-model="dialogVisible">
       <q-card class="custom">
-        <q-card-section >
+        <q-card-section class="q-card-section-custom">
           <q-carousel ref="carouselRef" :padding="false" v-model="step" :autoplay="false"
-            transition-prev="slide-left" transition-next="slide-right" aria-hidden="true">
+            transition-prev="slide-left" transition-next="slide-right" aria-hidden="true" class="q-carousel-custom">
 
             <q-carousel-slide name="version" key="version">
               <div class="q-mb-md">                
@@ -191,7 +191,33 @@ const groupedUnits = computed(() => {
     if (!groups[group]) groups[group] = [];
     groups[group].push(unit);
   }
-  return groups;
+  // Ici, itère sur chacun des groupes pour ne garder la première unité par land_unit.onscreen_name qui a le moins de land_unit.battle_entity.hit_points pour chaque groupe. Il s'agit d'éviter les doublons qui porte le même nom avec des hp différents.
+  const filteredGroups: Record<string, typeof units.value> = {};
+  for (const [groupName, unitsList] of Object.entries(groups)) {
+    // On regroupe par onscreen_name
+    const byName: Record<string, typeof units.value> = {};
+    for (const unit of unitsList) {
+      const name = unit.land_unit?.onscreen_name || unit.unit;
+      if (!byName[name]) byName[name] = [];
+      byName[name].push(unit);
+    }
+    // Pour chaque nom, on garde celui avec le moins de HP
+    const filtered: typeof units.value = [];
+    for (const name in byName) {
+      const unitsWithName = byName[name];
+      let minHpUnit = unitsWithName[0];
+      for (const u of unitsWithName) {
+        const hp = u.land_unit?.battle_entity?.hit_points ?? 0;
+        const minHp = minHpUnit.land_unit?.battle_entity?.hit_points ?? 0;
+        if (hp < minHp) {
+          minHpUnit = u;
+        }
+      }
+      filtered.push(minHpUnit);
+    }
+    filteredGroups[groupName] = filtered;
+  }
+  return filteredGroups;
 });
 
 // Navigation automatique
@@ -226,7 +252,18 @@ watch(selectedUnit, (val) => {
 .custom{
   min-width: 90dvw;
   max-width: 90dvw;
+  min-height: 90dvh;
+  max-height: 90dvh;
 }
+
+.q-carousel-custom {
+  height: 100%;
+}
+
+.q-card-section-custom {
+  min-height: 85dvh;
+}   
+
 .faction-icons-row {
   display: flex;
   flex-direction: row;
@@ -268,7 +305,6 @@ watch(selectedUnit, (val) => {
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  gap: 1rem;
   flex-wrap: wrap;
   margin-top: 1rem;
 }
@@ -280,24 +316,37 @@ watch(selectedUnit, (val) => {
   border-radius: 8px;
   padding: 0.5rem;
   transition: box-shadow 0.2s, background 0.2s;
+  position: relative;
 }
 .unit-icon-container.selected {
   background: #e3f2fd;
   box-shadow: 0 0 0 2px #1976d2;
 }
 .unit-icon {
-  width: 48px;
-  height: 48px;
+  width: auto;
+  height: auto;
   object-fit: contain;
   margin-bottom: 0.25rem;
+  position: relative;
 }
 .unit-label {
-  font-size: 0.85rem;
-  text-align: center;
-  max-width: 70px;
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  background: rgba(30,30,30,0.95);
+  color: #fff;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-size: 1rem;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  z-index: 10;
+  margin-top: 0.5rem;
+  pointer-events: none;
+}
+.unit-icon-container:hover .unit-label {
+  display: block;
 }
 .group-label {
   font-size: 1rem;
