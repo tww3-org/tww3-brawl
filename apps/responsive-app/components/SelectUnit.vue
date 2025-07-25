@@ -53,14 +53,32 @@
 
             <q-carousel-slide name="unit" key="unit">
               <div class="q-mb-md">
-                <q-select
-                  v-model="selectedUnit"
-                  :options="unitOptions"
-                  :loading="unitsLoading"
-                  :disable="!selectedFaction || unitsLoading"
-                  label="Unité"
-                  dense outlined
-                />
+                <div v-if="units && Object.keys(groupedUnits).length > 0">
+                  <div v-for="(unitsList, groupName) in groupedUnits" :key="groupName" class="unit-group-block">
+                    <div class="group-label">{{ groupName }}</div>
+                    <div class="unit-icons-row">
+                      <div
+                        v-for="unit in unitsList"
+                        :key="unit.unit"
+                        class="unit-icon-container"
+                        :class="{ selected: selectedUnit && selectedUnit.value === unit.unit }"
+                        @click="selectedUnit = { label: unit.land_unit?.onscreen_name || unit.unit, value: unit.unit }"
+                      >
+                        <img
+                          v-if="getUnitPortrait(versionId, unit)"
+                          :src="getUnitPortrait(versionId, unit)"
+                          :alt="unit.land_unit?.onscreen_name || unit.unit"
+                          class="unit-icon"
+                        />
+                        <div class="unit-label">{{ unit.land_unit?.onscreen_name || unit.unit }}</div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+                <div v-else>
+                  <q-spinner color="primary" />
+                </div>
               </div>
             </q-carousel-slide>
           </q-carousel>
@@ -112,6 +130,7 @@ import { useVersions } from '~/composables/useVersions';
 import { useFactions } from '~/composables/useFactions';
 import { useUnits } from '~/composables/useUnits';
 import { getFactionPortrait } from '@tww3-brawl/sdk/src/utils/getFactionPortrait';
+import { getUnitPortrait } from '@tww3-brawl/sdk/src/utils/getUnitPortrait';
 
 const carouselRef = ref<QCarousel | null>(null);
 const step = ref<'version' | 'faction' | 'unit'>('version');
@@ -163,6 +182,18 @@ const unitOptions = computed(() => {
   return units.value.map(u => ({ label: u.land_unit?.onscreen_name || u.unit, value: u.unit }));
 });
 
+// Ajout d'un computed pour grouper les unités par groupe
+const groupedUnits = computed(() => {
+  if (!units.value) return {};
+  const groups: Record<string, typeof units.value> = {};
+  for (const unit of units.value) {
+    const group = unit.group || 'Autres';
+    if (!groups[group]) groups[group] = [];
+    groups[group].push(unit);
+  }
+  return groups;
+});
+
 // Navigation automatique
 watch(selectedVersion, async (val) => {
   if (val) {
@@ -193,7 +224,7 @@ watch(selectedUnit, (val) => {
 
 <style scoped>
 .custom{
-  width: 800px;
+  min-width: 90dvw;
   max-width: 90dvw;
 }
 .faction-icons-row {
@@ -231,5 +262,48 @@ watch(selectedUnit, (val) => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.unit-icons-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+.unit-icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 0.5rem;
+  transition: box-shadow 0.2s, background 0.2s;
+}
+.unit-icon-container.selected {
+  background: #e3f2fd;
+  box-shadow: 0 0 0 2px #1976d2;
+}
+.unit-icon {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  margin-bottom: 0.25rem;
+}
+.unit-label {
+  font-size: 0.85rem;
+  text-align: center;
+  max-width: 70px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.group-label {
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
 }
 </style>
