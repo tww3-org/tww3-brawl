@@ -77,6 +77,8 @@ export interface Unit {
     ward_save: number;
   };
   is_large?: boolean;
+  general_portrait?: string;
+  group?: string;
 }
 
 /**
