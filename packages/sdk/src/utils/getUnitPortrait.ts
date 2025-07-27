@@ -15,7 +15,9 @@ export function getUnitPortrait(version: string, unit: Partial<Unit> & { flags_u
     img_path += `/${portraitPath}`;
   } else {
     // Concatenate to img_path the string "/ui/units/icons/", then unit.unit, then the extension ".webp"
-    if (unit.unit) {
+    if (unit.unit_card_url) {
+      img_path += `/ui/units/icons/${unit.unit_card_url}.webp`;
+    } else if (unit.unit) {
       img_path += `/ui/units/icons/${unit.unit}.webp`;
     }
   }

@@ -75,14 +75,17 @@ export async function fetchUnits(
               },
               melee_attack: true,
               melee_defence: true,
+              variant: {
+                unit_card_url: true,
+              },
             },
             custom_battle_permissions: {
-              general_portrait: true
+              general_portrait: true,
             },
-            ui_unit_group:{
-              parent_group:{
-                onscreen_name: true
-              }
+            ui_unit_group: {
+              parent_group: {
+                onscreen_name: true,
+              },
             },
           },
         },
@@ -108,7 +111,6 @@ export async function fetchUnits(
         typeof unit.num_men === 'number' &&
         unit.land_unit
       ) {
-
         const adaptedUnit: Unit = {
           unit: unit.unit,
           caste: unit.caste,
@@ -200,8 +202,10 @@ export async function fetchUnits(
             ward_save: 0,
           },
           is_large: unit.land_unit?.battle_entity?.size === 'large',
-          general_portrait: unit.custom_battle_permissions?.[0]?.general_portrait || '',
+          general_portrait:
+            unit.custom_battle_permissions?.[0]?.general_portrait || '',
           group: unit.ui_unit_group?.parent_group?.onscreen_name || '',
+          unit_card_url: unit.land_unit?.variant?.unit_card_url || '',
         };
 
         units.push(adaptedUnit);
