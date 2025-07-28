@@ -1,6 +1,6 @@
 <template>
   <div class="row items-center q-gutter-x-sm">
-    <q-btn :label="modelValue || 'Pick a unit'" color="primary" @click="dialogVisible = true" />
+    <q-btn :label="buttonLabel" color="primary" @click="dialogVisible = true" />
     <q-btn round flat color="grey" icon="settings" />
     <q-dialog v-model="dialogVisible">
       <q-card class="custom">
@@ -62,7 +62,7 @@
                         :key="unit.unit"
                         class="unit-icon-container"
                         :class="{ selected: selectedUnit && selectedUnit.value === unit.unit }"
-                        @click="selectedUnit = { label: unit.land_unit?.onscreen_name || unit.unit, value: unit.unit }"
+                        @click="selectedUnit = { label: unit.land_unit?.onscreen_name || unit.unit, value: unit.unit, unit: unit }"
                       >
                         <img
                           v-if="getUnitPortrait(versionId, unit)"
@@ -110,12 +110,12 @@
           />
           <q-btn
             v-else
-            :disable="!selectedUnit"
+            :disable="!selectedUnit || !selectedVersion"
             label="Finir"
             color="primary"
             flat
             dense
-            @click="() => { dialogVisible = false; if(selectedUnit) emit('update:modelValue', selectedUnit.value) }"
+            @click="() => { dialogVisible = false; if(selectedUnit && selectedVersion) emit('update:modelValue', { unit: selectedUnit.unit, version: selectedVersion }) }"
           />
         </q-card-actions>
       </q-card>
@@ -126,31 +126,45 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import type { QCarousel } from 'quasar';
+import type { Unit } from '@tww3-brawl/sdk/src/types';
 import { useVersions } from '~/composables/useVersions';
 import { useFactions } from '~/composables/useFactions';
 import { useUnits } from '~/composables/useUnits';
 import { getFactionPortrait } from '@tww3-brawl/sdk/src/utils/getFactionPortrait';
 import { getUnitPortrait } from '@tww3-brawl/sdk/src/utils/getUnitPortrait';
 
+// Type pour la sélection d'unité avec version
+interface UnitSelection {
+  unit: Unit;
+  version: { label: string; value: string };
+}
+
 const carouselRef = ref<QCarousel | null>(null);
 const step = ref<'version' | 'faction' | 'unit'>('version');
 const dialogVisible = ref(false);
 
-
-defineProps<{
-  modelValue?: string
+const props = defineProps<{
+  modelValue?: UnitSelection
   version?: string
 }>();
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string]
+  'update:modelValue': [value: UnitSelection]
   'update:version': [value: string]
 }>();
+
+// Computed pour le label du bouton
+const buttonLabel = computed(() => {
+  if (props.modelValue?.unit?.land_unit?.onscreen_name) {
+    return props.modelValue.unit.land_unit.onscreen_name;
+  }
+  return 'Pick a unit';
+});
 
 // Sélection version/faction/unité
 const selectedVersion = ref<{ label: string; value: string } | null>(null);
 const selectedFaction = ref<{ label: string; value: string } | null>(null);
-const selectedUnit = ref<{ label: string; value: string } | null>(null);
+const selectedUnit = ref<{ label: string; value: string; unit: Unit } | null>(null);
 
 // Récupération des versions
 const { data: versions, isLoading: versionsLoading } = useVersions();
@@ -255,10 +269,10 @@ watch(selectedFaction, (val) => {
 
 // Quand une unité est choisie, on émet la valeur
 watch(selectedUnit, (val) => {
-  if (val) {
+  if (val && selectedVersion.value) {
     // On ferme le dialog et on émet la valeur
     dialogVisible.value = false;
-    emit('update:modelValue', val.value);
+    emit('update:modelValue', { unit: val.unit, version: selectedVersion.value });
   }
 });
 </script>
