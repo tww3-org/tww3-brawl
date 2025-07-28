@@ -215,6 +215,21 @@ const groupedUnits = computed(() => {
       }
       filtered.push(minHpUnit);
     }
+    // Trier les unités d'abord par prix de recrutement puis par ordre alphabétique
+    filtered.sort((a, b) => {
+      const costA = a.recruitment_cost || 0;
+      const costB = b.recruitment_cost || 0;
+      
+      // D'abord trier par prix (croissant)
+      if (costA !== costB) {
+        return costA - costB;
+      }
+      
+      // Si même prix, trier par ordre alphabétique
+      const nameA = a.land_unit?.onscreen_name || a.unit;
+      const nameB = b.land_unit?.onscreen_name || b.unit;
+      return nameA.localeCompare(nameB);
+    });
     filteredGroups[groupName] = filtered;
   }
   return filteredGroups;

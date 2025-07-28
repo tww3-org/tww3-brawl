@@ -31,6 +31,8 @@ export interface Unit {
   unit: string;
   caste: string;
   num_men: number;
+  recruitment_cost?: number;
+  upkeep_cost?: number;
   land_unit?: {
     onscreen_name: string;
     bonus_hit_points: number;

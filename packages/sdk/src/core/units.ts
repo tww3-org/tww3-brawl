@@ -37,6 +37,8 @@ export async function fetchUnits(
             unit: true,
             caste: true,
             num_men: true,
+            recruitment_cost: true,
+            upkeep_cost: true,
             land_unit: {
               onscreen_name: true,
               bonus_hit_points: true,
@@ -115,6 +117,8 @@ export async function fetchUnits(
           unit: unit.unit,
           caste: unit.caste,
           num_men: unit.num_men,
+          recruitment_cost: Number(unit.recruitment_cost || 0),
+          upkeep_cost: Number(unit.upkeep_cost || 0),
           land_unit: unit.land_unit
             ? {
                 onscreen_name: unit.land_unit.onscreen_name as string,
