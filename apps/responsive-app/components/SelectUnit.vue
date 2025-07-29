@@ -5,46 +5,27 @@
     <q-dialog v-model="dialogVisible">
       <q-card class="custom">
         <q-card-section class="q-card-section-custom">
-          <q-carousel ref="carouselRef" :padding="false" v-model="step" :autoplay="false"
-            transition-prev="slide-left" transition-next="slide-right" aria-hidden="true" class="q-carousel-custom">
+          <q-carousel ref="carouselRef" :padding="false" v-model="step" :autoplay="false" transition-prev="slide-left"
+            transition-next="slide-right" aria-hidden="true" class="q-carousel-custom">
 
             <q-carousel-slide name="version" key="version">
-              <div class="q-mb-md">                
-                <q-select
-                  v-model="selectedVersion"
-                  :options="versionOptions"
-                  :loading="versionsLoading"
-                  label="Versions"
-                  dense outlined
-                />
+              <div class="q-mb-md">
+                <q-select v-model="selectedVersion" :options="versionOptions" :loading="versionsLoading"
+                  label="Versions" dense outlined />
               </div>
 
             </q-carousel-slide>
 
             <q-carousel-slide name="faction" key="faction">
               <div class="q-mb-md">
-                <q-select
-                  v-model="selectedFaction"
-                  :options="factionOptions"
-                  :loading="factionsLoading"
-                  :disable="!selectedVersion || factionsLoading"
-                  label="Faction"
-                  dense outlined
-                />
+                <q-select v-model="selectedFaction" :options="factionOptions" :loading="factionsLoading"
+                  :disable="!selectedVersion || factionsLoading" label="Faction" dense outlined />
                 <div v-if="factions && step === 'faction'" class="faction-icons-row">
-                  <div
-                    v-for="faction in factions"
-                    :key="faction.key"
-                    class="faction-icon-container"
+                  <div v-for="faction in factions" :key="faction.key" class="faction-icon-container"
                     :class="{ selected: selectedFaction && selectedFaction.value === faction.key }"
-                    @click="selectedFaction = { label: faction.screen_name || faction.key, value: faction.key }"
-                  >
-                    <img
-                      v-if="getFactionPortrait(versionId, faction)"
-                      :src="getFactionPortrait(versionId, faction)"
-                      :alt="faction.screen_name || faction.key"
-                      class="faction-icon"
-                    />
+                    @click="selectedFaction = { label: faction.screen_name || faction.key, value: faction.key }">
+                    <img v-if="getFactionPortrait(versionId, faction)" :src="getFactionPortrait(versionId, faction)"
+                      :alt="faction.screen_name || faction.key" class="faction-icon" />
                     <div class="faction-label">{{ faction.subculture?.name || faction.key }}</div>
                   </div>
                 </div>
@@ -52,71 +33,38 @@
             </q-carousel-slide>
 
             <q-carousel-slide name="unit" key="unit">
-              <div class="q-mb-md">
-                <div v-if="units && Object.keys(groupedUnits).length > 0">
-                  <div v-for="(unitsList, groupName) in groupedUnits" :key="groupName" class="unit-group-block">
-                    <div class="group-label">{{ groupName }}</div>
-                    <div class="unit-icons-row">
-                      <div
-                        v-for="unit in unitsList"
-                        :key="unit.unit"
-                        class="unit-icon-container"
-                        :class="{ selected: selectedUnit && selectedUnit.value === unit.unit }"
-                        @click="selectedUnit = { label: unit.land_unit?.onscreen_name || unit.unit, value: unit.unit, unit: unit }"
-                      >
-                        <img
-                          v-if="getUnitPortrait(versionId, unit)"
-                          :src="getUnitPortrait(versionId, unit)"
-                          :alt="unit.land_unit?.onscreen_name || unit.unit"
-                          class="unit-icon"
-                        />
-                        <div class="unit-label">{{ unit.land_unit?.onscreen_name || unit.unit }}</div>
+                <div class="q-mb-md">
+                  <div v-if="units && Object.keys(groupedUnits).length > 0">
+                    <div v-for="(unitsList, groupName) in groupedUnits" :key="groupName" class="unit-group-block">
+                      <div class="group-label">{{ groupName }}</div>
+                      <div class="unit-icons-row">
+                        <div v-for="unit in unitsList" :key="unit.unit" class="unit-icon-container"
+                          :class="{ selected: selectedUnit && selectedUnit.value === unit.unit }"
+                          @click="selectedUnit = { label: unit.land_unit?.onscreen_name || unit.unit, value: unit.unit, unit: unit }">
+                          <img v-if="getUnitPortrait(versionId, unit)" :src="getUnitPortrait(versionId, unit)"
+                            :alt="unit.land_unit?.onscreen_name || unit.unit" class="unit-icon" />
+                          <div class="unit-label">{{ unit.land_unit?.onscreen_name || unit.unit }}</div>
+                        </div>
                       </div>
-                    </div>
 
+                    </div>
+                  </div>
+                  <div v-else>
+                    <q-spinner color="primary" />
                   </div>
                 </div>
-                <div v-else>
-                  <q-spinner color="primary" />
-                </div>
-              </div>
             </q-carousel-slide>
           </q-carousel>
         </q-card-section>
         <q-card-actions class="text-primary" align="between">
-          <q-btn
-            v-if="step === 'version'"
-            label="Fermer"
-            flat
-            dense
-            @click="dialogVisible = false"
-          />
-          <q-btn
-            v-else
-            label="Précédent"
-            flat
-            dense
-            @click="carouselRef?.previous()"
-          />
+          <q-btn v-if="step === 'version'" label="Fermer" flat dense @click="dialogVisible = false" />
+          <q-btn v-else label="Précédent" flat dense @click="carouselRef?.previous()" />
 
-          <q-btn
-            v-if="step !== 'unit'"
+          <q-btn v-if="step !== 'unit'"
             :disable="(step === 'version' && !selectedVersion) || (step === 'faction' && !selectedFaction)"
-            label="Suivant"
-            color="primary"
-            flat
-            dense
-            @click="carouselRef?.next()"
-          />
-          <q-btn
-            v-else
-            :disable="!selectedUnit || !selectedVersion"
-            label="Finir"
-            color="primary"
-            flat
-            dense
-            @click="() => { dialogVisible = false; if(selectedUnit && selectedVersion) emit('update:modelValue', { unit: selectedUnit.unit, version: selectedVersion }) }"
-          />
+            label="Suivant" color="primary" flat dense @click="carouselRef?.next()" />
+          <q-btn v-else :disable="!selectedUnit || !selectedVersion" label="Finir" color="primary" flat dense
+            @click="() => { dialogVisible = false; if (selectedUnit && selectedVersion) emit('update:modelValue', { unit: selectedUnit.unit, version: selectedVersion }) }" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -176,8 +124,9 @@ const versionOptions = computed(() => {
 // Récupération des factions
 const versionId = computed(() => {
   console.log('selectedVersion', selectedVersion.value)
-  return selectedVersion.value?.value ?? ''});
-  
+  return selectedVersion.value?.value ?? ''
+});
+
 const { data: factions, isLoading: factionsLoading, refetch: refetchFactions } = useFactions(versionId);
 
 const factionOptions = computed(() => {
@@ -233,12 +182,12 @@ const groupedUnits = computed(() => {
     filtered.sort((a, b) => {
       const costA = a.recruitment_cost || 0;
       const costB = b.recruitment_cost || 0;
-      
+
       // D'abord trier par prix (croissant)
       if (costA !== costB) {
         return costA - costB;
       }
-      
+
       // Si même prix, trier par ordre alphabétique
       const nameA = a.land_unit?.onscreen_name || a.unit;
       const nameB = b.land_unit?.onscreen_name || b.unit;
@@ -246,7 +195,36 @@ const groupedUnits = computed(() => {
     });
     filteredGroups[groupName] = filtered;
   }
-  return filteredGroups;
+
+  // Définir l'ordre des groupes
+  const groupOrder = [
+    'Lords',
+    'Heroes',
+    'Infantry',
+    'Missile Infantry',
+    'Cavalry & Chariots',
+    'Missile Cavalry & Chariots',
+    'Artillery & War Machines'
+  ];
+
+  // Créer un nouvel objet avec les groupes dans l'ordre spécifié
+  const orderedGroups: Record<string, typeof units.value> = {};
+
+  // D'abord ajouter les groupes dans l'ordre spécifié
+  for (const groupName of groupOrder) {
+    if (filteredGroups[groupName]) {
+      orderedGroups[groupName] = filteredGroups[groupName];
+    }
+  }
+
+  // Ensuite ajouter tous les autres groupes non spécifiés
+  for (const [groupName, unitsList] of Object.entries(filteredGroups)) {
+    if (!groupOrder.includes(groupName)) {
+      orderedGroups[groupName] = unitsList;
+    }
+  }
+
+  return orderedGroups;
 });
 
 // Navigation automatique
@@ -278,7 +256,7 @@ watch(selectedUnit, (val) => {
 </script>
 
 <style scoped>
-.custom{
+.custom {
   min-width: 90dvw;
   max-width: 90dvw;
   min-height: 90dvh;
@@ -291,7 +269,7 @@ watch(selectedUnit, (val) => {
 
 .q-card-section-custom {
   min-height: 85dvh;
-}   
+}
 
 .faction-icons-row {
   display: flex;
@@ -302,6 +280,7 @@ watch(selectedUnit, (val) => {
   flex-wrap: wrap;
   margin-top: 1rem;
 }
+
 .faction-icon-container {
   display: flex;
   flex-direction: column;
@@ -311,16 +290,19 @@ watch(selectedUnit, (val) => {
   padding: 0.5rem;
   transition: box-shadow 0.2s, background 0.2s;
 }
+
 .faction-icon-container.selected {
   background: #e3f2fd;
   box-shadow: 0 0 0 2px #1976d2;
 }
+
 .faction-icon {
   width: 48px;
   height: 48px;
   object-fit: contain;
   margin-bottom: 0.25rem;
 }
+
 .faction-label {
   font-size: 0.85rem;
   text-align: center;
@@ -329,6 +311,7 @@ watch(selectedUnit, (val) => {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 .unit-icons-row {
   display: flex;
   flex-direction: row;
@@ -337,6 +320,7 @@ watch(selectedUnit, (val) => {
   flex-wrap: wrap;
   margin-top: 1rem;
 }
+
 .unit-icon-container {
   display: flex;
   flex-direction: column;
@@ -347,10 +331,12 @@ watch(selectedUnit, (val) => {
   transition: box-shadow 0.2s, background 0.2s;
   position: relative;
 }
+
 .unit-icon-container.selected {
   background: #e3f2fd;
   box-shadow: 0 0 0 2px #1976d2;
 }
+
 .unit-icon {
   width: auto;
   height: auto;
@@ -358,13 +344,14 @@ watch(selectedUnit, (val) => {
   margin-bottom: 0.25rem;
   position: relative;
 }
+
 .unit-label {
   display: none;
   position: absolute;
   left: 50%;
   top: 100%;
   transform: translateX(-50%);
-  background: rgba(30,30,30,0.95);
+  background: rgba(30, 30, 30, 0.95);
   color: #fff;
   padding: 0.25rem 0.75rem;
   border-radius: 6px;
@@ -374,9 +361,11 @@ watch(selectedUnit, (val) => {
   margin-top: 0.5rem;
   pointer-events: none;
 }
+
 .unit-icon-container:hover .unit-label {
   display: block;
 }
+
 .group-label {
   font-size: 1rem;
   font-weight: bold;
