@@ -265,10 +265,13 @@ watch(selectedUnit, (val) => {
 
 .q-carousel-custom {
   height: 100%;
+  min-height: 100%;
 }
 
 .q-card-section-custom {
-  min-height: 85dvh;
+  height: calc(85dvh - 20px); /* 60px pour la hauteur approximative du q-card-actions */
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .faction-icons-row {
