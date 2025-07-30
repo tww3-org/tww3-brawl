@@ -56,7 +56,7 @@
             </q-carousel-slide>
           </q-carousel>
         </q-card-section>
-        <q-card-actions class="text-primary" align="between">
+        <q-card-actions class="text-primary q-card-actions-custom" align="between">
           <q-btn v-if="step === 'version'" label="Fermer" flat dense @click="dialogVisible = false" />
           <q-btn v-else label="Précédent" flat dense @click="carouselRef?.previous()" />
 
@@ -264,9 +264,12 @@ watch(selectedUnit, (val) => {
 }
 
 .q-card-section-custom {
-  height: calc(85dvh - 20px); /* 60px pour la hauteur approximative du q-card-actions */
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+.q-card-actions-custom {
+  margin-top: auto;
 }
 
 .faction-icons-row {
