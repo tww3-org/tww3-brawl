@@ -1,6 +1,6 @@
 <template>
   <div class="row items-center q-gutter-x-sm">
-    <q-btn :label="buttonLabel" color="primary" @click="dialogVisible = true" />
+    <q-btn label="Pick a Unit" color="primary" @click="dialogVisible = true" />
     <q-btn round flat color="grey" icon="settings" />
     <q-dialog v-model="dialogVisible">
       <q-card class="custom">
@@ -101,13 +101,6 @@ const emit = defineEmits<{
   'update:version': [value: string]
 }>();
 
-// Computed pour le label du bouton
-const buttonLabel = computed(() => {
-  if (props.modelValue?.unit?.land_unit?.onscreen_name) {
-    return props.modelValue.unit.land_unit.onscreen_name;
-  }
-  return 'Pick a unit';
-});
 
 // Sélection version/faction/unité
 const selectedVersion = ref<{ label: string; value: string } | null>(null);
@@ -261,6 +254,8 @@ watch(selectedUnit, (val) => {
   max-width: 90dvw;
   min-height: 90dvh;
   max-height: 90dvh;
+  display: flex;
+  flex-direction: column;
 }
 
 .q-carousel-custom {

@@ -7,7 +7,7 @@
       class="unit-image"
     />
     
-    <q-card-section :class="orientation">
+    <q-card-section :class="orientation" class="card-section">
       <div class="text-h6">{{ unitTitle }}</div>
       
       <div class="q-mt-md" :class="{ 'flex justify-end': orientation === 'right' }">
@@ -62,12 +62,20 @@ const unitImageUrl = computed(() => {
 <style scoped>
 .unit-card {
   max-width: 350px;
-  width: 100%;
+  width: 500px;
+  height: 350px;
+  display: flex;
+  flex-direction: column;
 }
 
 .unit-image {
   width: 100%;
   height: auto;
+  flex: 1;
+}
+
+.card-section {
+  margin-top: auto;
 }
 
 .right {
