@@ -55,8 +55,8 @@ const unitTitle = computed(() => {
 
 // Computed pour l'image de l'unité
 const unitImageUrl = computed(() => {
-  if (selectedUnit.value?.unit && selectedUnit.value?.version?.value) {
-    const portrait = getUnitPortrait(selectedUnit.value.version.value, selectedUnit.value.unit)
+  if (selectedUnit.value?.unit && selectedUnit.value?.version?.id) {
+    const portrait = getUnitPortrait(selectedUnit.value.version.id, selectedUnit.value.unit)
     if (portrait) {
       return portrait
     }

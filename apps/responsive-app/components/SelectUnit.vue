@@ -11,7 +11,7 @@
             <q-carousel-slide name="version" key="version">
               <div class="q-mb-md">
                 <q-select v-model="selectedVersion" :options="versionOptions" :loading="versionsLoading"
-                  label="Versions" dense outlined />
+                  label="Versions" dense outlined option-label="name" option-value="id" />
               </div>
 
             </q-carousel-slide>
@@ -19,11 +19,11 @@
             <q-carousel-slide name="faction" key="faction">
               <div class="q-mb-md">
                 <q-select v-model="selectedFaction" :options="factionOptions" :loading="factionsLoading"
-                  :disable="!selectedVersion || factionsLoading" label="Faction" dense outlined />
+                  :disable="!selectedVersion || factionsLoading" label="Faction" dense outlined option-label="screen_name" option-value="key" />
                 <div v-if="factions && step === 'faction'" class="faction-icons-row">
                   <div v-for="faction in factions" :key="faction.key" class="faction-icon-container"
-                    :class="{ selected: selectedFaction && selectedFaction.value === faction.key }"
-                    @click="selectedFaction = { label: faction.screen_name || faction.key, value: faction.key }">
+                    :class="{ selected: selectedFaction && selectedFaction.key === faction.key }"
+                    @click="selectedFaction = faction">
                     <img v-if="getFactionPortrait(versionId, faction)" :src="getFactionPortrait(versionId, faction)"
                       :alt="faction.screen_name || faction.key" class="faction-icon" />
                     <div class="faction-label">{{ faction.subculture?.name || faction.key }}</div>
@@ -81,6 +81,8 @@ import { useUnits } from '~/composables/useUnits';
 import { getFactionPortrait } from '@tww3-brawl/sdk/src/utils/getFactionPortrait';
 import { getUnitPortrait } from '@tww3-brawl/sdk/src/utils/getUnitPortrait';
 import type { UnitSelection } from '~/types/unit';
+import type { Version } from '@tww3-brawl/sdk/src/types';
+import type { Faction } from '@tww3-brawl/sdk/src/types';
 
 const carouselRef = ref<QCarousel | null>(null);
 const step = ref<'version' | 'faction' | 'unit'>('version');
@@ -98,34 +100,32 @@ const emit = defineEmits<{
 
 
 // Sélection version/faction/unité
-const selectedVersion = ref<{ label: string; value: string } | null>(null);
-const selectedFaction = ref<{ label: string; value: string } | null>(null);
+const selectedVersion = ref<Version | null>(null);
+const selectedFaction = ref<Faction | null>(null);
 const selectedUnit = ref<{ label: string; value: string; unit: Unit } | null>(null);
 
 // Récupération des versions
 const { data: versions, isLoading: versionsLoading } = useVersions();
 const versionOptions = computed(() => {
   if (!versions.value) return [];
-  return versions.value.map(v => ({ label: v.name, value: v.id }));
+  return versions.value;
 });
 
 // Récupération des factions
 const versionId = computed(() => {
   console.log('selectedVersion', selectedVersion.value)
-  return selectedVersion.value?.value ?? ''
+  return selectedVersion.value?.id ?? ''
 });
 
 const { data: factions, isLoading: factionsLoading, refetch: refetchFactions } = useFactions(versionId);
 
 const factionOptions = computed(() => {
   if (!factions.value) return [];
-  const values = factions.value.map(f => ({ label: f.screen_name || f.key, value: f.key }))
-  console.log('factions', values)
-  return values;
+  return factions.value;
 });
 
 // Récupération des unités
-const factionKey = computed(() => selectedFaction.value?.value ?? '');
+const factionKey = computed(() => selectedFaction.value?.key ?? '');
 const { data: units, isLoading: unitsLoading, refetch: refetchUnits } = useUnits(versionId, factionKey);
 const unitOptions = computed(() => {
   if (!units.value) return [];
@@ -240,6 +240,31 @@ watch(selectedUnit, (val) => {
     emit('update:modelValue', { unit: val.unit, version: selectedVersion.value, faction: selectedFaction.value });
   }
 });
+
+// Initialiser les refs quand modelValue est fourni
+watch(() => props.modelValue, (newValue) => {
+  if (newValue) {
+    // Initialiser la version
+    selectedVersion.value = newValue.version;
+    
+    // Initialiser la faction
+    selectedFaction.value = newValue.faction;
+    
+    // Initialiser l'unité
+    selectedUnit.value = {
+      label: newValue.unit.land_unit?.onscreen_name || newValue.unit.unit,
+      value: newValue.unit.unit,
+      unit: newValue.unit
+    };
+    
+  } else {
+    // Réinitialiser si modelValue est null/undefined
+    selectedVersion.value = null;
+    selectedFaction.value = null;
+    selectedUnit.value = null;
+    step.value = 'unit';
+  }
+}, { immediate: true });
 </script>
 
 <style scoped>

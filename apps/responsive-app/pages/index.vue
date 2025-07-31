@@ -21,8 +21,8 @@
             <q-card-section>
               <div class="text-h6">Left</div>
               <div>{{ leftUnit.unit.land_unit?.onscreen_name }}</div>
-              <div>{{ leftUnit.faction.label }}</div>
-              <div class="text-caption">{{ leftUnit.version.label }}</div>
+              <div>{{ leftUnit.faction.subculture?.name }}</div>
+              <div class="text-caption">{{ leftUnit.version.name }}</div>
             </q-card-section>
           </q-card>
         </div>
@@ -31,8 +31,8 @@
             <q-card-section>
               <div class="text-h6">Right</div>
               <div>{{ rightUnit.unit.land_unit?.onscreen_name }}</div>
-              <div>{{ rightUnit.faction.label }}</div>
-              <div class="text-caption">{{ rightUnit.version.label }}</div>
+              <div>{{ rightUnit.faction.subculture?.name }}</div>
+              <div class="text-caption">{{ rightUnit.version.name }}</div>
             </q-card-section>
           </q-card>
         </div>
