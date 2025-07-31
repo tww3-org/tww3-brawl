@@ -39,8 +39,8 @@
                       <div class="group-label">{{ groupName }}</div>
                       <div class="unit-icons-row">
                         <div v-for="unit in unitsList" :key="unit.unit" class="unit-icon-container"
-                          :class="{ selected: selectedUnit && selectedUnit.value === unit.unit }"
-                          @click="selectedUnit = { label: unit.land_unit?.onscreen_name || unit.unit, value: unit.unit, unit: unit }">
+                          :class="{ selected: selectedUnit && selectedUnit.unit === unit.unit }"
+                          @click="selectedUnit = unit">
                           <img v-if="getUnitPortrait(versionId, unit)" :src="getUnitPortrait(versionId, unit)"
                             :alt="unit.land_unit?.onscreen_name || unit.unit" class="unit-icon" />
                           <div class="unit-label">{{ unit.land_unit?.onscreen_name || unit.unit }}</div>
@@ -64,7 +64,7 @@
             :disable="(step === 'version' && !selectedVersion) || (step === 'faction' && !selectedFaction)"
             label="Suivant" color="primary" flat dense @click="carouselRef?.next()" />
           <q-btn v-else :disable="!selectedUnit || !selectedVersion || !selectedFaction" label="Finir" color="primary" flat dense
-            @click="() => { dialogVisible = false; if (selectedUnit && selectedVersion && selectedFaction) emit('update:modelValue', { unit: selectedUnit.unit, version: selectedVersion, faction: selectedFaction }) }" />
+            @click="() => { dialogVisible = false; if (selectedUnit && selectedVersion && selectedFaction) emit('update:modelValue', { unit: selectedUnit, version: selectedVersion, faction: selectedFaction }) }" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -102,7 +102,7 @@ const emit = defineEmits<{
 // Sélection version/faction/unité
 const selectedVersion = ref<Version | null>(null);
 const selectedFaction = ref<Faction | null>(null);
-const selectedUnit = ref<{ label: string; value: string; unit: Unit } | null>(null);
+const selectedUnit = ref<Unit | null>(null);
 
 // Récupération des versions
 const { data: versions, isLoading: versionsLoading } = useVersions();
@@ -237,7 +237,7 @@ watch(selectedUnit, (val) => {
   if (val && selectedVersion.value && selectedFaction.value) {
     // On ferme le dialog et on émet la valeur
     dialogVisible.value = false;
-    emit('update:modelValue', { unit: val.unit, version: selectedVersion.value, faction: selectedFaction.value });
+    emit('update:modelValue', { unit: val, version: selectedVersion.value, faction: selectedFaction.value });
   }
 });
 
@@ -251,18 +251,15 @@ watch(() => props.modelValue, (newValue) => {
     selectedFaction.value = newValue.faction;
     
     // Initialiser l'unité
-    selectedUnit.value = {
-      label: newValue.unit.land_unit?.onscreen_name || newValue.unit.unit,
-      value: newValue.unit.unit,
-      unit: newValue.unit
-    };
+    selectedUnit.value = newValue.unit;
     
+    step.value = 'unit';
   } else {
     // Réinitialiser si modelValue est null/undefined
     selectedVersion.value = null;
     selectedFaction.value = null;
     selectedUnit.value = null;
-    step.value = 'unit';
+    step.value = 'version';
   }
 }, { immediate: true });
 </script>
