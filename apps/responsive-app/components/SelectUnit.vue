@@ -64,7 +64,7 @@
             :disable="(step === 'version' && !selectedVersion) || (step === 'faction' && !selectedFaction)"
             label="Suivant" color="primary" flat dense @click="carouselRef?.next()" />
           <q-btn v-else :disable="!selectedUnit || !selectedVersion || !selectedFaction" label="Finir" color="primary" flat dense
-            @click="() => { dialogVisible = false; if (selectedUnit && selectedVersion && selectedFaction) emit('update:modelValue', { unit: selectedUnit, version: selectedVersion, faction: selectedFaction }) }" />
+            @click="() => { dialogVisible = false; if (selectedUnitSelection) emit('update:modelValue', selectedUnitSelection) }" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -100,9 +100,41 @@ const emit = defineEmits<{
 
 
 // Sélection version/faction/unité
-const selectedVersion = ref<Version | null>(null);
-const selectedFaction = ref<Faction | null>(null);
-const selectedUnit = ref<Unit | null>(null);
+const selectedUnitSelection = ref<UnitSelection | null>(null);
+
+// Computed pour accéder aux propriétés de manière sûre
+const selectedVersion = computed({
+  get: () => selectedUnitSelection.value?.version || null,
+  set: (value: Version | null) => {
+    if (selectedUnitSelection.value) {
+      selectedUnitSelection.value.version = value!;
+    } else if (value) {
+      selectedUnitSelection.value = { unit: {} as Unit, version: value, faction: {} as Faction };
+    }
+  }
+});
+
+const selectedFaction = computed({
+  get: () => selectedUnitSelection.value?.faction || null,
+  set: (value: Faction | null) => {
+    if (selectedUnitSelection.value) {
+      selectedUnitSelection.value.faction = value!;
+    } else if (value) {
+      selectedUnitSelection.value = { unit: {} as Unit, version: {} as Version, faction: value };
+    }
+  }
+});
+
+const selectedUnit = computed({
+  get: () => selectedUnitSelection.value?.unit || null,
+  set: (value: Unit | null) => {
+    if (selectedUnitSelection.value) {
+      selectedUnitSelection.value.unit = value!;
+    } else if (value) {
+      selectedUnitSelection.value = { unit: value, version: {} as Version, faction: {} as Faction };
+    }
+  }
+});
 
 // Récupération des versions
 const { data: versions, isLoading: versionsLoading } = useVersions();
@@ -113,8 +145,8 @@ const versionOptions = computed(() => {
 
 // Récupération des factions
 const versionId = computed(() => {
-  console.log('selectedVersion', selectedVersion.value)
-  return selectedVersion.value?.id ?? ''
+  console.log('selectedUnitSelection', selectedUnitSelection.value)
+  return selectedUnitSelection.value?.version?.id ?? ''
 });
 
 const { data: factions, isLoading: factionsLoading, refetch: refetchFactions } = useFactions(versionId);
@@ -125,7 +157,7 @@ const factionOptions = computed(() => {
 });
 
 // Récupération des unités
-const factionKey = computed(() => selectedFaction.value?.key ?? '');
+const factionKey = computed(() => selectedUnitSelection.value?.faction?.key ?? '');
 const { data: units, isLoading: unitsLoading, refetch: refetchUnits } = useUnits(versionId, factionKey);
 const unitOptions = computed(() => {
   if (!units.value) return [];
@@ -214,51 +246,40 @@ const groupedUnits = computed(() => {
   return orderedGroups;
 });
 
-// Navigation automatique
-watch(selectedVersion, async (val) => {
-  if (val) {
+// Navigation automatique et logique centralisée
+watch(selectedUnitSelection, async (val) => {
+  if (!val) return;
+  
+  // Si une version est sélectionnée, passer à l'étape faction
+  if (val.version && !val.faction) {
     step.value = 'faction';
-    selectedFaction.value = null;
-    selectedUnit.value = null;
     await refetchFactions();
-    console.log('factions', factions.value)
+    console.log('factions', factions.value);
   }
-});
-watch(selectedFaction, (val) => {
-  if (val) {
+  
+  // Si une faction est sélectionnée, passer à l'étape unité
+  if (val.faction && !val.unit) {
     step.value = 'unit';
-    selectedUnit.value = null;
     refetchUnits();
   }
-});
-
-// Quand une unité est choisie, on émet la valeur
-watch(selectedUnit, (val) => {
-  if (val && selectedVersion.value && selectedFaction.value) {
-    // On ferme le dialog et on émet la valeur
+  
+  // Si tout est sélectionné, fermer le dialog et émettre
+  if (val.unit && val.version && val.faction) {
     dialogVisible.value = false;
-    emit('update:modelValue', { unit: val, version: selectedVersion.value, faction: selectedFaction.value });
+    emit('update:modelValue', val);
   }
-});
+}, { deep: true });
 
 // Initialiser les refs quand modelValue est fourni
 watch(() => props.modelValue, (newValue) => {
   if (newValue) {
-    // Initialiser la version
-    selectedVersion.value = newValue.version;
-    
-    // Initialiser la faction
-    selectedFaction.value = newValue.faction;
-    
-    // Initialiser l'unité
-    selectedUnit.value = newValue.unit;
+    // Initialiser la sélection complète
+    selectedUnitSelection.value = newValue;
     
     step.value = 'unit';
   } else {
     // Réinitialiser si modelValue est null/undefined
-    selectedVersion.value = null;
-    selectedFaction.value = null;
-    selectedUnit.value = null;
+    selectedUnitSelection.value = null;
     step.value = 'version';
   }
 }, { immediate: true });
