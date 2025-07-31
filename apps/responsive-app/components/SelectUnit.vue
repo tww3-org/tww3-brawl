@@ -8,22 +8,30 @@
           <q-carousel ref="carouselRef" :padding="false" v-model="step" :autoplay="false" transition-prev="slide-left"
             transition-next="slide-right" aria-hidden="true" class="q-carousel-custom">
 
-            <q-carousel-slide name="version" key="version">
-              <div class="q-mb-md">
-                <q-select v-model="selectedVersion" :options="versionOptions" :loading="versionsLoading"
-                  label="Versions" dense outlined option-label="name" option-value="id" />
-              </div>
-
-            </q-carousel-slide>
+                         <q-carousel-slide name="version" key="version">
+               <div class="q-mb-md">
+                 <q-select v-model="selectedVersion" :options="versionOptions" :loading="versionsLoading"
+                   label="Versions" dense outlined option-label="name" option-value="id" />
+                 <div v-if="versions && step === 'version'" class="version-icons-row">
+                   <div v-for="version in versions" :key="version.id" class="version-icon-container"
+                     :class="{ selected: selectedVersion && selectedVersion.id === version.id }"
+                     @click="selectVersionAndNext(version)">
+                     <div class="version-icon">{{ version.name?.charAt(0) || 'V' }}</div>
+                     <div class="version-label">{{ version.name }}</div>
+                   </div>
+                 </div>
+               </div>
+ 
+             </q-carousel-slide>
 
             <q-carousel-slide name="faction" key="faction">
               <div class="q-mb-md">
                 <q-select v-model="selectedFaction" :options="factionOptions" :loading="factionsLoading"
                   :disable="!selectedVersion || factionsLoading" label="Faction" dense outlined option-label="screen_name" option-value="key" />
-                <div v-if="factions && step === 'faction'" class="faction-icons-row">
+                  <div v-if="factions && step === 'faction'" class="faction-icons-row">
                   <div v-for="faction in factions" :key="faction.key" class="faction-icon-container"
                     :class="{ selected: selectedFaction && selectedFaction.key === faction.key }"
-                    @click="selectedFaction = faction">
+                    @click="selectFactionAndNext(faction)">
                     <img v-if="getFactionPortrait(versionId, faction)" :src="getFactionPortrait(versionId, faction)"
                       :alt="faction.screen_name || faction.key" class="faction-icon" />
                     <div class="faction-label">{{ faction.subculture?.name || faction.key }}</div>
@@ -40,7 +48,7 @@
                       <div class="unit-icons-row">
                         <div v-for="unit in unitsList" :key="unit.unit" class="unit-icon-container"
                           :class="{ selected: selectedUnit && selectedUnit.unit === unit.unit }"
-                          @click="selectedUnit = unit">
+                          @click="selectUnitAndFinish(unit)">
                           <img v-if="getUnitPortrait(versionId, unit)" :src="getUnitPortrait(versionId, unit)"
                             :alt="unit.land_unit?.onscreen_name || unit.unit" class="unit-icon" />
                           <div class="unit-label">{{ unit.land_unit?.onscreen_name || unit.unit }}</div>
@@ -58,11 +66,11 @@
         </q-card-section>
         <q-card-actions class="text-primary q-card-actions-custom" align="between">
           <q-btn v-if="step === 'version'" label="Fermer" flat dense @click="dialogVisible = false" />
-          <q-btn v-else label="Précédent" flat dense @click="carouselRef?.previous()" />
+          <q-btn v-else label="Précédent" flat dense @click="goToPreviousStep" />
 
           <q-btn v-if="step !== 'unit'"
             :disable="(step === 'version' && !selectedVersion) || (step === 'faction' && !selectedFaction)"
-            label="Suivant" color="primary" flat dense @click="carouselRef?.next()" />
+            label="Suivant" color="primary" flat dense @click="goToNextStep" />
           <q-btn v-else :disable="!selectedUnit || !selectedVersion || !selectedFaction" label="Finir" color="primary" flat dense
             @click="() => { dialogVisible = false; if (selectedUnitSelection) emit('update:modelValue', selectedUnitSelection) }" />
         </q-card-actions>
@@ -109,7 +117,7 @@ const selectedVersion = computed({
     if (selectedUnitSelection.value) {
       selectedUnitSelection.value.version = value!;
     } else if (value) {
-      selectedUnitSelection.value = { unit: {} as Unit, version: value, faction: {} as Faction };
+      selectedUnitSelection.value = { unit: undefined, version: value, faction: undefined };
     }
   }
 });
@@ -120,7 +128,7 @@ const selectedFaction = computed({
     if (selectedUnitSelection.value) {
       selectedUnitSelection.value.faction = value!;
     } else if (value) {
-      selectedUnitSelection.value = { unit: {} as Unit, version: {} as Version, faction: value };
+      selectedUnitSelection.value = { unit: undefined, version: undefined, faction: value };
     }
   }
 });
@@ -131,7 +139,7 @@ const selectedUnit = computed({
     if (selectedUnitSelection.value) {
       selectedUnitSelection.value.unit = value!;
     } else if (value) {
-      selectedUnitSelection.value = { unit: value, version: {} as Version, faction: {} as Faction };
+      selectedUnitSelection.value = { unit: value, version: undefined, faction: undefined };
     }
   }
 });
@@ -247,31 +255,55 @@ const groupedUnits = computed(() => {
 });
 
 // Navigation automatique et logique centralisée
-watch(selectedUnitSelection, async (val) => {
-  if (!val) return;
+// watch(selectedUnitSelection, (val) => {
+//   if (!val) return;
   
-  // Si une version est sélectionnée, passer à l'étape faction
-  if (val.version && !val.faction) {
-    step.value = 'faction';
+//   // Si une version est sélectionnée, passer à l'étape faction
+//   if (val.version && !val.faction && step.value === 'version') {
+//     console.log('version', val.version);
+//     step.value = 'faction';
+//   }
+  
+//   // Si une faction est sélectionnée, passer à l'étape unité
+//   if (val.faction && !val.unit && step.value === 'faction') {
+//     console.log('faction', val.faction);
+//     step.value = 'unit';
+//   }
+  
+//   // Si tout est sélectionné, fermer le dialog et émettre
+//   if (val.unit && val.version && val.faction && step.value === 'unit') {
+//     console.log('unit', val.unit);
+//     // dialogVisible.value = false;
+//     emit('update:modelValue', val);
+//   }
+// }, { deep: true });
+
+// Refetch en fonction de l'étape
+watch(step, async (newStep) => {
+  console.log('newStep', newStep);
+  if (newStep === 'version') {
+    // Les versions sont déjà chargées par useVersions(), pas besoin de refetch
+    console.log('versions', versions.value);
+    // Reset faction et unit quand on revient à version
+    if (selectedUnitSelection.value) {
+      selectedUnitSelection.value.faction = undefined as any;
+      selectedUnitSelection.value.unit = undefined as any;
+    }
+  } else if (newStep === 'faction') {
     await refetchFactions();
     console.log('factions', factions.value);
+    // Reset unit quand on passe à faction
+    if (selectedUnitSelection.value) {
+      selectedUnitSelection.value.unit = undefined as any;
+    }
+  } else if (newStep === 'unit') {
+    await refetchUnits();
   }
-  
-  // Si une faction est sélectionnée, passer à l'étape unité
-  if (val.faction && !val.unit) {
-    step.value = 'unit';
-    refetchUnits();
-  }
-  
-  // Si tout est sélectionné, fermer le dialog et émettre
-  if (val.unit && val.version && val.faction) {
-    dialogVisible.value = false;
-    emit('update:modelValue', val);
-  }
-}, { deep: true });
+});
 
 // Initialiser les refs quand modelValue est fourni
 watch(() => props.modelValue, (newValue) => {
+  console.log('newValue', newValue);
   if (newValue) {
     // Initialiser la sélection complète
     selectedUnitSelection.value = newValue;
@@ -283,6 +315,50 @@ watch(() => props.modelValue, (newValue) => {
     step.value = 'version';
   }
 }, { immediate: true });
+
+// Fonctions de navigation explicites
+const goToNextStep = () => {
+  if (step.value === 'version' && selectedVersion.value) {
+    selectedFaction.value = undefined as any;
+    selectedUnit.value = undefined as any;
+    step.value = 'faction';
+  } else if (step.value === 'faction' && selectedFaction.value) {
+    selectedUnit.value = undefined as any;
+    step.value = 'unit';
+  }
+};
+
+const goToPreviousStep = () => {
+  if (step.value === 'unit') {
+    console.log('should go before unit');
+    selectedUnit.value = undefined as any;
+    step.value = 'faction';
+  } else if (step.value === 'faction') {
+    selectedFaction.value = undefined as any;
+    step.value = 'version';
+  }
+};
+
+// Fonction pour sélectionner une version et passer à l'étape suivante
+const selectVersionAndNext = (version: Version) => {
+  selectedVersion.value = version;
+  step.value = 'faction';
+};
+
+// Fonction pour sélectionner une faction et passer à l'étape suivante
+const selectFactionAndNext = (faction: Faction) => {
+  selectedFaction.value = faction;
+  step.value = 'unit';
+};
+
+// Fonction pour sélectionner une unité et terminer
+const selectUnitAndFinish = (unit: Unit) => {
+  selectedUnit.value = unit;
+  if (selectedUnitSelection.value) {
+    dialogVisible.value = false;
+    emit('update:modelValue', selectedUnitSelection.value);
+  }
+};
 </script>
 
 <style scoped>
@@ -307,6 +383,54 @@ watch(() => props.modelValue, (newValue) => {
 
 .q-card-actions-custom {
   margin-top: auto;
+}
+
+.version-icons-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.version-icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 0.5rem;
+  transition: box-shadow 0.2s, background 0.2s;
+}
+
+.version-icon-container.selected {
+  background: #e3f2fd;
+  box-shadow: 0 0 0 2px #1976d2;
+}
+
+.version-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.version-label {
+  font-size: 0.85rem;
+  text-align: center;
+  max-width: 80px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .faction-icons-row {

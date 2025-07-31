@@ -12,6 +12,17 @@
       />
     </div>
     
+    <!-- Bouton Reset -->
+    <div class="q-mt-md text-center">
+      <q-btn 
+        label="Reset" 
+        color="negative" 
+        icon="refresh" 
+        @click="resetUnits"
+        :disable="!unitStore.leftUnit || !unitStore.rightUnit"
+      />
+    </div>
+    
     <!-- Affichage des sélections pour debug -->
     <div class="q-mt-lg" v-if="leftUnit || rightUnit">
       <h3>Sélections actuelles :</h3>
@@ -66,6 +77,12 @@ const rightUnit = computed({
     console.log('Right unit updated:', value)
   }
 })
+
+// Fonction pour reset les unités
+const resetUnits = () => {
+  unitStore.clearUnits()
+  console.log('Units reset')
+}
 </script>
 
 <style scoped>
