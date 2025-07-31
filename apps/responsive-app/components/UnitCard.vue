@@ -21,13 +21,8 @@
 import { computed } from 'vue'
 import type { Unit } from '@tww3-brawl/sdk/src/types'
 import { getUnitPortrait } from '@tww3-brawl/sdk/src/utils/getUnitPortrait'
+import type { UnitSelection } from '~/types/unit'
 import SelectUnit from './SelectUnit.vue'
-
-// Type pour la sélection d'unité avec version
-interface UnitSelection {
-  unit: Unit;
-  version: { label: string; value: string };
-}
 
 interface Props {
   orientation?: 'left' | 'right'

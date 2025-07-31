@@ -1,11 +1,5 @@
 import { defineStore } from 'pinia'
-import type { Unit } from '@tww3-brawl/sdk/src/types'
-
-// Type pour la sélection d'unité avec version
-interface UnitSelection {
-  unit: Unit;
-  version: { label: string; value: string };
-}
+import type { UnitSelection } from '~/types/unit'
 
 export const useUnitStore = defineStore('unit', {
   state: () => {

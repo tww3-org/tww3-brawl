@@ -16,20 +16,22 @@
     <div class="q-mt-lg" v-if="leftUnit || rightUnit">
       <h3>Sélections actuelles :</h3>
       <div class="row q-gutter-md">
-        <div class="col-6" v-if="leftUnit">
+        <div class="col-6" v-if="leftUnit && leftUnit.unit && leftUnit.faction && leftUnit.version">
           <q-card>
             <q-card-section>
               <div class="text-h6">Left</div>
               <div>{{ leftUnit.unit.land_unit?.onscreen_name }}</div>
+              <div>{{ leftUnit.faction.label }}</div>
               <div class="text-caption">{{ leftUnit.version.label }}</div>
             </q-card-section>
           </q-card>
         </div>
-        <div class="col-6" v-if="rightUnit">
+        <div class="col-6" v-if="rightUnit && rightUnit.unit && rightUnit.faction && rightUnit.version">
           <q-card>
             <q-card-section>
               <div class="text-h6">Right</div>
               <div>{{ rightUnit.unit.land_unit?.onscreen_name }}</div>
+              <div>{{ rightUnit.faction.label }}</div>
               <div class="text-caption">{{ rightUnit.version.label }}</div>
             </q-card-section>
           </q-card>
@@ -43,13 +45,8 @@
 import { computed } from 'vue'
 import type { Unit } from '@tww3-brawl/sdk/src/types'
 import { useUnitStore } from '~/stores/unitStore'
+import type { UnitSelection } from '~/types/unit'
 import UnitCard from '~/components/UnitCard.vue'
-
-// Type pour la sélection d'unité avec version
-interface UnitSelection {
-  unit: Unit;
-  version: { label: string; value: string };
-}
 
 const unitStore = useUnitStore()
 

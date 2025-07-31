@@ -63,8 +63,8 @@
           <q-btn v-if="step !== 'unit'"
             :disable="(step === 'version' && !selectedVersion) || (step === 'faction' && !selectedFaction)"
             label="Suivant" color="primary" flat dense @click="carouselRef?.next()" />
-          <q-btn v-else :disable="!selectedUnit || !selectedVersion" label="Finir" color="primary" flat dense
-            @click="() => { dialogVisible = false; if (selectedUnit && selectedVersion) emit('update:modelValue', { unit: selectedUnit.unit, version: selectedVersion }) }" />
+          <q-btn v-else :disable="!selectedUnit || !selectedVersion || !selectedFaction" label="Finir" color="primary" flat dense
+            @click="() => { dialogVisible = false; if (selectedUnit && selectedVersion && selectedFaction) emit('update:modelValue', { unit: selectedUnit.unit, version: selectedVersion, faction: selectedFaction }) }" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -80,12 +80,7 @@ import { useFactions } from '~/composables/useFactions';
 import { useUnits } from '~/composables/useUnits';
 import { getFactionPortrait } from '@tww3-brawl/sdk/src/utils/getFactionPortrait';
 import { getUnitPortrait } from '@tww3-brawl/sdk/src/utils/getUnitPortrait';
-
-// Type pour la sélection d'unité avec version
-interface UnitSelection {
-  unit: Unit;
-  version: { label: string; value: string };
-}
+import type { UnitSelection } from '~/types/unit';
 
 const carouselRef = ref<QCarousel | null>(null);
 const step = ref<'version' | 'faction' | 'unit'>('version');
@@ -123,7 +118,6 @@ const versionId = computed(() => {
 const { data: factions, isLoading: factionsLoading, refetch: refetchFactions } = useFactions(versionId);
 
 const factionOptions = computed(() => {
-  console.log('fetch factions')
   if (!factions.value) return [];
   const values = factions.value.map(f => ({ label: f.screen_name || f.key, value: f.key }))
   console.log('factions', values)
@@ -240,10 +234,10 @@ watch(selectedFaction, (val) => {
 
 // Quand une unité est choisie, on émet la valeur
 watch(selectedUnit, (val) => {
-  if (val && selectedVersion.value) {
+  if (val && selectedVersion.value && selectedFaction.value) {
     // On ferme le dialog et on émet la valeur
     dialogVisible.value = false;
-    emit('update:modelValue', { unit: val.unit, version: selectedVersion.value });
+    emit('update:modelValue', { unit: val.unit, version: selectedVersion.value, faction: selectedFaction.value });
   }
 });
 </script>
