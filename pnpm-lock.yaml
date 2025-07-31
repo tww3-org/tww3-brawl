@@ -38,6 +38,9 @@ importers:
 
   apps/responsive-app:
     dependencies:
+      '@pinia/nuxt':
+        specifier: ^0.11.2
+        version: 0.11.2(pinia@3.0.3)
       '@quasar/extras':
         specifier: ^1.16.15
         version: 1.16.17
@@ -56,6 +59,12 @@ importers:
       nuxt-quasar-ui:
         specifier: ^2.1.12
         version: 2.1.12(@quasar/extras@1.16.17)(quasar@2.18.2)
+      pinia:
+        specifier: ^3.0.3
+        version: 3.0.3(typescript@5.8.2)(vue@3.5.13)
+      pinia-plugin-persistedstate:
+        specifier: ^4.4.1
+        version: 4.4.1(@pinia/nuxt@0.11.2)(pinia@3.0.3)
       quasar:
         specifier: ^2.18.2
         version: 2.18.2
@@ -1660,6 +1669,17 @@ packages:
       '@parcel/watcher-win32-x64': 2.5.1
     dev: false
 
+  /@pinia/nuxt@0.11.2(pinia@3.0.3):
+    resolution: {integrity: sha512-CgvSWpbktxxWBV7ModhAcsExsQZqpPq6vMYEe9DexmmY6959ev8ukL4iFhr/qov2Nb9cQAWd7niFDnaWkN+FHg==}
+    peerDependencies:
+      pinia: ^3.0.3
+    dependencies:
+      '@nuxt/kit': 3.16.1(magicast@0.3.5)
+      pinia: 3.0.3(typescript@5.8.2)(vue@3.5.13)
+    transitivePeerDependencies:
+      - magicast
+    dev: false
+
   /@pkgjs/parseargs@0.11.0:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
@@ -2276,6 +2296,12 @@ packages:
     resolution: {integrity: sha512-sGhTPMuXqZ1rVOk32RylztWkfXTRhuS7vgAKv0zjqk8gbsHkJ7xfFf+jbySxt7tWObEJwyKaHMikV/WGDiQm8g==}
     dev: false
 
+  /@vue/devtools-api@7.7.7:
+    resolution: {integrity: sha512-lwOnNBH2e7x1fIIbVT7yF5D+YWhqELm55/4ZKf45R9T8r9dE2AIOy8HKjfqzGsoTHFbWbr337O4E0A0QADnjBg==}
+    dependencies:
+      '@vue/devtools-kit': 7.7.7
+    dev: false
+
   /@vue/devtools-core@7.7.2(vite@6.2.2)(vue@3.5.13):
     resolution: {integrity: sha512-lexREWj1lKi91Tblr38ntSsy6CvI8ba7u+jmwh2yruib/ltLUcsIzEjCnrkh1yYGGIKXbAuYV2tOG10fGDB9OQ==}
     peerDependencies:
@@ -2304,8 +2330,26 @@ packages:
       superjson: 2.2.2
     dev: false
 
+  /@vue/devtools-kit@7.7.7:
+    resolution: {integrity: sha512-wgoZtxcTta65cnZ1Q6MbAfePVFxfM+gq0saaeytoph7nEa7yMXoi6sCPy4ufO111B9msnw0VOWjPEFCXuAKRHA==}
+    dependencies:
+      '@vue/devtools-shared': 7.7.7
+      birpc: 2.5.0
+      hookable: 5.5.3
+      mitt: 3.0.1
+      perfect-debounce: 1.0.0
+      speakingurl: 14.0.1
+      superjson: 2.2.2
+    dev: false
+
   /@vue/devtools-shared@7.7.2:
     resolution: {integrity: sha512-uBFxnp8gwW2vD6FrJB8JZLUzVb6PNRG0B0jBnHsOH8uKyva2qINY8PTF5Te4QlTbMDqU5K6qtJDr6cNsKWhbOA==}
+    dependencies:
+      rfdc: 1.4.1
+    dev: false
+
+  /@vue/devtools-shared@7.7.7:
+    resolution: {integrity: sha512-+udSj47aRl5aKb0memBvcUG9koarqnxNM5yjuREvqwK6T3ap4mn3Zqqc17QrBFTqSMjr3HK1cvStEZpMDpfdyw==}
     dependencies:
       rfdc: 1.4.1
     dev: false
@@ -2587,6 +2631,10 @@ packages:
 
   /birpc@2.2.0:
     resolution: {integrity: sha512-1/22obknhoj56PcE+pZPp6AbWDdY55M81/ofpPW3Ltlp9Eh4zoFFLswvZmNpRTb790CY5tsNfgbYeNOqIARJfQ==}
+    dev: false
+
+  /birpc@2.5.0:
+    resolution: {integrity: sha512-VSWO/W6nNQdyP520F1mhf+Lc2f8pjGQOtoHHm7Ze8Go1kX7akpVIrtTa0fn+HB0QJEDVacl6aO08YE0PgXfdnQ==}
     dev: false
 
   /bl@4.1.0:
@@ -3154,6 +3202,10 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
+  /deep-pick-omit@1.2.1:
+    resolution: {integrity: sha512-2J6Kc/m3irCeqVG42T+SaUMesaK7oGWaedGnQQK/+O0gYc+2SP5bKh/KKTE7d7SJ+GCA9UUE1GRzh6oDe0EnGw==}
+    dev: false
+
   /deepmerge@4.3.1:
     resolution: {integrity: sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==}
     engines: {node: '>=0.10.0'}
@@ -3208,6 +3260,10 @@ packages:
 
   /destr@2.0.3:
     resolution: {integrity: sha512-2N3BOUU4gYMpTP24s5rF5iP7BDr7uNTCs4ozw3kf/eKfvWSIu93GEBi5m427YoyJoeOzQ5smuu4nNAPGb8idSQ==}
+    dev: false
+
+  /destr@2.0.5:
+    resolution: {integrity: sha512-ugFTXCtDZunbzasqBxrK93Ik/DRYsO6S/fedkWEMKqt04xZ4csmnmwGDBAb07QWNaGMAmnTIemsYZCksjATwsA==}
     dev: false
 
   /destroy@1.2.0:
@@ -5337,6 +5393,41 @@ packages:
   /picomatch@4.0.2:
     resolution: {integrity: sha512-M7BAV6Rlcy5u+m6oPhAPFgJTzAioX/6B0DxyvDlo9l8+T3nLKbrczg2WLUyzd45L8RqfUMyGPzekbMvX2Ldkwg==}
     engines: {node: '>=12'}
+
+  /pinia-plugin-persistedstate@4.4.1(@pinia/nuxt@0.11.2)(pinia@3.0.3):
+    resolution: {integrity: sha512-lmuMPpXla2zJKjxEq34e1E9P9jxkWEhcVwwioCCE0izG45kkTOvQfCzvwhW3i38cvnaWC7T1eRdkd15Re59ldw==}
+    peerDependencies:
+      '@nuxt/kit': '>=3.0.0'
+      '@pinia/nuxt': '>=0.10.0'
+      pinia: '>=3.0.0'
+    peerDependenciesMeta:
+      '@nuxt/kit':
+        optional: true
+      '@pinia/nuxt':
+        optional: true
+      pinia:
+        optional: true
+    dependencies:
+      '@pinia/nuxt': 0.11.2(pinia@3.0.3)
+      deep-pick-omit: 1.2.1
+      defu: 6.1.4
+      destr: 2.0.5
+      pinia: 3.0.3(typescript@5.8.2)(vue@3.5.13)
+    dev: false
+
+  /pinia@3.0.3(typescript@5.8.2)(vue@3.5.13):
+    resolution: {integrity: sha512-ttXO/InUULUXkMHpTdp9Fj4hLpD/2AoJdmAbAeW2yu1iy1k+pkFekQXw5VpC0/5p51IOR/jDaDRfRWRnMMsGOA==}
+    peerDependencies:
+      typescript: '>=4.4.4'
+      vue: ^2.7.0 || ^3.5.11
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+    dependencies:
+      '@vue/devtools-api': 7.7.7
+      typescript: 5.8.2
+      vue: 3.5.13(typescript@5.8.2)
+    dev: false
 
   /pirates@4.0.6:
     resolution: {integrity: sha512-saLsH7WeYYPiD25LDuLRRY/i+6HaPYr6G1OUlN39otzkSTxKnubR9RTxS3/Kk50s1g2JTgFwWQDQyplC5/SHZg==}

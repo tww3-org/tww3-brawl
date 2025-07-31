@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import type { Unit } from '@tww3-brawl/sdk/src/types'
 import { getUnitPortrait } from '@tww3-brawl/sdk/src/utils/getUnitPortrait'
 import SelectUnit from './SelectUnit.vue'
@@ -31,13 +31,24 @@ interface UnitSelection {
 
 interface Props {
   orientation?: 'left' | 'right'
+  modelValue?: UnitSelection | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
   orientation: 'left'
 })
 
-const selectedUnit = ref<UnitSelection>()
+const emit = defineEmits<{
+  'update:modelValue': [value: UnitSelection | null]
+}>()
+
+// Two-way binding avec le parent
+const selectedUnit = computed({
+  get: () => props.modelValue || undefined,
+  set: (value: UnitSelection | undefined) => {
+    emit('update:modelValue', value || null)
+  }
+})
 
 // Computed pour le titre de l'unité
 const unitTitle = computed(() => {

@@ -1,5 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-import type { NuxtConfig } from 'nuxt/schema'
+import type { NuxtConfig } from 'nuxt/schema';
 
 const config: NuxtConfig = {
   devtools: { enabled: true },
@@ -7,12 +7,17 @@ const config: NuxtConfig = {
   build: {
     // Transpilation nécessaire pour le SDK local car il est publié en ESM/TypeScript
     // et doit être converti en format compatible avec le bundle Nuxt
-    transpile: ['@tww3-brawl/sdk']
+    transpile: ['@tww3-brawl/sdk'],
   },
 
   compatibilityDate: '2024-12-30',
-  modules: ['nuxt-quasar-ui'],
   
+  modules: [
+    'nuxt-quasar-ui',
+    '@pinia/nuxt', // required
+    'pinia-plugin-persistedstate/nuxt',
+  ],
+
   quasar: {
     extras: {
       fontIcons: ['material-icons'],
@@ -24,10 +29,10 @@ const config: NuxtConfig = {
         accent: '#9C27B0',
         dark: '#1d1d1d',
       },
-      dark: false
+      dark: false,
     },
-    plugins: []
-  }
-}
+    plugins: [],
+  },
+};
 
-export default defineNuxtConfig(config)
+export default defineNuxtConfig(config) as ReturnType<typeof defineNuxtConfig>;
