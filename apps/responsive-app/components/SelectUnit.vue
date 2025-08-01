@@ -66,11 +66,11 @@
         </q-card-section>
         <q-card-actions class="text-primary q-card-actions-custom" align="between">
           <q-btn v-if="step === 'version'" label="Fermer" flat dense @click="dialogVisible = false" />
-          <q-btn v-else label="Back" flat dense @click="carouselRef?.previous()" />
+          <q-btn v-else label="Back" flat dense @click="goToPreviousStep" />
 
           <q-btn v-if="step !== 'unit'"
             :disable="(step === 'version' && !selectedVersion) || (step === 'faction' && !selectedFaction)"
-            label="Next" color="primary" flat dense @click="carouselRef?.next()" />
+            label="Next" color="primary" flat dense @click="goToNextStep" />
           <q-btn v-else :disable="!selectedUnit || !selectedVersion || !selectedFaction" label="Finish" color="primary" flat dense
             @click="() => { dialogVisible = false; if (selectedUnitSelection) emit('update:modelValue', selectedUnitSelection) }" />
         </q-card-actions>
@@ -254,6 +254,30 @@ const groupedUnits = computed(() => {
   return orderedGroups;
 });
 
+// Navigation automatique et logique centralisée
+// watch(selectedUnitSelection, (val) => {
+//   if (!val) return;
+  
+//   // Si une version est sélectionnée, passer à l'étape faction
+//   if (val.version && !val.faction && step.value === 'version') {
+//     console.log('version', val.version);
+//     step.value = 'faction';
+//   }
+  
+//   // Si une faction est sélectionnée, passer à l'étape unité
+//   if (val.faction && !val.unit && step.value === 'faction') {
+//     console.log('faction', val.faction);
+//     step.value = 'unit';
+//   }
+  
+//   // Si tout est sélectionné, fermer le dialog et émettre
+//   if (val.unit && val.version && val.faction && step.value === 'unit') {
+//     console.log('unit', val.unit);
+//     // dialogVisible.value = false;
+//     emit('update:modelValue', val);
+//   }
+// }, { deep: true });
+
 // Refetch en fonction de l'étape
 watch(step, async (newStep) => {
   console.log('newStep', newStep);
@@ -306,12 +330,25 @@ const goToNextStep = () => {
 
 const goToPreviousStep = () => {
   if (step.value === 'unit') {
+    console.log('should go before unit');
     selectedUnit.value = undefined as any;
     step.value = 'faction';
   } else if (step.value === 'faction') {
     selectedFaction.value = undefined as any;
     step.value = 'version';
   }
+};
+
+// Fonction pour sélectionner une version et passer à l'étape suivante
+const selectVersionAndNext = (version: Version) => {
+  selectedVersion.value = version;
+  step.value = 'faction';
+};
+
+// Fonction pour sélectionner une faction et passer à l'étape suivante
+const selectFactionAndNext = (faction: Faction) => {
+  selectedFaction.value = faction;
+  step.value = 'unit';
 };
 
 // Fonction pour sélectionner une unité et terminer
