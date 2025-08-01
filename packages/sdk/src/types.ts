@@ -41,20 +41,6 @@ export interface Unit {
       size: string;
       type: string;
     };
-    armour?: {
-      armour_value: number;
-    };
-    melee_attack?: number;
-    melee_defence?: number;
-    primary_melee_weapon?: {
-      damage: number;
-      ap_damage: number;
-      bonus_v_large: number;
-      bonus_v_infantry: number;
-      melee_attack_interval: number;
-      is_magical: boolean;
-      ignition_amount: number;
-    };
   };
   health?: {
     unit: number;

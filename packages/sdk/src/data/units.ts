@@ -119,57 +119,6 @@ export async function fetchUnits(
           num_men: unit.num_men,
           recruitment_cost: Number(unit.recruitment_cost || 0),
           upkeep_cost: Number(unit.upkeep_cost || 0),
-          land_unit: unit.land_unit
-            ? {
-                onscreen_name: unit.land_unit.onscreen_name as string,
-                bonus_hit_points: Number(unit.land_unit.bonus_hit_points || 0),
-                battle_entity: unit.land_unit.battle_entity
-                  ? {
-                      hit_points: Number(
-                        unit.land_unit.battle_entity.hit_points || 0
-                      ),
-                      size: unit.land_unit.battle_entity.size as string,
-                      type: unit.land_unit.battle_entity.type as string,
-                    }
-                  : undefined,
-                armour: unit.land_unit.armour
-                  ? {
-                      armour_value: Number(
-                        unit.land_unit.armour.armour_value || 0
-                      ),
-                    }
-                  : undefined,
-                melee_attack: Number(unit.land_unit.melee_attack || 0),
-                melee_defence: Number(unit.land_unit.melee_defence || 0),
-                primary_melee_weapon: unit.land_unit.primary_melee_weapon
-                  ? {
-                      damage: Number(
-                        unit.land_unit.primary_melee_weapon.damage || 0
-                      ),
-                      ap_damage: Number(
-                        unit.land_unit.primary_melee_weapon.ap_damage || 0
-                      ),
-                      bonus_v_large: Number(
-                        unit.land_unit.primary_melee_weapon.bonus_v_large || 0
-                      ),
-                      bonus_v_infantry: Number(
-                        unit.land_unit.primary_melee_weapon.bonus_v_infantry ||
-                          0
-                      ),
-                      melee_attack_interval: Number(
-                        unit.land_unit.primary_melee_weapon
-                          .melee_attack_interval || 0
-                      ),
-                      is_magical: Boolean(
-                        unit.land_unit.primary_melee_weapon.is_magical
-                      ),
-                      ignition_amount: Number(
-                        unit.land_unit.primary_melee_weapon.ignition_amount || 0
-                      ),
-                    }
-                  : undefined,
-              }
-            : undefined,
           health: {
             unit: unitHealth(unit as Partial<main_unit>),
             entity: Math.round(unit.land_unit?.battle_entity?.hit_points || 0),

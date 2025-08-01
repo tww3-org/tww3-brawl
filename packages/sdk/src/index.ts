@@ -8,7 +8,7 @@ export * from './types';
 export * from './utils';
 
 // Export des fonctions core
-export * from './core';
+export * from './data';
 
 // Garder pour compatibilité
 export function helloWorld() {

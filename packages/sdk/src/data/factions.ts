@@ -1,13 +1,5 @@
 import type { GraphQLClient, Faction } from '../types';
 
-interface RawFaction {
-  key: string | null;
-  screen_name: string | null;
-  subculture?: {
-    name: string | null;
-  } | null;
-}
-
 /**
  * Récupère la liste des factions disponibles pour une version spécifique du jeu
  * @param client Client GraphQL typé depuis le package gql
