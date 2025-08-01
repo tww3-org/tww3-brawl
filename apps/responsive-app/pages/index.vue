@@ -19,7 +19,7 @@
         color="negative" 
         icon="refresh" 
         @click="resetUnits"
-        :disable="!unitStore.leftUnit || !unitStore.rightUnit"
+        :disable="!unitStore.leftUnit?.unit || !unitStore.rightUnit?.unit"
       />
     </div>
     
