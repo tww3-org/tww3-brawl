@@ -4,10 +4,12 @@
     <div class="q-gutter-y-md row justify-center items-center">
       <UnitCard 
         orientation="left" 
+        class="bg-positive"
         v-model="leftUnit"
       />
       <UnitCard 
         orientation="right" 
+        class="bg-negative"
         v-model="rightUnit"
       />
     </div>
@@ -16,10 +18,9 @@
     <div class="q-mt-md text-center">
       <q-btn 
         label="Reset" 
-        color="negative" 
+        color="warning" 
         icon="refresh" 
         @click="resetUnits"
-        :disable="!unitStore.leftUnit?.unit || !unitStore.rightUnit?.unit"
       />
     </div>
     

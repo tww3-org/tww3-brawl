@@ -28,6 +28,8 @@ const config: NuxtConfig = {
         secondary: '#26A69A',
         accent: '#9C27B0',
         dark: '#1d1d1d',
+        positive: '#E63946', // 🔴 Rouge vif et agressif'#21BA45',
+        negative: '#1D3557', // 🔵 Bleu profond et puissant'#C10015',
       },
       dark: false,
     },
