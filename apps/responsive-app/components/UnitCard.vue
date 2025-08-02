@@ -14,10 +14,10 @@
         <SelectUnit v-model="selectedUnit" />
       </div>
       
-      <!-- Slider pour le nombre d'entités -->
+      <!-- Slider for entity count -->
       <div v-if="showEntitySlider" class="q-mt-md">
         <div class="text-caption q-mb-xs">
-          Nombre d'entités actives: {{ entityCount }}
+          Active entities: {{ entityCount }}
         </div>
         <q-slider
           v-model="entityCount"
@@ -39,7 +39,6 @@ import { computed } from 'vue'
 import type { Unit } from '@tww3-brawl/sdk/src/types'
 import { getUnitPortrait } from '@tww3-brawl/sdk/src/utils/getUnitPortrait'
 import type { UnitSelection, UnitWithEntityCount } from '~/types/unit'
-import { getMaxEntityCount } from '~/types/unit'
 import SelectUnit from './SelectUnit.vue'
 
 interface Props {
@@ -55,12 +54,12 @@ const emit = defineEmits<{
   'update:modelValue': [value: UnitWithEntityCount | null]
 }>()
 
-// Two-way binding avec le parent
+// Two-way binding with parent
 const selectedUnit = computed({
   get: () => props.modelValue?.selection || undefined,
   set: (value: UnitSelection | undefined) => {
     if (value) {
-      const maxEntityCount = getMaxEntityCount(value);
+      const maxEntityCount = value.unit?.num_men || 1;
       const defaultEntityCount = Math.min(15, maxEntityCount);
       
       emit('update:modelValue', {
@@ -73,7 +72,7 @@ const selectedUnit = computed({
   }
 })
 
-// Computed pour le titre de l'unité
+// Computed for unit title
 const unitTitle = computed(() => {
   if (selectedUnit.value?.unit?.land_unit?.onscreen_name) {
     return selectedUnit.value.unit.land_unit.onscreen_name;
@@ -81,7 +80,7 @@ const unitTitle = computed(() => {
   return 'Unit Title';
 });
 
-// Computed pour l'image de l'unité
+// Computed for unit image
 const unitImageUrl = computed(() => {
   if (selectedUnit.value?.unit && selectedUnit.value?.version?.id) {
     const portrait = getUnitPortrait(selectedUnit.value.version.id, selectedUnit.value.unit)
@@ -92,18 +91,18 @@ const unitImageUrl = computed(() => {
   return '/default-unit-image.jpg'
 })
 
-// Computed pour le nombre maximum d'entités
+// Computed for maximum entity count
 const maxEntityCount = computed(() => {
-  if (!selectedUnit.value) return 1;
-  return getMaxEntityCount(selectedUnit.value);
+  if (!selectedUnit.value?.unit) return 1;
+  return selectedUnit.value.unit.num_men || 1;
 })
 
-// Computed pour déterminer si on doit afficher le slider
+// Computed to determine if slider should be shown
 const showEntitySlider = computed(() => {
   return selectedUnit.value && maxEntityCount.value > 1;
 })
 
-// Computed pour le nombre d'entités actuel
+// Computed for current entity count
 const entityCount = computed({
   get: () => props.modelValue?.entityCount || 1,
   set: (value: number) => {
@@ -116,7 +115,7 @@ const entityCount = computed({
   }
 })
 
-// Fonction pour mettre à jour le nombre d'entités
+// Function to update entity count
 const updateEntityCount = (value: number | null) => {
   if (value !== null) {
     entityCount.value = value;

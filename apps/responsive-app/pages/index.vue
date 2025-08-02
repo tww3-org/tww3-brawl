@@ -14,7 +14,7 @@
       />
     </div>
     
-    <!-- Bouton Reset -->
+    <!-- Reset Button -->
     <div class="q-mt-md text-center">
       <q-btn 
         label="Reset" 
@@ -24,9 +24,9 @@
       />
     </div>
     
-    <!-- Affichage des sélections pour debug -->
+    <!-- Debug display of current selections -->
     <div class="q-mt-lg" v-if="leftUnit || rightUnit">
-      <h3>Sélections actuelles :</h3>
+      <h3>Current selections:</h3>
       <div class="row q-gutter-md">
         <div class="col-6" v-if="leftUnit && leftUnit.selection && leftUnit.selection.unit && leftUnit.selection.faction && leftUnit.selection.version">
           <q-card>
@@ -35,7 +35,7 @@
               <div>{{ leftUnit.selection.unit.land_unit?.onscreen_name }}</div>
               <div>{{ leftUnit.selection.faction.subculture?.name }}</div>
               <div class="text-caption">{{ leftUnit.selection.version.name }}</div>
-              <div class="text-caption">Entités: {{ leftUnit.entityCount }}</div>
+              <div class="text-caption">Entities: {{ leftUnit.entityCount }}</div>
             </q-card-section>
           </q-card>
         </div>
@@ -46,7 +46,7 @@
               <div>{{ rightUnit.selection.unit.land_unit?.onscreen_name }}</div>
               <div>{{ rightUnit.selection.faction.subculture?.name }}</div>
               <div class="text-caption">{{ rightUnit.selection.version.name }}</div>
-              <div class="text-caption">Entités: {{ rightUnit.entityCount }}</div>
+              <div class="text-caption">Entities: {{ rightUnit.entityCount }}</div>
             </q-card-section>
           </q-card>
         </div>
@@ -64,7 +64,7 @@ import UnitCard from '~/components/UnitCard.vue'
 
 const unitStore = useUnitStore()
 
-// Two-way binding avec le store pour les unités
+// Two-way binding with store for units
 const leftUnit = computed({
   get: () => unitStore.leftUnit,
   set: (value: UnitWithEntityCount | null) => {
@@ -95,7 +95,7 @@ const rightUnit = computed({
   }
 })
 
-// Fonction pour reset les unités
+// Function to reset units
 const resetUnits = () => {
   unitStore.clearUnits()
   console.log('Units reset')

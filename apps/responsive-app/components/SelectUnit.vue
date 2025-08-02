@@ -107,10 +107,10 @@ const emit = defineEmits<{
 }>();
 
 
-// Sélection version/faction/unité
+// Version/faction/unit selection
 const selectedUnitSelection = ref<UnitSelection | null>(null);
 
-// Computed pour accéder aux propriétés de manière sûre
+// Computed to safely access properties
 const selectedVersion = computed({
   get: () => selectedUnitSelection.value?.version || null,
   set: (value: Version | null) => {
@@ -144,14 +144,14 @@ const selectedUnit = computed({
   }
 });
 
-// Récupération des versions
+// Fetch versions
 const { data: versions, isLoading: versionsLoading } = useVersions();
 const versionOptions = computed(() => {
   if (!versions.value) return [];
   return versions.value;
 });
 
-// Récupération des factions
+// Fetch factions
 const versionId = computed(() => {
   console.log('selectedUnitSelection', selectedUnitSelection.value)
   return selectedUnitSelection.value?.version?.id ?? ''
@@ -164,7 +164,7 @@ const factionOptions = computed(() => {
   return factions.value;
 });
 
-// Récupération des unités
+// Fetch units
 const factionKey = computed(() => selectedUnitSelection.value?.faction?.key ?? '');
 const { data: units, isLoading: unitsLoading, refetch: refetchUnits } = useUnits(versionId, factionKey);
 const unitOptions = computed(() => {
@@ -172,7 +172,7 @@ const unitOptions = computed(() => {
   return units.value.map(u => ({ label: u.land_unit?.onscreen_name || u.unit, value: u.unit }));
 });
 
-// Ajout d'un computed pour grouper les unités par groupe
+// Add computed to group units by group
 const groupedUnits = computed(() => {
   if (!units.value) return {};
   const groups: Record<string, typeof units.value> = {};
@@ -181,17 +181,17 @@ const groupedUnits = computed(() => {
     if (!groups[group]) groups[group] = [];
     groups[group].push(unit);
   }
-  // Ici, itère sur chacun des groupes pour ne garder la première unité par land_unit.onscreen_name qui a le moins de land_unit.battle_entity.hit_points pour chaque groupe. Il s'agit d'éviter les doublons qui porte le même nom avec des hp différents.
+  // Here, iterate over each group to keep only the first unit per land_unit.onscreen_name that has the least land_unit.battle_entity.hit_points for each group. This is to avoid duplicates that have the same name with different HP.
   const filteredGroups: Record<string, typeof units.value> = {};
   for (const [groupName, unitsList] of Object.entries(groups)) {
-    // On regroupe par onscreen_name
+    // Group by onscreen_name
     const byName: Record<string, typeof units.value> = {};
     for (const unit of unitsList) {
       const name = unit.land_unit?.onscreen_name || unit.unit;
       if (!byName[name]) byName[name] = [];
       byName[name].push(unit);
     }
-    // Pour chaque nom, on garde celui avec le moins de HP
+    // For each name, keep the one with the least HP
     const filtered: typeof units.value = [];
     for (const name in byName) {
       const unitsWithName = byName[name];
@@ -205,17 +205,17 @@ const groupedUnits = computed(() => {
       }
       filtered.push(minHpUnit);
     }
-    // Trier les unités d'abord par prix de recrutement puis par ordre alphabétique
+    // Sort units first by recruitment cost then alphabetically
     filtered.sort((a, b) => {
       const costA = a.recruitment_cost || 0;
       const costB = b.recruitment_cost || 0;
 
-      // D'abord trier par prix (croissant)
+      // First sort by price (ascending)
       if (costA !== costB) {
         return costA - costB;
       }
 
-      // Si même prix, trier par ordre alphabétique
+      // If same price, sort alphabetically
       const nameA = a.land_unit?.onscreen_name || a.unit;
       const nameB = b.land_unit?.onscreen_name || b.unit;
       return nameA.localeCompare(nameB);
@@ -223,7 +223,7 @@ const groupedUnits = computed(() => {
     filteredGroups[groupName] = filtered;
   }
 
-  // Définir l'ordre des groupes
+  // Define group order
   const groupOrder = [
     'Lords',
     'Heroes',
@@ -234,17 +234,17 @@ const groupedUnits = computed(() => {
     'Artillery & War Machines'
   ];
 
-  // Créer un nouvel objet avec les groupes dans l'ordre spécifié
+  // Create a new object with groups in the specified order
   const orderedGroups: Record<string, typeof units.value> = {};
 
-  // D'abord ajouter les groupes dans l'ordre spécifié
+  // First add groups in the specified order
   for (const groupName of groupOrder) {
     if (filteredGroups[groupName]) {
       orderedGroups[groupName] = filteredGroups[groupName];
     }
   }
 
-  // Ensuite ajouter tous les autres groupes non spécifiés
+  // Then add all other unspecified groups
   for (const [groupName, unitsList] of Object.entries(filteredGroups)) {
     if (!groupOrder.includes(groupName)) {
       orderedGroups[groupName] = unitsList;
@@ -254,7 +254,7 @@ const groupedUnits = computed(() => {
   return orderedGroups;
 });
 
-// Navigation automatique et logique centralisée
+// Automatic navigation and centralized logic
 // watch(selectedUnitSelection, (val) => {
 //   if (!val) return;
   
@@ -278,13 +278,13 @@ const groupedUnits = computed(() => {
 //   }
 // }, { deep: true });
 
-// Refetch en fonction de l'étape
+// Refetch based on step
 watch(step, async (newStep) => {
   console.log('newStep', newStep);
   if (newStep === 'version') {
-    // Les versions sont déjà chargées par useVersions(), pas besoin de refetch
+    // Versions are already loaded by useVersions(), no need to refetch
     console.log('versions', versions.value);
-    // Reset faction et unit quand on revient à version
+          // Reset faction and unit when returning to version
     if (selectedUnitSelection.value) {
       selectedUnitSelection.value.faction = undefined as any;
       selectedUnitSelection.value.unit = undefined as any;
@@ -292,7 +292,7 @@ watch(step, async (newStep) => {
   } else if (newStep === 'faction') {
     await refetchFactions();
     console.log('factions', factions.value);
-    // Reset unit quand on passe à faction
+    // Reset unit when going to faction
     if (selectedUnitSelection.value) {
       selectedUnitSelection.value.unit = undefined as any;
     }
@@ -301,22 +301,22 @@ watch(step, async (newStep) => {
   }
 });
 
-// Initialiser les refs quand modelValue est fourni
+// Initialize refs when modelValue is provided
 watch(() => props.modelValue, (newValue) => {
   console.log('newValue', newValue);
   if (newValue) {
-    // Initialiser la sélection complète
+    // Initialize complete selection
     selectedUnitSelection.value = newValue;
     
     step.value = 'unit';
   } else {
-    // Réinitialiser si modelValue est null/undefined
+    // Reset if modelValue is null/undefined
     selectedUnitSelection.value = null;
     step.value = 'version';
   }
 }, { immediate: true });
 
-// Fonctions de navigation explicites
+// Explicit navigation functions
 const goToNextStep = () => {
   if (step.value === 'version' && selectedVersion.value) {
     selectedFaction.value = undefined as any;
@@ -339,19 +339,19 @@ const goToPreviousStep = () => {
   }
 };
 
-// Fonction pour sélectionner une version et passer à l'étape suivante
+// Function to select a version and go to next step
 const selectVersionAndNext = (version: Version) => {
   selectedVersion.value = version;
   step.value = 'faction';
 };
 
-// Fonction pour sélectionner une faction et passer à l'étape suivante
+// Function to select a faction and go to next step
 const selectFactionAndNext = (faction: Faction) => {
   selectedFaction.value = faction;
   step.value = 'unit';
 };
 
-// Fonction pour sélectionner une unité et terminer
+// Function to select a unit and finish
 const selectUnitAndFinish = (unit: Unit) => {
   selectedUnit.value = unit;
   if (selectedUnitSelection.value) {
