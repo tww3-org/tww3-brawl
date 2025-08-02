@@ -28,23 +28,25 @@
     <div class="q-mt-lg" v-if="leftUnit || rightUnit">
       <h3>Sélections actuelles :</h3>
       <div class="row q-gutter-md">
-        <div class="col-6" v-if="leftUnit && leftUnit.unit && leftUnit.faction && leftUnit.version">
+        <div class="col-6" v-if="leftUnit && leftUnit.selection && leftUnit.selection.unit && leftUnit.selection.faction && leftUnit.selection.version">
           <q-card>
             <q-card-section>
               <div class="text-h6">Left</div>
-              <div>{{ leftUnit.unit.land_unit?.onscreen_name }}</div>
-              <div>{{ leftUnit.faction.subculture?.name }}</div>
-              <div class="text-caption">{{ leftUnit.version.name }}</div>
+              <div>{{ leftUnit.selection.unit.land_unit?.onscreen_name }}</div>
+              <div>{{ leftUnit.selection.faction.subculture?.name }}</div>
+              <div class="text-caption">{{ leftUnit.selection.version.name }}</div>
+              <div class="text-caption">Entités: {{ leftUnit.entityCount }}</div>
             </q-card-section>
           </q-card>
         </div>
-        <div class="col-6" v-if="rightUnit && rightUnit.unit && rightUnit.faction && rightUnit.version">
+        <div class="col-6" v-if="rightUnit && rightUnit.selection && rightUnit.selection.unit && rightUnit.selection.faction && rightUnit.selection.version">
           <q-card>
             <q-card-section>
               <div class="text-h6">Right</div>
-              <div>{{ rightUnit.unit.land_unit?.onscreen_name }}</div>
-              <div>{{ rightUnit.faction.subculture?.name }}</div>
-              <div class="text-caption">{{ rightUnit.version.name }}</div>
+              <div>{{ rightUnit.selection.unit.land_unit?.onscreen_name }}</div>
+              <div>{{ rightUnit.selection.faction.subculture?.name }}</div>
+              <div class="text-caption">{{ rightUnit.selection.version.name }}</div>
+              <div class="text-caption">Entités: {{ rightUnit.entityCount }}</div>
             </q-card-section>
           </q-card>
         </div>
@@ -57,7 +59,7 @@
 import { computed } from 'vue'
 import type { Unit } from '@tww3-brawl/sdk/src/types'
 import { useUnitStore } from '~/stores/unitStore'
-import type { UnitSelection } from '~/types/unit'
+import type { UnitWithEntityCount } from '~/types/unit'
 import UnitCard from '~/components/UnitCard.vue'
 
 const unitStore = useUnitStore()
@@ -65,16 +67,30 @@ const unitStore = useUnitStore()
 // Two-way binding avec le store pour les unités
 const leftUnit = computed({
   get: () => unitStore.leftUnit,
-  set: (value: UnitSelection | null) => {
-    unitStore.setLeftUnit(value)
+  set: (value: UnitWithEntityCount | null) => {
+    if (value) {
+      unitStore.setLeftUnit(value.selection)
+      if (value.entityCount !== unitStore.leftUnit?.entityCount) {
+        unitStore.setLeftUnitEntityCount(value.entityCount)
+      }
+    } else {
+      unitStore.setLeftUnit(null)
+    }
     console.log('Left unit updated:', value)
   }
 })
 
 const rightUnit = computed({
   get: () => unitStore.rightUnit,
-  set: (value: UnitSelection | null) => {
-    unitStore.setRightUnit(value)
+  set: (value: UnitWithEntityCount | null) => {
+    if (value) {
+      unitStore.setRightUnit(value.selection)
+      if (value.entityCount !== unitStore.rightUnit?.entityCount) {
+        unitStore.setRightUnitEntityCount(value.entityCount)
+      }
+    } else {
+      unitStore.setRightUnit(null)
+    }
     console.log('Right unit updated:', value)
   }
 })
