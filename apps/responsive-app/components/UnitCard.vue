@@ -13,23 +13,6 @@
       <div class="q-mt-md" :class="{ 'flex justify-end': orientation === 'right' }">
         <SelectUnit v-model="selectedUnit" />
       </div>
-      
-      <!-- Slider for entity count -->
-      <div v-if="showEntitySlider" class="q-mt-md">
-        <div class="text-caption q-mb-xs">
-          Active entities: {{ entityCount }}
-        </div>
-        <q-slider
-          v-model="entityCount"
-          :min="1"
-          :max="maxEntityCount"
-          :step="1"
-          label
-          label-always
-          color="primary"
-          @update:model-value="updateEntityCount"
-        />
-      </div>
     </q-card-section>
   </q-card>
 </template>
@@ -90,37 +73,6 @@ const unitImageUrl = computed(() => {
   }
   return '/default-unit-image.jpg'
 })
-
-// Computed for maximum entity count
-const maxEntityCount = computed(() => {
-  if (!selectedUnit.value?.unit) return 1;
-  return selectedUnit.value.unit.num_men || 1;
-})
-
-// Computed to determine if slider should be shown
-const showEntitySlider = computed(() => {
-  return selectedUnit.value && maxEntityCount.value > 1;
-})
-
-// Computed for current entity count
-const entityCount = computed({
-  get: () => props.modelValue?.entityCount || 1,
-  set: (value: number) => {
-    if (props.modelValue) {
-      emit('update:modelValue', {
-        ...props.modelValue,
-        entityCount: value
-      })
-    }
-  }
-})
-
-// Function to update entity count
-const updateEntityCount = (value: number | null) => {
-  if (value !== null) {
-    entityCount.value = value;
-  }
-}
 </script>
 
 <style scoped>

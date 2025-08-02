@@ -24,6 +24,9 @@
       />
     </div>
     
+    <!-- Entity Sliders -->
+    <EntitySliders />
+    
     <!-- Debug display of current selections -->
     <div class="q-mt-lg" v-if="leftUnit || rightUnit">
       <h3>Current selections:</h3>
@@ -61,6 +64,7 @@ import type { Unit } from '@tww3-brawl/sdk/src/types'
 import { useUnitStore } from '~/stores/unitStore'
 import type { UnitWithEntityCount } from '~/types/unit'
 import UnitCard from '~/components/UnitCard.vue'
+import EntitySliders from '~/components/EntitySliders.vue'
 
 const unitStore = useUnitStore()
 

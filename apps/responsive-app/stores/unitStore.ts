@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import type { UnitSelection, UnitWithEntityCount } from '~/types/unit'
-import { getMaxEntityCount } from '~/types/unit'
 
 export const useUnitStore = defineStore('unit', {
   state: () => {
@@ -12,8 +11,8 @@ export const useUnitStore = defineStore('unit', {
   actions: {
     setLeftUnit(selection: UnitSelection | null) {
       if (selection) {
-        const maxEntityCount = getMaxEntityCount(selection);
-        const defaultEntityCount = Math.min(15, maxEntityCount);
+        const maxEntityCount = selection.unit?.num_men || 1;
+        const defaultEntityCount = Math.min(16, maxEntityCount);
         
         this.leftUnit = {
           selection,
@@ -25,7 +24,7 @@ export const useUnitStore = defineStore('unit', {
     },
     setRightUnit(selection: UnitSelection | null) {
       if (selection) {
-        const maxEntityCount = getMaxEntityCount(selection);
+        const maxEntityCount = selection.unit?.num_men || 1;
         const defaultEntityCount = Math.min(15, maxEntityCount);
         
         this.rightUnit = {
