@@ -79,7 +79,7 @@ export function calculateResistRatio(attacker: Unit, defender: Unit): number {
  * @param defender - The defending unit
  * @returns The average health lost per entity as a percentage
  */
-export function averageHealthLostPerEntity(attacker: Unit, defender: Unit) {
+export function averageHealthLostPerEntityPerHit(attacker: Unit, defender: Unit) {
     const att_ratio = calculateAttackRatio(attacker, defender)
     const resist_ratio = calculateResistRatio(attacker, defender)
     let damage_value = att_ratio * (1 - resist_ratio) * calculateDamageOnHit(attacker, defender)
@@ -94,9 +94,11 @@ export function averageHealthLostPerEntity(attacker: Unit, defender: Unit) {
  * @param defender - The defending unit
  * @returns The average health lost per unit as a percentage
  */
-export function averageHealthLostPerUnit(attacker: Unit, defender: Unit) {
+export function averageHealthLostPerUnitPerHit(attacker: Unit, defender: Unit) {
     const att_ratio = calculateAttackRatio(attacker, defender)
     const resist_ratio = calculateResistRatio(attacker, defender)
     let damage_value = att_ratio * (1 - resist_ratio) * calculateDamageOnHit(attacker, defender)
     return damage_value / (defender.health?.unit || 0) 
 }
+
+

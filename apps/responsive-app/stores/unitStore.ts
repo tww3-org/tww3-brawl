@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import type { UnitSelection, UnitWithEntityCount } from '~/types/unit'
+import { calculateWinner } from '@tww3-brawl/sdk/src/logic/twoSideCalculations'
 
 export const useUnitStore = defineStore('unit', {
   state: () => {
@@ -48,6 +49,19 @@ export const useUnitStore = defineStore('unit', {
     clearUnits() {
       this.leftUnit = null
       this.rightUnit = null
+    }
+  },
+  getters: {
+    /**
+     * Calculates the winner and combat statistics between the two selected units
+     * @returns Object with winner, hits needed, and remaining health, or null if units are not selected
+     */
+    combatResult(): ReturnType<typeof calculateWinner> | null {
+      if (!this.leftUnit?.selection.unit || !this.rightUnit?.selection.unit) {
+        return null
+      }
+      
+      return calculateWinner(this.leftUnit.selection.unit, this.rightUnit.selection.unit)
     }
   },
   persist: {
