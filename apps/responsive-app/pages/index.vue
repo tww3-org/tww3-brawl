@@ -26,7 +26,10 @@
     
     <!-- Entity Sliders -->
     <EntitySliders />
-    
+  
+    <!-- Short Summary -->
+    <ShortSummary />
+
     <!-- Debug display of current selections -->
     <div class="q-mt-lg" v-if="leftUnit || rightUnit">
       <h3>Current selections:</h3>

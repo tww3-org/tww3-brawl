@@ -30,10 +30,10 @@ export function calculateWinner(leftUnit: Unit, rightUnit: Unit): CombatResult {
      * @returns Object with hits needed and remaining health
      */
     function calculateCombatStats(winner: 'left' | 'right', damageDealt: number, damageTaken: number) {
-        const hitsNeeded = 100 / damageDealt
+        const hitsNeeded = 1 / damageDealt
         const totalDamageTaken = hitsNeeded * damageTaken
-        const remainingHealth = 100 - totalDamageTaken
-        
+        const remainingHealth = 1 - totalDamageTaken
+
         return {
             winner,
             hitsNeeded,
