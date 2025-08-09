@@ -1,0 +1,39 @@
+{
+    "name": "Node.js 20 DevContainer",
+  
+    // Utilise notre Dockerfile personnalisé
+    "dockerFile": "../Dockerfile",
+  
+    // Configure les ports à transférer de l'intérieur du conteneur à votre machine locale.
+    // Par exemple, si votre application s'exécute sur le port 3000, elle sera accessible via localhost:3000
+    "forwardPorts": [3000, 8080],
+  
+    // Extensions VS Code à installer dans le conteneur
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "dbaeumer.vscode-eslint",
+          "esbenp.prettier-vscode",
+          "ms-vscode.vscode-typescript-next",
+          "ms-vscode.js-debug-nightly",
+          "humao.rest-client",
+          "sonarsource.sonarlint-vscode",
+          "vue.volar"
+        ],
+        "settings": {
+          "terminal.integrated.shell.linux": "/usr/bin/fish",
+          "java.home": "/usr/lib/jvm/java-17-openjdk-amd64"
+        }
+      }
+    },
+  
+    // Commande à exécuter après la création et la connexion du conteneur
+    // C'est un bon endroit pour installer les dépendances du projet
+    "postCreateCommand": "pnpm install",
+  
+    // Permet de modifier les paramètres de l'éditeur de l'espace de travail
+    // Ces paramètres s'appliqueront uniquement lorsque vous êtes dans le devcontainer
+    "containerEnv": {
+      "JAVA_HOME": "/usr/lib/jvm/java-17-openjdk-amd64"
+    }
+  }
