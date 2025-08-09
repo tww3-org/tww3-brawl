@@ -154,13 +154,14 @@ export async function fetchUnits(
             fire: 0,
             ward_save: 0,
           },
-          is_large: unit.land_unit?.battle_entity?.size === 'large',
+          is_large: unit.land_unit?.battle_entity?.size !== 'small',
           general_portrait:
             unit.custom_battle_permissions?.[0]?.general_portrait || '',
           group: unit.ui_unit_group?.parent_group?.onscreen_name || '',
           unit_card_url: unit.land_unit?.variant?.unit_card_url || '',
         };
 
+        console.log('adaptedUnit', adaptedUnit)
         units.push(adaptedUnit);
       }
     }

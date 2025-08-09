@@ -41,7 +41,7 @@
               <div>{{ leftUnit.selection.unit.land_unit?.onscreen_name }}</div>
               <div>{{ leftUnit.selection.faction.subculture?.name }}</div>
               <div class="text-caption">{{ leftUnit.selection.version.name }}</div>
-              <div class="text-caption">Entities: {{ leftUnit.entityCount }}</div>
+              <div class="text-caption">Entities: {{ leftUnit.entityNumber }}</div>
             </q-card-section>
           </q-card>
         </div>
@@ -52,7 +52,7 @@
               <div>{{ rightUnit.selection.unit.land_unit?.onscreen_name }}</div>
               <div>{{ rightUnit.selection.faction.subculture?.name }}</div>
               <div class="text-caption">{{ rightUnit.selection.version.name }}</div>
-              <div class="text-caption">Entities: {{ rightUnit.entityCount }}</div>
+              <div class="text-caption">Entities: {{ rightUnit.entityNumber }}</div>
             </q-card-section>
           </q-card>
         </div>
@@ -65,7 +65,7 @@
 import { computed } from 'vue'
 import type { Unit } from '@tww3-brawl/sdk/src/types'
 import { useUnitStore } from '~/stores/unitStore'
-import type { UnitWithEntityCount } from '~/types/unit'
+import type { UnitWithEntityNumber } from '~/types/unit'
 import UnitCard from '~/components/UnitCard.vue'
 import EntitySliders from '~/components/EntitySliders.vue'
 
@@ -74,11 +74,11 @@ const unitStore = useUnitStore()
 // Two-way binding with store for units
 const leftUnit = computed({
   get: () => unitStore.leftUnit,
-  set: (value: UnitWithEntityCount | null) => {
+  set: (value: UnitWithEntityNumber | null) => {
     if (value) {
       unitStore.setLeftUnit(value.selection)
-      if (value.entityCount !== unitStore.leftUnit?.entityCount) {
-        unitStore.setLeftUnitEntityCount(value.entityCount)
+      if (value.entityNumber !== unitStore.leftUnit?.entityNumber) {
+        unitStore.setLeftUnitEntityCount(value.entityNumber)
       }
     } else {
       unitStore.setLeftUnit(null)
@@ -89,11 +89,11 @@ const leftUnit = computed({
 
 const rightUnit = computed({
   get: () => unitStore.rightUnit,
-  set: (value: UnitWithEntityCount | null) => {
+  set: (value: UnitWithEntityNumber | null) => {
     if (value) {
       unitStore.setRightUnit(value.selection)
-      if (value.entityCount !== unitStore.rightUnit?.entityCount) {
-        unitStore.setRightUnitEntityCount(value.entityCount)
+      if (value.entityNumber !== unitStore.rightUnit?.entityNumber) {
+        unitStore.setRightUnitEntityCount(value.entityNumber)
       }
     } else {
       unitStore.setRightUnit(null)

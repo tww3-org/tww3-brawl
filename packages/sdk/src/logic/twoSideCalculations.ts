@@ -2,6 +2,18 @@ import { Unit } from '../types'
 import { averageHealthLostPerUnitPerHit } from './oneSideCalculations'
 
 /**
+ * Type for unit with entity number information
+ */
+export interface UnitWithEntityNumber {
+  selection: {
+    unit?: Unit;
+    version?: any;
+    faction?: any;
+  };
+  entityNumber: number;
+}
+
+/**
  * Result of a combat calculation between two units
  */
 export interface CombatResult {
@@ -13,15 +25,16 @@ export interface CombatResult {
 /**
  * Calculates the winner between two units and provides detailed combat statistics.
  * 
- * @param leftUnit - The left unit in the comparison
- * @param rightUnit - The right unit in the comparison
+ * @param leftUnit - The left unit with entity number in the comparison
+ * @param rightUnit - The right unit with entity number in the comparison
  * @returns Object containing winner, number of hits needed, and remaining health
  */
-export function calculateWinner(leftUnit: Unit, rightUnit: Unit): CombatResult {
+export function calculateWinner(leftUnit: UnitWithEntityNumber, rightUnit: UnitWithEntityNumber): CombatResult {
     // Calculate damage each unit deals to the other
-    const leftDamageToRight = averageHealthLostPerUnitPerHit(leftUnit, rightUnit)
-    const rightDamageToLeft = averageHealthLostPerUnitPerHit(rightUnit, leftUnit)
-    
+    const leftDamageToRight = averageHealthLostPerUnitPerHit(leftUnit.selection.unit!, rightUnit.selection.unit!) * (leftUnit.entityNumber || 1)
+    const rightDamageToLeft = averageHealthLostPerUnitPerHit(rightUnit.selection.unit!, leftUnit.selection.unit!) * (rightUnit.entityNumber || 1)
+    console.log('leftUnit', leftUnit)
+    console.log('rightUnit', rightUnit)
     /**
      * Internal function to calculate combat statistics for a winner
      * @param winner - Which unit wins ('left' or 'right')

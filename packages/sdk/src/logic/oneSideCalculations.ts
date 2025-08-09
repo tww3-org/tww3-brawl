@@ -16,8 +16,8 @@ const max_att_def_layer = 90
 export function calculateAttackRatio(attacker: Unit, defender: Unit): number {
     const attackerAttack = attacker.attack || 0
     const defenderDefense = defender.defense || 0
-    const isLarge = defender.is_large || false
-    
+    const isLarge = defender.land_unit?.battle_entity?.size !== 'small'
+
     // Apply bonus damage based on target type (large vs infantry)
     const bonusDamage = isLarge 
         ? (attacker.damage?.bonus_v_large || 0)
@@ -38,12 +38,21 @@ export function calculateAttackRatio(attacker: Unit, defender: Unit): number {
  * @returns The total damage value after armor calculations
  */
 export function calculateDamageOnHit(attacker: Unit, defender: Unit): number {
-    const normalDamage = attacker.damage?.normal || 0
-    const piercingDamage = attacker.damage?.piercing || 0
+    const isLarge = defender.land_unit?.battle_entity?.size !== 'small'
+
+    // Apply bonus damage based on target type (large vs infantry)
+    const bonusDamage = isLarge 
+        ? (attacker.damage?.bonus_v_large || 0)
+        : (attacker.damage?.bonus_v_infantry || 0)
+    
+        const normalDamage = attacker.damage?.normal || 0
+        const piercingDamage = attacker.damage?.piercing || 0
+        const damageSplitRatio = normalDamage / (normalDamage + piercingDamage )
+
     const armor = defender.armor || 0
     
     // Normal damage is reduced by armor, piercing damage ignores armor
-    return (normalDamage * (1 - Math.min(armor * 0.75 * 0.01, 1)) + piercingDamage)
+    return ((normalDamage + bonusDamage * damageSplitRatio) * (1 - Math.min(armor * 0.75 * 0.01, 1)) + piercingDamage + bonusDamage * (1 - damageSplitRatio))
 }
 
 /**
@@ -96,6 +105,7 @@ export function averageHealthLostPerEntityPerHit(attacker: Unit, defender: Unit)
  */
 export function averageHealthLostPerUnitPerHit(attacker: Unit, defender: Unit) {
     const att_ratio = calculateAttackRatio(attacker, defender)
+    console.log('att_ratio', att_ratio)
     const resist_ratio = calculateResistRatio(attacker, defender)
     let damage_value = att_ratio * (1 - resist_ratio) * calculateDamageOnHit(attacker, defender)
     return damage_value / (defender.health?.unit || 0) 

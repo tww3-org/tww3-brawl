@@ -14,11 +14,25 @@
 
       <!-- Health display with circular progress -->
       <div class="health-display">
+
         <q-circular-progress
-          :model-value="combatResult.remainingHealth"
-          :color="healthColor"
+        show-value
+        font-size="12px"
+        :value="combatResult.remainingHealth * 100"
+        size="50px"
+        :thickness="0.22"
+        :color="healthColor"
+        track-color="grey-3"
+        class="q-ma-md"
+      >
+      {{ (combatResult.remainingHealth * 100).toFixed(1) }}%
+      </q-circular-progress>
+
+        <q-circular-progress
+          :model-value="33"
+          color="blue"
           size="36px"
-          :thickness="8"
+          :thickness="0.8"
           show-value
           font-size="16px"
           class="health-progress"

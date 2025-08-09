@@ -8,7 +8,7 @@ export interface UnitSelection {
 }
 
 // Type for unit with active entity count
-export interface UnitWithEntityCount {
+export interface UnitWithEntityNumber {
   selection: UnitSelection;
-  entityCount: number;
+  entityNumber: number;
 } 

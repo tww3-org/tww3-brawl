@@ -1,23 +1,23 @@
 import { defineStore } from 'pinia'
-import type { UnitSelection, UnitWithEntityCount } from '~/types/unit'
+import type { UnitSelection, UnitWithEntityNumber } from '~/types/unit'
 import { calculateWinner } from '@tww3-brawl/sdk/src/logic/twoSideCalculations'
 
 export const useUnitStore = defineStore('unit', {
   state: () => {
     return {
-      leftUnit: null as UnitWithEntityCount | null,
-      rightUnit: null as UnitWithEntityCount | null,
+      leftUnit: null as UnitWithEntityNumber | null,
+      rightUnit: null as UnitWithEntityNumber | null,
     }
   },
   actions: {
     setLeftUnit(selection: UnitSelection | null) {
       if (selection) {
         const maxEntityCount = selection.unit?.num_men || 1;
-        const defaultEntityCount = Math.min(16, maxEntityCount);
+        const defaultEntityCount = Math.min(1, maxEntityCount / 10);
         
         this.leftUnit = {
           selection,
-          entityCount: defaultEntityCount
+          entityNumber: defaultEntityCount
         };
       } else {
         this.leftUnit = null;
@@ -26,11 +26,11 @@ export const useUnitStore = defineStore('unit', {
     setRightUnit(selection: UnitSelection | null) {
       if (selection) {
         const maxEntityCount = selection.unit?.num_men || 1;
-        const defaultEntityCount = Math.min(15, maxEntityCount);
+        const defaultEntityCount = Math.min(1, maxEntityCount / 10);
         
         this.rightUnit = {
           selection,
-          entityCount: defaultEntityCount
+          entityNumber: defaultEntityCount
         };
       } else {
         this.rightUnit = null;
@@ -38,12 +38,12 @@ export const useUnitStore = defineStore('unit', {
     },
     setLeftUnitEntityCount(entityCount: number) {
       if (this.leftUnit) {
-        this.leftUnit.entityCount = entityCount;
+        this.leftUnit.entityNumber = entityCount;
       }
     },
     setRightUnitEntityCount(entityCount: number) {
       if (this.rightUnit) {
-        this.rightUnit.entityCount = entityCount;
+        this.rightUnit.entityNumber = entityCount;
       }
     },
     clearUnits() {
@@ -60,8 +60,7 @@ export const useUnitStore = defineStore('unit', {
       if (!this.leftUnit?.selection.unit || !this.rightUnit?.selection.unit) {
         return null
       }
-      
-      return calculateWinner(this.leftUnit.selection.unit, this.rightUnit.selection.unit)
+      return calculateWinner(this.leftUnit, this.rightUnit)
     }
   },
   persist: {
