@@ -194,17 +194,14 @@ const groupedUnits = computed(() => {
     // For each name, keep the one with the least HP
     const filtered: typeof units.value = [];
     for (const name in byName) {
-      const unitsWithName = byName[name];
-      let minHpUnit = unitsWithName[0];
-      for (const u of unitsWithName) {
-        const hp = u.land_unit?.battle_entity?.hit_points ?? 0;
-        const minHp = minHpUnit.land_unit?.battle_entity?.hit_points ?? 0;
-        if (hp < minHp) {
-          minHpUnit = u;
-        }
-      }
+      const minHpUnit = byName[name].sort((a, b) => {
+        const hpA = a.recruitment_cost || 0;
+        const hpB = b.recruitment_cost || 0;
+        return hpA - hpB;
+      })[0];
       filtered.push(minHpUnit);
     }
+    console.log('filtered', filtered);
     // Sort units first by recruitment cost then alphabetically
     filtered.sort((a, b) => {
       const costA = a.recruitment_cost || 0;
@@ -220,6 +217,7 @@ const groupedUnits = computed(() => {
       const nameB = b.land_unit?.onscreen_name || b.unit;
       return nameA.localeCompare(nameB);
     });
+    console.log('filtered sorted', filtered);
     filteredGroups[groupName] = filtered;
   }
 
