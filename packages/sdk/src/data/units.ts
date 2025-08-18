@@ -119,6 +119,15 @@ export async function fetchUnits(
           num_men: unit.num_men,
           recruitment_cost: Number(unit.recruitment_cost || 0),
           upkeep_cost: Number(unit.upkeep_cost || 0),
+          land_unit: {
+            onscreen_name: unit.land_unit?.onscreen_name || '',
+            bonus_hit_points: Number(unit.land_unit?.bonus_hit_points || 0),
+            battle_entity: {
+              hit_points: Number(unit.land_unit?.battle_entity?.hit_points || 0),
+              size: unit.land_unit?.battle_entity?.size || 'small',
+              type: unit.land_unit?.battle_entity?.type || '',
+            },
+          },
           health: {
             unit: unitHealth(unit as Partial<main_unit>),
             entity: Math.round(unit.land_unit?.battle_entity?.hit_points || 0),

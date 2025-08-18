@@ -33,10 +33,10 @@ export interface Unit {
   num_men: number;
   recruitment_cost?: number;
   upkeep_cost?: number;
-  land_unit?: {
+  land_unit: {
     onscreen_name: string;
     bonus_hit_points: number;
-    battle_entity?: {
+    battle_entity: {
       hit_points: number;
       size: string;
       type: string;
