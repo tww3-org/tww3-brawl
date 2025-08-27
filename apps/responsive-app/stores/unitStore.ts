@@ -13,7 +13,7 @@ export const useUnitStore = defineStore('unit', {
     setLeftUnit(selection: UnitSelection | null) {
       if (selection) {
         const maxEntityCount = selection.unit?.num_men || 1;
-        const defaultEntityCount = Math.min(1, maxEntityCount / 10);
+        const defaultEntityCount = Math.max(1, maxEntityCount / 10);
         
         this.leftUnit = {
           selection,
@@ -26,12 +26,13 @@ export const useUnitStore = defineStore('unit', {
     setRightUnit(selection: UnitSelection | null) {
       if (selection) {
         const maxEntityCount = selection.unit?.num_men || 1;
-        const defaultEntityCount = Math.min(1, maxEntityCount / 10);
+        const defaultEntityCount = Math.max(1, maxEntityCount / 10);
         
         this.rightUnit = {
           selection,
-          entityNumber: defaultEntityCount
+          entityNumber: Math.round(defaultEntityCount)
         };
+        console.log('Default right unit entity count:', this.rightUnit.entityNumber);
       } else {
         this.rightUnit = null;
       }
