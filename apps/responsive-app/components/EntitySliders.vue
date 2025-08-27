@@ -1,58 +1,24 @@
 <template>
-  <div class="q-mt-lg">
-    <div class="row q-gutter-md">
-      <!-- Left unit entity slider -->
-      <div class="col-6">
-        <q-card>
-          <q-card-section>
-            <div class="text-h6">Left Unit Entities</div>
-            <div v-if="leftUnit && leftUnit.selection && leftUnit.selection.unit && leftUnit.selection.unit.num_men > 1">
-              <div class="text-caption q-mb-xs">
-                Active entities: {{ leftUnit.entityNumber }}
-              </div>
-              <q-slider
-                v-model="leftUnit.entityNumber"
-                :min="1"
-                :max="leftUnit.selection.unit.num_men"
-                :step="1"
-                label
-                label-always
-                color="positive"
-              />
-            </div>
-            <div v-else class="text-caption">
-              No unit selected or unit has only 1 entity
-            </div>
-          </q-card-section>
-        </q-card>
-      </div>
+  <div class="col-6">
+    <q-card>
+      <q-card-section>
 
-      <!-- Right unit entity slider -->
-      <div class="col-6">
-        <q-card>
-          <q-card-section>
-            <div class="text-h6">Right Unit Entities</div>
-            <div v-if="rightUnit && rightUnit.selection && rightUnit.selection.unit && rightUnit.selection.unit.num_men > 1">
-              <div class="text-caption q-mb-xs">
-                Active entities: {{ rightUnit.entityNumber }}
-              </div>
-              <q-slider
-                v-model="rightUnit.entityNumber"
-                :min="1"
-                :max="rightUnit.selection.unit.num_men"
-                :step="1"
-                label
-                label-always
-                color="negative"
-              />
-            </div>
-            <div v-else class="text-caption">
-              No unit selected or unit has only 1 entity
-            </div>
-          </q-card-section>
-        </q-card>
-      </div>
-    </div>
+          <div class="text-caption q-mb-xs">
+            Active entities: {{ entityNumber }}
+          </div>
+          <q-slider
+            :model-value="entityNumber"
+            @update:model-value="updateEntityNumber"
+            :min="1"
+            :max="maxEntities"
+            :step="1"
+            label
+            label-always
+          />
+
+
+      </q-card-section>
+    </q-card>
   </div>
 </template>
 
@@ -60,42 +26,20 @@
 import { computed } from 'vue'
 import { useUnitStore } from '~/stores/unitStore'
 
-const unitStore = useUnitStore()
-
-// Get units from store
-const leftUnit = computed(() => unitStore.leftUnit)
-const rightUnit = computed(() => unitStore.rightUnit)
-
-// Two-way binding for left entity count
-const leftEntityCount = computed({
-  get: () => leftUnit.value?.entityNumber || 1,
-  set: (value: number) => {
-    if (leftUnit.value) {
-      unitStore.setLeftUnitEntityCount(value)
-    }
-  }
-})
-
-// Two-way binding for right entity count
-const rightEntityCount = computed({
-  get: () => rightUnit.value?.entityNumber || 1,
-  set: (value: number) => {
-    if (rightUnit.value) {
-      unitStore.setRightUnitEntityCount(value)
-    }
-  }
-})
-
-// Functions to update entity counts
-const updateLeftEntityCount = (value: number | null) => {
-  if (value !== null) {
-    leftEntityCount.value = value;
-  }
+interface Props {
+  entityNumber: number
+  maxEntities: number
 }
 
-const updateRightEntityCount = (value: number | null) => {
+const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  'update:entityNumber': [value: number]
+}>()
+
+const updateEntityNumber = (value: number | null) => {
   if (value !== null) {
-    rightEntityCount.value = value;
+    emit('update:entityNumber', value)
   }
 }
 </script>
