@@ -2,15 +2,18 @@
   <h1 class="title">TWW3 Brawl</h1>
   <div class="q-pa-md">
     <div class="q-gutter-y-md row justify-center items-center">
+      {{ unitStore.leftUnit }}
       <UnitCard 
         orientation="left" 
         class="bg-positive"
-        v-model="leftUnit"
+        :modelValue="unitStore.leftUnit"
+        @update:modelValue="(value) => unitStore.setLeftUnit(value)"
       />
       <UnitCard 
         orientation="right" 
         class="bg-negative"
-        v-model="rightUnit"
+        :modelValue="unitStore.rightUnit"
+        @update:modelValue="(value) => unitStore.setRightUnit(value)"
       />
     </div>
     
@@ -25,45 +28,32 @@
     </div>
     
     <!-- Entity Sliders -->
-    <EntitySliders />
+    <div class="row q-gutter-md" v-if="unitStore.leftUnit || unitStore.rightUnit">
+      <div class="col-6" v-if="unitStore.leftUnit">
+        Store: {{ unitStore.leftUnit.entityNumber }}
+        <EntitySliders 
+          :entity-number="unitStore.leftUnit.entityNumber" 
+          :max-entities="unitStore.leftUnit.selection?.unit?.num_men || 1"
+          @update:entity-number="(value) => unitStore.setLeftUnitEntityCount(value)"
+        />
+      </div>
+      <div class="col-6" v-if="unitStore.rightUnit">
+        Store: {{ unitStore.rightUnit.entityNumber }}
+        <EntitySliders 
+          :entity-number="unitStore.rightUnit.entityNumber" 
+          :max-entities="unitStore.rightUnit.selection?.unit?.num_men || 1"
+          @update:entity-number="(value) => unitStore.setRightUnitEntityCount(value)"
+        />
+      </div>
+    </div>
   
     <!-- Short Summary -->
     <ShortSummary />
-
-    <!-- Debug display of current selections -->
-    <div class="q-mt-lg" v-if="leftUnit || rightUnit">
-      <h3>Current selections:</h3>
-      <div class="row q-gutter-md">
-        <div class="col-6" v-if="leftUnit && leftUnit.selection && leftUnit.selection.unit && leftUnit.selection.faction && leftUnit.selection.version">
-          <q-card>
-            <q-card-section>
-              <div class="text-h6">Left</div>
-              <div>{{ leftUnit.selection.unit.land_unit?.onscreen_name }}</div>
-              <div>{{ leftUnit.selection.faction.subculture?.name }}</div>
-              <div class="text-caption">{{ leftUnit.selection.version.name }}</div>
-              <div class="text-caption">Entities: {{ leftUnit.entityNumber }}</div>
-            </q-card-section>
-          </q-card>
-        </div>
-        <div class="col-6" v-if="rightUnit && rightUnit.selection && rightUnit.selection.unit && rightUnit.selection.faction && rightUnit.selection.version">
-          <q-card>
-            <q-card-section>
-              <div class="text-h6">Right</div>
-              <div>{{ rightUnit.selection.unit.land_unit?.onscreen_name }}</div>
-              <div>{{ rightUnit.selection.faction.subculture?.name }}</div>
-              <div class="text-caption">{{ rightUnit.selection.version.name }}</div>
-              <div class="text-caption">Entities: {{ rightUnit.entityNumber }}</div>
-            </q-card-section>
-          </q-card>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Unit } from '@tww3-brawl/sdk/src/types'
 import { useUnitStore } from '~/stores/unitStore'
 import type { UnitWithEntityNumber } from '~/types/unit'
 import UnitCard from '~/components/UnitCard.vue'
@@ -71,36 +61,37 @@ import EntitySliders from '~/components/EntitySliders.vue'
 
 const unitStore = useUnitStore()
 
+console.log('unitStore.leftUnit', unitStore.leftUnit)
 // Two-way binding with store for units
-const leftUnit = computed({
-  get: () => unitStore.leftUnit,
-  set: (value: UnitWithEntityNumber | null) => {
-    if (value) {
-      unitStore.setLeftUnit(value.selection)
-      if (value.entityNumber !== unitStore.leftUnit?.entityNumber) {
-        unitStore.setLeftUnitEntityCount(value.entityNumber)
-      }
-    } else {
-      unitStore.setLeftUnit(null)
-    }
-    console.log('Left unit updated:', value)
-  }
-})
+// const leftUnit = computed({
+//   get: () => unitStore.leftUnit,
+//   set: (value: UnitWithEntityNumber | null) => {
+//     if (value) {
+//       unitStore.setLeftUnit(value.selection)
+//       if (value.entityNumber !== unitStore.leftUnit?.entityNumber) {
+//         unitStore.setLeftUnitEntityCount(value.entityNumber)
+//       }
+//     } else {
+//       unitStore.setLeftUnit(null)
+//     }
+//     console.log('Left unit updated:', value)
+//   }
+// })
 
-const rightUnit = computed({
-  get: () => unitStore.rightUnit,
-  set: (value: UnitWithEntityNumber | null) => {
-    if (value) {
-      unitStore.setRightUnit(value.selection)
-      if (value.entityNumber !== unitStore.rightUnit?.entityNumber) {
-        unitStore.setRightUnitEntityCount(value.entityNumber)
-      }
-    } else {
-      unitStore.setRightUnit(null)
-    }
-    console.log('Right unit updated:', value)
-  }
-})
+// const rightUnit = computed({
+//   get: () => unitStore.rightUnit,
+//   set: (value: UnitWithEntityNumber | null) => {
+//     if (value) {
+//       unitStore.setRightUnit(value.selection)
+//       if (value.entityNumber !== unitStore.rightUnit?.entityNumber) {
+//         unitStore.setRightUnitEntityCount(value.entityNumber)
+//       }
+//     } else {
+//       unitStore.setRightUnit(null)
+//     }
+//     console.log('Right unit updated:', value)
+//   }
+// })
 
 // Function to reset units
 const resetUnits = () => {

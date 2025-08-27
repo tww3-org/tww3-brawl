@@ -11,7 +11,7 @@
       <div class="text-h6">{{ unitTitle }}</div>
       
       <div class="q-mt-md" :class="{ 'flex justify-end': orientation === 'right' }">
-        <SelectUnit v-model="selectedUnit" />
+        <SelectUnit :unitSelection="unitSelection" :version="version" @update:unitSelection="(value) => updateUnitSelection(value)" @update:version="(value) => version = value" />
       </div>
     </q-card-section>
   </q-card>
@@ -19,14 +19,16 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Unit } from '@tww3-brawl/sdk/src/types'
 import { getUnitPortrait } from '@tww3-brawl/sdk/src/utils/getUnitPortrait'
-import type { UnitSelection, UnitWithEntityCount } from '~/types/unit'
+import type { UnitSelection, UnitWithEntityNumber } from '~/types/unit'
 import SelectUnit from './SelectUnit.vue'
+
+const unitSelection = computed(() => props.modelValue?.selection || null)
+const version = ref<string | null>(null)
 
 interface Props {
   orientation?: 'left' | 'right'
-  modelValue?: UnitWithEntityCount | null
+  modelValue?: UnitWithEntityNumber | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -34,39 +36,32 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: UnitWithEntityCount | null]
+  'update:modelValue': [value: UnitWithEntityNumber | null]
 }>()
 
-// Two-way binding with parent
-const selectedUnit = computed({
-  get: () => props.modelValue?.selection || undefined,
-  set: (value: UnitSelection | undefined) => {
-    if (value) {
-      const maxEntityCount = value.unit?.num_men || 1;
-      const defaultEntityCount = Math.min(15, maxEntityCount);
-      
-      emit('update:modelValue', {
-        selection: value,
-        entityCount: defaultEntityCount
-      })
-    } else {
-      emit('update:modelValue', null)
-    }
-  }
-})
-
+function updateUnitSelection(value: UnitSelection) {
+  const maxEntityCount = value.unit?.num_men || 1;
+    const defaultEntityCount = Math.min(15, maxEntityCount);
+    
+    emit('update:modelValue', {
+      selection: value,
+      entityNumber: defaultEntityCount
+    })
+  
+}
 // Computed for unit title
 const unitTitle = computed(() => {
-  if (selectedUnit.value?.unit?.land_unit?.onscreen_name) {
-    return selectedUnit.value.unit.land_unit.onscreen_name;
+  console.log('unitSelection', unitSelection.value)
+  if (unitSelection.value?.unit?.land_unit?.onscreen_name) {
+    return unitSelection.value.unit.land_unit.onscreen_name;
   }
   return 'Unit Title';
 });
 
 // Computed for unit image
 const unitImageUrl = computed(() => {
-  if (selectedUnit.value?.unit && selectedUnit.value?.version?.id) {
-    const portrait = getUnitPortrait(selectedUnit.value.version.id, selectedUnit.value.unit)
+  if (unitSelection.value?.unit && unitSelection.value?.version?.id) {
+    const portrait = getUnitPortrait(unitSelection.value.version.id, unitSelection.value.unit)
     if (portrait) {
       return portrait
     }

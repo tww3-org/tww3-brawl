@@ -72,7 +72,7 @@
             :disable="(step === 'version' && !selectedVersion) || (step === 'faction' && !selectedFaction)"
             label="Next" color="primary" flat dense @click="goToNextStep" />
           <q-btn v-else :disable="!selectedUnit || !selectedVersion || !selectedFaction" label="Finish" color="primary" flat dense
-            @click="() => { dialogVisible = false; if (selectedUnitSelection) emit('update:modelValue', selectedUnitSelection) }" />
+            @click="() => { dialogVisible = false; if (selectedUnitSelection) emit('update:unitSelection', selectedUnitSelection) }" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -97,12 +97,12 @@ const step = ref<'version' | 'faction' | 'unit'>('version');
 const dialogVisible = ref(false);
 
 const props = defineProps<{
-  modelValue?: UnitSelection
-  version?: string
+  unitSelection: UnitSelection | null
+  version: string | null
 }>();
 
 const emit = defineEmits<{
-  'update:modelValue': [value: UnitSelection]
+  'update:unitSelection': [value: UnitSelection]
   'update:version': [value: string]
 }>();
 
@@ -299,21 +299,6 @@ watch(step, async (newStep) => {
   }
 });
 
-// Initialize refs when modelValue is provided
-watch(() => props.modelValue, (newValue) => {
-  console.log('newValue', newValue);
-  if (newValue) {
-    // Initialize complete selection
-    selectedUnitSelection.value = newValue;
-    
-    step.value = 'unit';
-  } else {
-    // Reset if modelValue is null/undefined
-    selectedUnitSelection.value = null;
-    step.value = 'version';
-  }
-}, { immediate: true });
-
 // Explicit navigation functions
 const goToNextStep = () => {
   if (step.value === 'version' && selectedVersion.value) {
@@ -354,7 +339,7 @@ const selectUnitAndFinish = (unit: Unit) => {
   selectedUnit.value = unit;
   if (selectedUnitSelection.value) {
     dialogVisible.value = false;
-    emit('update:modelValue', selectedUnitSelection.value);
+    emit('update:unitSelection', selectedUnitSelection.value);
   }
 };
 </script>

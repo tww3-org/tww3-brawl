@@ -10,34 +10,29 @@ export const useUnitStore = defineStore('unit', {
     }
   },
   actions: {
-    setLeftUnit(selection: UnitSelection | null) {
+    setLeftUnit(selection: UnitWithEntityNumber | null) {
       if (selection) {
-        const maxEntityCount = selection.unit?.num_men || 1;
-        const defaultEntityCount = Math.max(1, maxEntityCount / 10);
+        // const maxEntityCount = selection.unit?.num_men || 1;
+        // const defaultEntityCount = Math.max(1, maxEntityCount / 10);
         
-        this.leftUnit = {
-          selection,
-          entityNumber: defaultEntityCount
-        };
+        this.leftUnit = selection;
       } else {
         this.leftUnit = null;
       }
     },
-    setRightUnit(selection: UnitSelection | null) {
+    setRightUnit(selection: UnitWithEntityNumber | null) {
       if (selection) {
-        const maxEntityCount = selection.unit?.num_men || 1;
-        const defaultEntityCount = Math.max(1, maxEntityCount / 10);
+        // const maxEntityCount = selection.unit?.num_men || 1;
+        // const defaultEntityCount = Math.max(1, maxEntityCount / 10);
         
-        this.rightUnit = {
-          selection,
-          entityNumber: Math.round(defaultEntityCount)
-        };
+        this.rightUnit = selection
         console.log('Default right unit entity count:', this.rightUnit.entityNumber);
       } else {
         this.rightUnit = null;
       }
     },
     setLeftUnitEntityCount(entityCount: number) {
+      console.log('setLeftUnitEntityCount', entityCount)
       if (this.leftUnit) {
         this.leftUnit.entityNumber = entityCount;
       }
