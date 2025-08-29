@@ -13,6 +13,8 @@
       <div class="q-mt-md" :class="{ 'flex justify-end': orientation === 'right' }">
         <SelectUnit :unitSelection="unitSelection" :version="version" @update:unitSelection="(value) => updateUnitSelection(value)" @update:version="(value) => version = value" />
       </div>
+
+      <MountPicker v-if="unitSelection?.unit?.battle_mounts?.length && unitSelection?.unit?.battle_mounts?.length > 0" :modelValue="unitSelection.unit" />
     </q-card-section>
   </q-card>
 </template>
@@ -22,6 +24,7 @@ import { computed } from 'vue'
 import { getUnitPortrait } from '@tww3-brawl/sdk/src/utils/getUnitPortrait'
 import type { UnitSelection, UnitWithEntityNumber } from '~/types/unit'
 import SelectUnit from './SelectUnit.vue'
+import MountPicker from './MountPicker.vue'
 
 const unitSelection = computed(() => props.modelValue?.selection || null)
 const version = ref<string | null>(null)

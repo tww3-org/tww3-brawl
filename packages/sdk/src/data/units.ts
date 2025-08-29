@@ -81,6 +81,12 @@ export async function fetchUnits(
                 unit_card_url: true,
               },
             },
+            battle_mounts: {
+              base_unit: true,
+              mounted_unit: true,
+              icon_name: true,
+              mount_name: true
+            },
             custom_battle_permissions: {
               general_portrait: true,
             },
@@ -114,6 +120,7 @@ export async function fetchUnits(
         unit.land_unit
       ) {
         const adaptedUnit: Unit = {
+          version: versionId,
           unit: unit.unit,
           caste: unit.caste,
           num_men: unit.num_men,
@@ -128,6 +135,14 @@ export async function fetchUnits(
               type: unit.land_unit?.battle_entity?.type || '',
             },
           },
+          battle_mounts: (unit.battle_mounts || [])
+            .filter((mount): mount is NonNullable<typeof mount> => mount !== null)
+            .map(mount => ({
+              base_unit: mount.base_unit || '',
+              mounted_unit: mount.mounted_unit || '',
+              icon_name: mount.icon_name || '',
+              mount_name: mount.mount_name || ''
+            })),
           health: {
             unit: unitHealth(unit as Partial<main_unit>),
             entity: Math.round(unit.land_unit?.battle_entity?.hit_points || 0),

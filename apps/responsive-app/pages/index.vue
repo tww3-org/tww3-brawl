@@ -2,7 +2,6 @@
   <h1 class="title">TWW3 Brawl</h1>
   <div class="q-pa-md">
     <div class="q-gutter-y-md row justify-center items-center">
-      {{ unitStore.leftUnit }}
       <UnitCard 
         orientation="left" 
         class="bg-positive"

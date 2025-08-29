@@ -28,6 +28,7 @@ export interface Faction {
  * Représente une unité du jeu
  */
 export interface Unit {
+  version: string;
   unit: string;
   caste: string;
   num_men: number;
@@ -42,6 +43,12 @@ export interface Unit {
       type: string;
     };
   };
+  battle_mounts: {
+    base_unit: string,
+    mounted_unit: string,
+    icon_name: string,
+    mount_name: string
+  }[];
   health?: {
     unit: number;
     entity: number;

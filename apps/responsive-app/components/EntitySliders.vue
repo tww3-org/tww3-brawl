@@ -23,6 +23,7 @@
 </template>
 
 <script setup lang="ts">
+// TODO: add quick select buttons for usual entity counts and a number input
 import { computed } from 'vue'
 import { useUnitStore } from '~/stores/unitStore'
 
