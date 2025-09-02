@@ -29,7 +29,7 @@
 
 
 import { ref, computed, watch } from 'vue';
-import { useVersions, useFactions, useUnits } from '~/composables';
+import { useVersions, useFactions, useFactionUnits } from '~/composables';
 import type { Faction, Unit } from '@tww3-brawl/sdk';
 
 // Version sélectionnée
@@ -77,7 +77,7 @@ watch(() => selectedVersion.value?.value, () => {
 // ID de version pour la requête de factions
 const factionKey = computed(() => selectedFaction.value?.value ?? '');
 // Récupération des unités pour la faction et la version sélectionnée
-const { data: units, isLoading: unitsLoading, refetch: refetchUnits } = useUnits(versionId, factionKey);
+const { data: units, isLoading: unitsLoading, refetch: refetchUnits } = useFactionUnits(versionId, factionKey);
 
 
 // Colonnes pour le tableau des unités

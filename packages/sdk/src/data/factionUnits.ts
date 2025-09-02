@@ -9,7 +9,7 @@ import { unitHealth } from '../utils';
  * @param factionKey Clé de la faction
  * @returns Liste des unités
  */
-export async function fetchUnits(
+export async function fetchFactionUnits(
   client: GraphQLClient,
   versionId: string,
   factionKey: string
