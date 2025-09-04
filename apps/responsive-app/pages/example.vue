@@ -67,7 +67,6 @@ const factionOptions = computed(() => {
 // Réinitialiser la faction sélectionnée quand la version change
 watch(() => selectedVersion.value?.value, () => {
     if (selectedVersion.value?.value) {
-        console.log('plop')
         refetchFactions()
         selectedFaction.value = null
         refetchUnits()

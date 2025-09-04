@@ -65,7 +65,6 @@ function updateUnitSelection(value: UnitSelection) {
 }
 // Computed for unit title
 const unitTitle = computed(() => {
-  console.log('unitSelection', unitSelection.value)
   if (unitSelection.value?.unit?.land_unit?.onscreen_name) {
     return unitSelection.value.unit.land_unit.onscreen_name;
   }
@@ -74,7 +73,6 @@ const unitTitle = computed(() => {
 
 // Computed for unit image
 const unitImageUrl = computed(() => {
-  console.log('unitSelection', unitSelection.value)
   if (unitSelection.value?.unit && unitSelection.value?.version?.id) {
 
     const portrait = getUnitPortrait(unitSelection.value.version.id, unitSelection.value.unit)

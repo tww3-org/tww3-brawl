@@ -153,7 +153,6 @@ const versionOptions = computed(() => {
 
 // Fetch factions
 const versionId = computed(() => {
-  console.log('selectedUnitSelection', selectedUnitSelection.value)
   return selectedUnitSelection.value?.version?.id ?? ''
 });
 
@@ -201,7 +200,6 @@ const groupedUnits = computed(() => {
       })[0];
       filtered.push(minHpUnit);
     }
-    console.log('filtered', filtered);
     // Sort units first by recruitment cost then alphabetically
     filtered.sort((a, b) => {
       const costA = a.recruitment_cost || 0;
@@ -217,7 +215,6 @@ const groupedUnits = computed(() => {
       const nameB = b.land_unit?.onscreen_name || b.unit;
       return nameA.localeCompare(nameB);
     });
-    console.log('filtered sorted', filtered);
     filteredGroups[groupName] = filtered;
   }
 
@@ -254,10 +251,8 @@ const groupedUnits = computed(() => {
 
 // Refetch based on step
 watch(step, async (newStep) => {
-  console.log('newStep', newStep);
   if (newStep === 'version') {
     // Versions are already loaded by useVersions(), no need to refetch
-    console.log('versions', versions.value);
           // Reset faction and unit when returning to version
     if (selectedUnitSelection.value) {
       selectedUnitSelection.value.faction = undefined as any;
@@ -265,7 +260,6 @@ watch(step, async (newStep) => {
     }
   } else if (newStep === 'faction') {
     await refetchFactions();
-    console.log('factions', factions.value);
     // Reset unit when going to faction
     if (selectedUnitSelection.value) {
       selectedUnitSelection.value.unit = undefined as any;
@@ -289,7 +283,6 @@ const goToNextStep = () => {
 
 const goToPreviousStep = () => {
   if (step.value === 'unit') {
-    console.log('should go before unit');
     selectedUnit.value = undefined as any;
     step.value = 'faction';
   } else if (step.value === 'faction') {

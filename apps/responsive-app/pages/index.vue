@@ -60,7 +60,6 @@ import EntitySliders from '~/components/EntitySliders.vue'
 
 const unitStore = useUnitStore()
 
-console.log('unitStore.leftUnit', unitStore.leftUnit)
 // Two-way binding with store for units
 // const leftUnit = computed({
 //   get: () => unitStore.leftUnit,
@@ -95,7 +94,6 @@ console.log('unitStore.leftUnit', unitStore.leftUnit)
 // Function to reset units
 const resetUnits = () => {
   unitStore.clearUnits()
-  console.log('Units reset')
 }
 </script>
 

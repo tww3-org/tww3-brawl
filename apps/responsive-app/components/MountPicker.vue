@@ -63,15 +63,12 @@ const { data: mountedUnit, isLoading: unitLoading, error: unitError, refetch: re
 
 // Surveiller les changements de l'unité montée et mettre à jour le modèle
 watch(selectedMountKey, async (selectedMountKey) => {
-    console.log("selectedMountKey", selectedMountKey);
     if (selectedMountKey !== null) {
         await refetchMountedUnit();
-        console.log("mountedUnit", mountedUnit.value);
         // Emettre le modèle avec la nouvelle unité
         if (mountedUnit.value) {    
             emit('update:unit', mountedUnit.value);
         }
-        console.log("model", props.unit);
         // Réinitialiser la sélection
         // selectedMountKey.value = null;
     }
@@ -79,7 +76,6 @@ watch(selectedMountKey, async (selectedMountKey) => {
 
 function selectMount(mount: Unit['battle_mounts'][number]) {
     const new_unit_key = mount.mounted_unit;
-    console.log("click on mount", new_unit_key);
     // Si c'est la même unité (pas de changement de mount), ne rien faire
     if (new_unit_key === props.unit.unit) {
         return;

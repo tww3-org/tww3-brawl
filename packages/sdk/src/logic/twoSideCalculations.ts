@@ -33,8 +33,6 @@ export function calculateWinner(leftUnit: UnitWithEntityNumber, rightUnit: UnitW
     // Calculate damage each unit deals to the other
     const leftDamageToRight = averageHealthLostPerUnitPerHit(leftUnit.selection.unit!, rightUnit.selection.unit!) * (leftUnit.entityNumber || 1)
     const rightDamageToLeft = averageHealthLostPerUnitPerHit(rightUnit.selection.unit!, leftUnit.selection.unit!) * (rightUnit.entityNumber || 1)
-    console.log('leftUnit', leftUnit)
-    console.log('rightUnit', rightUnit)
     /**
      * Internal function to calculate combat statistics for a winner
      * @param winner - Which unit wins ('left' or 'right')

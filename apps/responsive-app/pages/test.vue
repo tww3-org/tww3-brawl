@@ -131,12 +131,10 @@ async function fetchVersions() {
       }
     });
     if (result?.versions) {
-      console.log('DEBUG versiions', result.versions);
       versions.value = result.versions.map(v => ({ name: v?.name as string, id: v?.id as string }));
       versionOptions.value = result.versions.map(v => v?.name as string);
     }
 
-    console.log(result);
   } catch (error) {
     console.error('Erreur lors de la récupération des versions:', error);
   }
@@ -210,7 +208,6 @@ async function fetchUnitsByFaction() {
         }
       }
     });
-    console.log('DEBUG result', result);
     if (result?.tww?.factions) {
       // Transformer les données pour correspondre à l'interface Unit
       factions.value = (result.tww.factions || [])

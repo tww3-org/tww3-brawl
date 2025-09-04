@@ -185,7 +185,6 @@ export async function fetchFactionUnits(
           unit_card_url: unit.land_unit?.variant?.unit_card_url || '',
         };
 
-        console.log('adaptedUnit', adaptedUnit)
         units.push(adaptedUnit);
       }
     }

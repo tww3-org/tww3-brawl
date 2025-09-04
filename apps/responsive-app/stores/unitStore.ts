@@ -26,13 +26,11 @@ export const useUnitStore = defineStore('unit', {
         // const defaultEntityCount = Math.max(1, maxEntityCount / 10);
         
         this.rightUnit = selection
-        console.log('Default right unit entity count:', this.rightUnit.entityNumber);
       } else {
         this.rightUnit = null;
       }
     },
     setLeftUnitEntityCount(entityCount: number) {
-      console.log('setLeftUnitEntityCount', entityCount)
       if (this.leftUnit) {
         this.leftUnit.entityNumber = entityCount;
       }
