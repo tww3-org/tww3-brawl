@@ -85,7 +85,7 @@ import type { QCarousel } from 'quasar';
 import type { Unit } from '@tww3-brawl/sdk/src/types';
 import { useVersions } from '~/composables/useVersions';
 import { useFactions } from '~/composables/useFactions';
-import { useUnits } from '~/composables/useUnits';
+import { useFactionUnits } from '~/composables/useFactionUnits';
 import { getFactionPortrait } from '@tww3-brawl/sdk/src/utils/getFactionPortrait';
 import { getUnitPortrait } from '@tww3-brawl/sdk/src/utils/getUnitPortrait';
 import type { UnitSelection } from '~/types/unit';
@@ -153,7 +153,6 @@ const versionOptions = computed(() => {
 
 // Fetch factions
 const versionId = computed(() => {
-  console.log('selectedUnitSelection', selectedUnitSelection.value)
   return selectedUnitSelection.value?.version?.id ?? ''
 });
 
@@ -166,7 +165,7 @@ const factionOptions = computed(() => {
 
 // Fetch units
 const factionKey = computed(() => selectedUnitSelection.value?.faction?.key ?? '');
-const { data: units, isLoading: unitsLoading, refetch: refetchUnits } = useUnits(versionId, factionKey);
+const { data: units, isLoading: unitsLoading, refetch: refetchUnits } = useFactionUnits(versionId, factionKey);
 const unitOptions = computed(() => {
   if (!units.value) return [];
   return units.value.map(u => ({ label: u.land_unit?.onscreen_name || u.unit, value: u.unit }));
@@ -201,7 +200,6 @@ const groupedUnits = computed(() => {
       })[0];
       filtered.push(minHpUnit);
     }
-    console.log('filtered', filtered);
     // Sort units first by recruitment cost then alphabetically
     filtered.sort((a, b) => {
       const costA = a.recruitment_cost || 0;
@@ -217,7 +215,6 @@ const groupedUnits = computed(() => {
       const nameB = b.land_unit?.onscreen_name || b.unit;
       return nameA.localeCompare(nameB);
     });
-    console.log('filtered sorted', filtered);
     filteredGroups[groupName] = filtered;
   }
 
@@ -252,36 +249,10 @@ const groupedUnits = computed(() => {
   return orderedGroups;
 });
 
-// Automatic navigation and centralized logic
-// watch(selectedUnitSelection, (val) => {
-//   if (!val) return;
-  
-//   // Si une version est sélectionnée, passer à l'étape faction
-//   if (val.version && !val.faction && step.value === 'version') {
-//     console.log('version', val.version);
-//     step.value = 'faction';
-//   }
-  
-//   // Si une faction est sélectionnée, passer à l'étape unité
-//   if (val.faction && !val.unit && step.value === 'faction') {
-//     console.log('faction', val.faction);
-//     step.value = 'unit';
-//   }
-  
-//   // Si tout est sélectionné, fermer le dialog et émettre
-//   if (val.unit && val.version && val.faction && step.value === 'unit') {
-//     console.log('unit', val.unit);
-//     // dialogVisible.value = false;
-//     emit('update:modelValue', val);
-//   }
-// }, { deep: true });
-
 // Refetch based on step
 watch(step, async (newStep) => {
-  console.log('newStep', newStep);
   if (newStep === 'version') {
     // Versions are already loaded by useVersions(), no need to refetch
-    console.log('versions', versions.value);
           // Reset faction and unit when returning to version
     if (selectedUnitSelection.value) {
       selectedUnitSelection.value.faction = undefined as any;
@@ -289,7 +260,6 @@ watch(step, async (newStep) => {
     }
   } else if (newStep === 'faction') {
     await refetchFactions();
-    console.log('factions', factions.value);
     // Reset unit when going to faction
     if (selectedUnitSelection.value) {
       selectedUnitSelection.value.unit = undefined as any;
@@ -313,7 +283,6 @@ const goToNextStep = () => {
 
 const goToPreviousStep = () => {
   if (step.value === 'unit') {
-    console.log('should go before unit');
     selectedUnit.value = undefined as any;
     step.value = 'faction';
   } else if (step.value === 'faction') {

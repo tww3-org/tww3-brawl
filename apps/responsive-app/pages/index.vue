@@ -2,7 +2,6 @@
   <h1 class="title">TWW3 Brawl</h1>
   <div class="q-pa-md">
     <div class="q-gutter-y-md row justify-center items-center">
-      {{ unitStore.leftUnit }}
       <UnitCard 
         orientation="left" 
         class="bg-positive"
@@ -61,7 +60,6 @@ import EntitySliders from '~/components/EntitySliders.vue'
 
 const unitStore = useUnitStore()
 
-console.log('unitStore.leftUnit', unitStore.leftUnit)
 // Two-way binding with store for units
 // const leftUnit = computed({
 //   get: () => unitStore.leftUnit,
@@ -96,7 +94,6 @@ console.log('unitStore.leftUnit', unitStore.leftUnit)
 // Function to reset units
 const resetUnits = () => {
   unitStore.clearUnits()
-  console.log('Units reset')
 }
 </script>
 

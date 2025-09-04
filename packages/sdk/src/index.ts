@@ -9,8 +9,3 @@ export * from './utils';
 
 // Export des fonctions core
 export * from './data';
-
-// Garder pour compatibilité
-export function helloWorld() {
-  return 'Hello World in watch mode from SDK with tsc or not';
-}
