@@ -19,7 +19,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { getUnitPortrait } from '@tww3-brawl/sdk/src/utils/getUnitPortrait'
-import type { UnitSelection, UnitWithEntityNumber } from '~/types/unit'
+import  { type UnitSelection, type UnitWithEntityNumberAndBonus, defaultUnitBonus } from '~/types/unit'
 import SelectUnit from './SelectUnit.vue'
 import MountPicker from './MountPicker.vue'
 import type { Unit } from '@tww3-brawl/sdk/src/types'
@@ -29,7 +29,7 @@ const version = ref<string | null>(null)
 
 interface Props {
   orientation?: 'left' | 'right'
-  modelValue?: UnitWithEntityNumber | null
+  modelValue?: UnitWithEntityNumberAndBonus | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -37,7 +37,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: UnitWithEntityNumber | null]
+  'update:modelValue': [value: UnitWithEntityNumberAndBonus | null]
 }>()
 
 
@@ -48,7 +48,8 @@ function updateUnit(value: Unit) {
     props.modelValue.selection.unit = value;
     emit('update:modelValue', {
       selection: props.modelValue.selection,
-      entityNumber: defaultEntityCount
+      entityNumber: defaultEntityCount,
+      bonus: props.modelValue.bonus
     })
   }
 }
@@ -59,7 +60,8 @@ function updateUnitSelection(value: UnitSelection) {
 
   emit('update:modelValue', {
     selection: value,
-    entityNumber: defaultEntityCount
+    entityNumber: defaultEntityCount,
+    bonus: defaultUnitBonus()
   })
 
 }

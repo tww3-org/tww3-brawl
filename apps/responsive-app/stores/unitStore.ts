@@ -1,16 +1,16 @@
 import { defineStore } from 'pinia'
-import type { UnitSelection, UnitWithEntityNumber } from '~/types/unit'
+import type { UnitSelection, UnitWithEntityNumberAndBonus } from '~/types/unit'
 import { calculateWinner } from '@tww3-brawl/sdk/src/logic/twoSideCalculations'
 
 export const useUnitStore = defineStore('unit', {
   state: () => {
     return {
-      leftUnit: null as UnitWithEntityNumber | null,
-      rightUnit: null as UnitWithEntityNumber | null,
+      leftUnit: null as UnitWithEntityNumberAndBonus | null,
+      rightUnit: null as UnitWithEntityNumberAndBonus | null,
     }
   },
   actions: {
-    setLeftUnit(selection: UnitWithEntityNumber | null) {
+    setLeftUnit(selection: UnitWithEntityNumberAndBonus | null) {
       if (selection) {
         // const maxEntityCount = selection.unit?.num_men || 1;
         // const defaultEntityCount = Math.max(1, maxEntityCount / 10);
@@ -20,7 +20,7 @@ export const useUnitStore = defineStore('unit', {
         this.leftUnit = null;
       }
     },
-    setRightUnit(selection: UnitWithEntityNumber | null) {
+    setRightUnit(selection: UnitWithEntityNumberAndBonus | null) {
       if (selection) {
         // const maxEntityCount = selection.unit?.num_men || 1;
         // const defaultEntityCount = Math.max(1, maxEntityCount / 10);

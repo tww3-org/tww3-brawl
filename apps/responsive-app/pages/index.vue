@@ -48,14 +48,17 @@
   
     <!-- Short Summary -->
     <ShortSummary />
+
+    <!-- Detail View -->
+    <DetailView :leftUnit="unitStore.leftUnit" :rightUnit="unitStore.rightUnit" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useUnitStore } from '~/stores/unitStore'
-import type { UnitWithEntityNumber } from '~/types/unit'
-import UnitCard from '~/components/UnitCard.vue'
+import type { UnitWithEntityNumberAndBonus } from '~/types/unit'
+import UnitCard from '~/components/UnitCard/index.vue'
 import EntitySliders from '~/components/EntitySliders.vue'
 
 const unitStore = useUnitStore()
