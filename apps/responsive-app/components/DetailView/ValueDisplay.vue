@@ -2,12 +2,13 @@
     <div class="container" :class="{ 'reverse': orientation === 'right' }">
         <div class="value">{{ value }}</div>
         <div v-if="bonus" class="bonus">{{ bonus }}</div>
-        <div>Plop</div>
+        <ModifierDisplay />
     </div>
 </template>
 
 <script setup lang="ts">
 import type { UnitBonus, UnitBonusPathes, UnitSelection, UnitWithEntityNumberAndBonus } from '~/types/unit';
+import ModifierDisplay from './ModifierDisplay.vue';
 
 const props = defineProps<{
     value: number | boolean
@@ -20,6 +21,7 @@ const props = defineProps<{
 .container {
     display: flex;
     flex-direction: row-reverse;
+    gap: 0.5rem;
 }
 
 .container.reverse {

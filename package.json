@@ -31,5 +31,10 @@
     "nx": "^20.3.1",
     "pnpm": "8.15.9",
     "supabase": "^2.2.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "unplugin-utils": "0.2.4"
+    }
   }
 }

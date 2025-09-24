@@ -16,6 +16,7 @@ const config: NuxtConfig = {
     'nuxt-quasar-ui',
     '@pinia/nuxt', // required
     'pinia-plugin-persistedstate/nuxt',
+    '@nuxt/icon',
   ],
 
   quasar: {
