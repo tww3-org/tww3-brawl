@@ -109,5 +109,3 @@ export function averageHealthLostPerUnitPerHit(attacker: Unit, defender: Unit) {
     let damage_value = att_ratio * (1 - resist_ratio) * calculateDamageOnHit(attacker, defender)
     return damage_value / (defender.health?.unit || 0) 
 }
-
-

@@ -34,11 +34,3 @@ export function setTyped<T, P extends Paths<T>>(
   }
   curr[keys[keys.length - 1]] = value;
 }
-
-const test = {
-  a: {
-    b: {
-      c: 1
-    }
-  }
-}

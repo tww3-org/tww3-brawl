@@ -1,5 +1,6 @@
+import type { UnitWithEntityNumber } from '@tww3-brawl/sdk/src/logic/twoSideCalculations';
 import type { Unit, Version, Faction } from '@tww3-brawl/sdk/src/types'
-import type { Paths } from '~/shared/jsonpath';
+import { getTyped, setTyped, type Paths } from '~/shared/jsonpath';
 
 // Type for unit selection with version and faction
 export interface UnitSelection {
@@ -26,7 +27,7 @@ export function defaultUnitBonus(): UnitBonus {
 
 export type UnitPaths = Paths<Required<Unit>>;
 
-export const UnitBonusPathes: readonly UnitPaths[] = [
+export const UnitBonusPathes = [
   'armor',
   'attack',
   'defense',
@@ -41,7 +42,6 @@ export const UnitBonusPathes: readonly UnitPaths[] = [
 
 export type UnitBonusPathes = typeof UnitBonusPathes[number];
 
-
 export const statistics: { path: Paths<Required<Unit>>, color: string, label: string }[] = [
   { path: 'health.unit', color: 'green', label: 'Health' },
   { path: 'attack', color: 'blue', label: 'Attack' },
@@ -55,3 +55,31 @@ export const statistics: { path: Paths<Required<Unit>>, color: string, label: st
   { path: 'resistance.fire', color: 'pink', label: 'Resistance Fire' },
   { path: 'resistance.ward_save', color: 'pink', label: 'Resistance Ward Save' },
 ] as const
+
+
+
+
+export function unitWithBonus(unit: Readonly<UnitWithEntityNumberAndBonus> ): UnitWithEntityNumber {   
+  if (!unit.selection.unit) {
+    return unit;
+  }
+  // Deep clone the unit
+  const finalUnit: Unit = JSON.parse(JSON.stringify(unit.selection.unit));
+  for (const path of Object.keys(unit.bonus) as UnitBonusPathes[]) {
+    if (typeof unit.bonus[path] === 'number') {
+      const value = getTyped(finalUnit, path as Paths<Unit>) as number;
+      setTyped(finalUnit, path as Paths<Unit>, (value + unit.bonus[path]) as unknown as Paths<Unit, Paths<Unit>>)
+    }
+  }
+  
+  return {
+    selection: {
+      unit: finalUnit,
+      version: unit.selection.version,
+      faction: unit.selection.faction
+    },
+    entityNumber: unit.entityNumber
+  }
+}
+
+

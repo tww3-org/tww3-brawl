@@ -50,50 +50,37 @@
     <ShortSummary />
 
     <!-- Detail View -->
-    <DetailView :leftUnit="unitStore.leftUnit" :rightUnit="unitStore.rightUnit" />
+    <DetailView :leftUnit="unitStore.leftUnit" :rightUnit="unitStore.rightUnit" @update="onUpdate" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useUnitStore } from '~/stores/unitStore'
-import type { UnitWithEntityNumberAndBonus } from '~/types/unit'
+import type { UnitBonusPathes, UnitWithEntityNumberAndBonus } from '~/types/unit'
 import UnitCard from '~/components/UnitCard/index.vue'
 import EntitySliders from '~/components/EntitySliders.vue'
+import type { Paths } from '~/shared/jsonpath'
 
 const unitStore = useUnitStore()
 
-// Two-way binding with store for units
-// const leftUnit = computed({
-//   get: () => unitStore.leftUnit,
-//   set: (value: UnitWithEntityNumber | null) => {
-//     if (value) {
-//       unitStore.setLeftUnit(value.selection)
-//       if (value.entityNumber !== unitStore.leftUnit?.entityNumber) {
-//         unitStore.setLeftUnitEntityCount(value.entityNumber)
-//       }
-//     } else {
-//       unitStore.setLeftUnit(null)
-//     }
-//     console.log('Left unit updated:', value)
-//   }
-// })
-
-// const rightUnit = computed({
-//   get: () => unitStore.rightUnit,
-//   set: (value: UnitWithEntityNumber | null) => {
-//     if (value) {
-//       unitStore.setRightUnit(value.selection)
-//       if (value.entityNumber !== unitStore.rightUnit?.entityNumber) {
-//         unitStore.setRightUnitEntityCount(value.entityNumber)
-//       }
-//     } else {
-//       unitStore.setRightUnit(null)
-//     }
-//     console.log('Right unit updated:', value)
-//   }
-// })
-
+const onUpdate = (unit_side: 'left' | 'right', path: UnitBonusPathes, value: number) => {
+  if (unit_side === 'left') {
+    const unitBonus = unitStore.leftUnit?.bonus ?? null;
+    if (unitBonus) {
+      unitBonus[path] = value;
+    }
+    unitStore.setLeftUnitBonus(unitBonus)
+  } else {
+    const unitBonus = unitStore.rightUnit?.bonus ?? null;
+    if (unitBonus) {
+      unitBonus[path] = value;
+    }
+    unitStore.setRightUnitBonus(unitBonus)
+  }
+  console.log('onUpdate bonus', unitStore.leftUnit?.bonus, unitStore.rightUnit?.bonus)
+  console.log('onUpdate unit', unitStore.leftUnit?.selection, unitStore.rightUnit?.selection)
+}
 // Function to reset units
 const resetUnits = () => {
   unitStore.clearUnits()

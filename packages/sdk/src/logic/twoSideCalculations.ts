@@ -31,6 +31,9 @@ export interface CombatResult {
  */
 export function calculateWinner(leftUnit: UnitWithEntityNumber, rightUnit: UnitWithEntityNumber): CombatResult {
     // Calculate damage each unit deals to the other
+
+    const leftUnitWithBonus = { ...leftUnit.selection.unit!, bonus: leftUnit.selection.bonus }
+    const rightUnitWithBonus = { ...rightUnit.selection.unit!, bonus: rightUnit.selection.bonus }
     const leftDamageToRight = averageHealthLostPerUnitPerHit(leftUnit.selection.unit!, rightUnit.selection.unit!) * (leftUnit.entityNumber || 1)
     const rightDamageToLeft = averageHealthLostPerUnitPerHit(rightUnit.selection.unit!, leftUnit.selection.unit!) * (rightUnit.entityNumber || 1)
     /**

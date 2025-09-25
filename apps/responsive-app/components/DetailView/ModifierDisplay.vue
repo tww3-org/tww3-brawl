@@ -1,19 +1,26 @@
 <template>
     <div>
-        <Icon name="line-md:chevron-small-triple-left" style="color: red"/>
-        <Icon name="line-md:chevron-small-double-left" style="color: red"/>
-        <Icon name="line-md:chevron-small-left" style="color: red"/>
-        <Icon name="ion:ios-minus-empty"></Icon>
-        <Icon name="line-md:chevron-small-right" style="color: green"/>
-        <Icon name="line-md:chevron-small-double-right" style="color: green"/>
-        <Icon name="line-md:chevron-small-triple-right" style="color: green"/>
+        <q-btn round flat dense color="red" aria-label="Decrease value" title="Decrease value" @click="emit('modify', -5)">
+            <Icon name="line-md:chevron-small-double-left" />
+        </q-btn>
+        <q-btn round flat dense color="red" aria-label="Decrease value" title="Decrease value" @click="emit('modify', -1)">
+            <Icon name="line-md:chevron-small-left" />
+        </q-btn>
+        <q-btn round flat dense aria-label="Reset value" title="Reset value" @click="emit('reset')">
+            <Icon name="ion:ios-minus-empty" />
+        </q-btn>
+        <q-btn round flat dense color="green" aria-label="Increase value" title="Increase value" @click="emit('modify', 1)">
+            <Icon name="line-md:chevron-small-right" />
+        </q-btn>
+        <q-btn round flat dense color="green" aria-label="Increase value" title="Increase value" @click="emit('modify', 5)">
+            <Icon name="line-md:chevron-small-double-right" />
+        </q-btn>
     </div>
 </template>
-
+ 
 <script setup lang="ts">
-
+const emit = defineEmits<{
+    modify: [value: number],
+    reset: []
+}>()
 </script>
-
-<style scoped>
-
-</style>
