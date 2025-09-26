@@ -88,9 +88,6 @@ const unitImageUrl = computed(() => {
 
 <style scoped>
 .unit-card {
-  max-width: 350px;
-  width: 500px;
-  height: 350px;
   display: flex;
   flex-direction: column;
 }

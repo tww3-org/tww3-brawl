@@ -1,7 +1,7 @@
 <template>
     <div class="container" :class="{ 'reverse': orientation === 'right' }">
-        <div class="value">{{ value }}</div>
-        <div v-if="bonus" class="bonus">{{ bonus }}</div>
+        <div class="left base" :class="{ 'right': orientation === 'right' }">{{ value }}</div>
+        <div class="left bonus" :class="{ 'right': orientation === 'right' }" >{{ bonus }}</div>
         <ModifierDisplay v-if="isUpdatable" @modify="onModify" @reset="onReset" />
     </div>
 </template>
@@ -48,5 +48,21 @@ const bonus = ref<number>(props.bonus)
 
 .container.reverse {
     flex-direction: row;
+}
+
+.left {
+    text-align: right;
+}
+
+.right {
+    text-align: left;
+}
+
+.bonus {
+    width: 3ch;
+}
+
+.base {
+    width: 5ch;
 }
 </style>

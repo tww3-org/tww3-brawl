@@ -1,23 +1,23 @@
 <template>
   <h1 class="title">TWW3 Brawl</h1>
-  <div class="q-pa-md">
-    <div class="q-gutter-y-md row justify-center items-center">
+  <div class="q-pa-md container">
+    <div class=" justify-center items-center unit-cards-container">
       <UnitCard 
         orientation="left" 
-        class="bg-positive"
+        class="bg-positive unit-card"
         :modelValue="unitStore.leftUnit"
         @update:modelValue="(value) => unitStore.setLeftUnit(value)"
       />
       <UnitCard 
         orientation="right" 
-        class="bg-negative"
+        class="bg-negative unit-card"
         :modelValue="unitStore.rightUnit"
         @update:modelValue="(value) => unitStore.setRightUnit(value)"
       />
     </div>
     
     <!-- Reset Button -->
-    <div class="q-mt-md text-center">
+    <div class="text-center" style="margin-top: 16px;">
       <q-btn 
         label="Reset" 
         color="warning" 
@@ -27,8 +27,8 @@
     </div>
     
     <!-- Entity Sliders -->
-    <div class="row q-gutter-md" v-if="unitStore.leftUnit || unitStore.rightUnit">
-      <div class="col-6" v-if="unitStore.leftUnit">
+    <div class="entity-sliders-container" v-if="unitStore.leftUnit || unitStore.rightUnit">
+      <div class="entity-slider" v-if="unitStore.leftUnit">
         Store: {{ unitStore.leftUnit.entityNumber }}
         <EntitySliders 
           :entity-number="unitStore.leftUnit.entityNumber" 
@@ -36,7 +36,7 @@
           @update:entity-number="(value) => unitStore.setLeftUnitEntityCount(value)"
         />
       </div>
-      <div class="col-6" v-if="unitStore.rightUnit">
+      <div class="entity-slider" v-if="unitStore.rightUnit">
         Store: {{ unitStore.rightUnit.entityNumber }}
         <EntitySliders 
           :entity-number="unitStore.rightUnit.entityNumber" 
@@ -55,12 +55,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { useUnitStore } from '~/stores/unitStore'
-import type { UnitBonusPathes, UnitWithEntityNumberAndBonus } from '~/types/unit'
+import type { UnitBonusPathes } from '~/types/unit'
 import UnitCard from '~/components/UnitCard/index.vue'
 import EntitySliders from '~/components/EntitySliders.vue'
-import type { Paths } from '~/shared/jsonpath'
 
 const unitStore = useUnitStore()
 
@@ -78,8 +76,6 @@ const onUpdate = (unit_side: 'left' | 'right', path: UnitBonusPathes, value: num
     }
     unitStore.setRightUnitBonus(unitBonus)
   }
-  console.log('onUpdate bonus', unitStore.leftUnit?.bonus, unitStore.rightUnit?.bonus)
-  console.log('onUpdate unit', unitStore.leftUnit?.selection, unitStore.rightUnit?.selection)
 }
 // Function to reset units
 const resetUnits = () => {
@@ -91,4 +87,48 @@ const resetUnits = () => {
 h1 {
   text-align: center;
 }
+
+.container { 
+  text-align: center /* centre horizontalement */
+}
+
+.container > * {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.entity-sliders-container {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  justify-content: center;
+}
+
+.entity-slider {
+  width: 50%;
+  display: inline-block;
+}
+
+.unit-cards-container {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.unit-card {
+  width: 50%;
+  height: 450px;
+}
+
+@media (max-width: 768px) {
+  .unit-cards-container {
+    flex-direction: column;
+  }
+  
+  .unit-card {
+    width: 100%;
+  }
+}
+
+
 </style>

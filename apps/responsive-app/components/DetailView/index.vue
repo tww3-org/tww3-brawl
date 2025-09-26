@@ -2,21 +2,21 @@
     <q-markup-table separator="none" flat bordered dense>
         <thead>
             <tr>
-                <th scope="col" class="text-right unit-column">{{ leftUnit?.selection?.unit?.land_unit?.onscreen_name }}</th>
-                <th scope="col" class="text-center stat-column">Statistic</th>
-                <th scope="col" class="text-left unit-column">{{ rightUnit?.selection?.unit?.land_unit?.onscreen_name }}</th>
+                <th scope="col" class="text-right unit-column"><b>{{ leftUnit?.selection?.unit?.land_unit?.onscreen_name }}</b>
+                </th>
+                <th scope="col" class="text-center stat-column"><b>Statistic</b></th>
+                <th scope="col" class="text-left unit-column"><b>{{ rightUnit?.selection?.unit?.land_unit?.onscreen_name }}</b>
+                </th>
             </tr>
         </thead>
         <tbody>
-
             <tr v-for="statistic in statistics" :key="statistic.path">
                 <td class="unit-column" v-if="leftUnit?.selection?.unit">
                     <ValueDisplay
                         :value="getTyped<Required<Unit>, Paths<Required<Unit>>>(leftUnit.selection.unit as Required<Unit>, (statistic.path) as Paths<Required<Unit>>) as number | boolean"
                         :bonus="leftUnit.bonus[statistic.path as UnitBonusPathes]"
                         :isUpdatable="UnitBonusPathes.includes(statistic.path as UnitBonusPathes)"
-                        @update="onUpdate('left', statistic.path as UnitBonusPathes, $event)"
-                        orientation="left" />
+                        @update="onUpdate('left', statistic.path as UnitBonusPathes, $event)" orientation="left" />
 
                 </td>
                 <td class="text-center stat-column">{{ statistic.label }}</td>
@@ -25,8 +25,7 @@
                         :value="getTyped<Required<Unit>, Paths<Required<Unit>>>(rightUnit.selection.unit as Required<Unit>, (statistic.path) as Paths<Required<Unit>>) as number | boolean"
                         :bonus="rightUnit.bonus[statistic.path as UnitBonusPathes]"
                         :isUpdatable="UnitBonusPathes.includes(statistic.path as UnitBonusPathes)"
-                        @update="onUpdate('right', statistic.path as UnitBonusPathes, $event)"
-                        orientation="right" />
+                        @update="onUpdate('right', statistic.path as UnitBonusPathes, $event)" orientation="right" />
                 </td>
 
             </tr>
@@ -59,13 +58,9 @@ function onUpdate(unit_side: 'left' | 'right', path: UnitBonusPathes, value: num
 <style scoped>
 /* Contrôle de la largeur des colonnes */
 .unit-column {
-    width: 20%;
-    /* Colonnes des unités prennent 35% chacune */
+    width: 50%;
 }
 
-.modifier-column {
-    width: 30%;
-}
 
 .stat-column {
     width: 100px;
