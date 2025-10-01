@@ -4,6 +4,14 @@ import type { NuxtConfig } from 'nuxt/schema';
 const config: NuxtConfig = {
   devtools: { enabled: true },
 
+  // Configuration for static site generation
+  ssr: false,
+  
+  app: {
+    baseURL: process.env.NUXT_APP_BASE_URL || '/',
+    buildAssetsDir: '_nuxt/',
+  },
+
   build: {
     // Transpilation nécessaire pour le SDK local car il est publié en ESM/TypeScript
     // et doit être converti en format compatible avec le bundle Nuxt
@@ -11,6 +19,12 @@ const config: NuxtConfig = {
   },
 
   compatibilityDate: '2024-12-30',
+
+  runtimeConfig: {
+    public: {
+      graphqlUrl: process.env.GRAPHQL_API_URL || 'https://broker.twwstats.com/graphql',
+    },
+  },
   
   modules: [
     'nuxt-quasar-ui',

@@ -1,8 +1,9 @@
 import { createClient, type Client } from '@tww3-brawl/gql';
 
 export default defineNuxtPlugin(() => {
+  const config = useRuntimeConfig();
   const client = createClient({
-    url: process.env.GRAPHQL_API_URL || 'https://broker.twwstats.com/graphql',
+    url: config.public.graphqlUrl || 'https://broker.twwstats.com/graphql',
   });
 
   return {
