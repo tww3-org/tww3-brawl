@@ -41,6 +41,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         
+      - name: Build workspace packages
+        run: pnpm --filter @tww3-brawl/gql build && pnpm --filter @tww3-brawl/sdk build
+        
       - name: Generate static site
         run: pnpm run app generate
         env:
@@ -50,5 +53,5 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./apps/responsive-app/.output
+          publish_dir: ./apps/responsive-app/.output/public
           publish_branch: gh-pages 
