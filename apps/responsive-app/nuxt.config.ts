@@ -10,12 +10,30 @@ const config: NuxtConfig = {
   app: {
     baseURL: process.env.NUXT_APP_BASE_URL || '/',
     buildAssetsDir: '_nuxt/',
+    head: {
+      title: 'TWW3 Brawl',
+      meta: [
+        { name: 'description', content: 'A calculator for a Total War: Warhammer 3 Brawl (simple melee combat)' },
+      ],
+      link: [
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+        { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' },
+        { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },
+        { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
+        { rel: 'manifest', href: '/site.webmanifest' }
+      ]
+    }
   },
 
   build: {
     // Transpilation nécessaire pour le SDK local car il est publié en ESM/TypeScript
     // et doit être converti en format compatible avec le bundle Nuxt
     transpile: ['@tww3-brawl/sdk'],
+  },
+
+  routeRules: {
+    '/test': { prerender: false },
+    '/example': { prerender: false }
   },
 
   compatibilityDate: '2024-12-30',
@@ -32,6 +50,8 @@ const config: NuxtConfig = {
     'pinia-plugin-persistedstate/nuxt',
     '@nuxt/icon',
   ],
+
+  css: ['~/assets/styles/main.css'],
 
   quasar: {
     extras: {

@@ -1,0 +1,10 @@
+html,
+body {
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+    Arial, 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
+}
+
+/* Optionnel: adapter quelques tokens Quasar via CSS utilitaires */
+.q-btn--primary {
+  font-weight: 1600;
+}

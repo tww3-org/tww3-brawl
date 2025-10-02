@@ -17,7 +17,7 @@
     </div>
     
     <!-- Reset Button -->
-    <div class="text-center" style="margin-top: 16px;">
+    <div class="text-center">
       <q-btn 
         label="Reset" 
         color="warning" 
@@ -93,7 +93,7 @@ h1 {
 
 .container > * {
   max-width: 800px;
-  margin: 0 auto;
+  margin: 16px auto 0;
 }
 
 .entity-sliders-container {
