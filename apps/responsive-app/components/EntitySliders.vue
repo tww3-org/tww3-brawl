@@ -14,13 +14,27 @@
             label
             label-always
           />
+          <div class="q-mt-md">
+            <div class="text-caption q-mb-xs">Quick select:</div>
+            <div class="row q-gutter-xs">
+              <q-btn
+                v-for="value in commonEntityValues"
+                :key="value"
+                :label="value.toString()"
+                :color="entityNumber === value ? 'primary' : 'grey-6'"
+                :outline="entityNumber !== value"
+                size="sm"
+                @click="updateEntityNumber(value)"
+                :disable="value > maxEntities"
+              />
+            </div>
+          </div>
       </q-card-section>
     </q-card>
   </div>
 </template>
 
 <script setup lang="ts">
-// TODO: add quick select buttons for usual entity counts and a number input
 import { computed } from 'vue'
 import { useUnitStore } from '~/stores/unitStore'
 
@@ -34,6 +48,9 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   'update:entityNumber': [value: number]
 }>()
+
+// Common entity values for quick selection
+const commonEntityValues = [6, 10, 14, 20]
 
 const updateEntityNumber = (value: number | null) => {
   if (value !== null) {
