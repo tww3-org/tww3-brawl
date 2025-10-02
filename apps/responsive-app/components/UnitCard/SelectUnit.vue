@@ -270,9 +270,6 @@ watch(dialogVisible, async (isVisible) => {
       selectedVersion.value = memoryStore.last_version;
       step.value = 'faction';
       await refetchFactions();
-    } else {
-      // Sinon commencer à l'étape version
-      step.value = 'version';
     }
   }
 });
