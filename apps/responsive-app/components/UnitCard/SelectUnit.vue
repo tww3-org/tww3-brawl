@@ -265,9 +265,7 @@ const groupedUnits = computed(() => {
 // Watch dialog visibility to start at the right step
 watch(dialogVisible, async (isVisible) => {
   if (isVisible) {
-    console.log('memoryStore.last_version', memoryStore.last_version);
-    console.log('selectedUnitSelection.value', selectedUnitSelection.value);
-    // Si pas d'unité sélectionnée et qu'on a une version en mémoire, commencer à l'étape faction
+    // Si pas d'unité sélectionnée (ou une unité invalide) et qu'on a une version en mémoire, commencer à l'étape faction
     if ((!selectedUnitSelection.value || !selectedUnitSelection.value.unit) && memoryStore.last_version) {
       selectedVersion.value = memoryStore.last_version;
       step.value = 'faction';
