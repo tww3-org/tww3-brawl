@@ -69,7 +69,6 @@ export interface Unit {
   };
   resistance?: {
     physical: number;
-    magical: number;
     fire: number;
     ward_save: number;
   };

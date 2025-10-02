@@ -71,6 +71,9 @@ export async function fetchUnit(
             },
             melee_attack: true,
             melee_defence: true,
+            damage_mod_physical: true,
+            damage_mod_flame: true,
+            damage_mod_all: true,
             variant: {
               unit_card_url: true,
             },
@@ -165,10 +168,9 @@ export async function fetchUnit(
         ),
       },
       resistance: {
-        physical: 0,
-        magical: 0,
-        fire: 0,
-        ward_save: 0,
+        physical: Number(unit.land_unit?.damage_mod_physical || 0),
+        fire: Number(unit.land_unit?.damage_mod_flame || 0),
+        ward_save: Number(unit.land_unit?.damage_mod_all || 0),
       },
       is_large: unit.land_unit?.battle_entity?.size !== 'small',
       general_portrait:
