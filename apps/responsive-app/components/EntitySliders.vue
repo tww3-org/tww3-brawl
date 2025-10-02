@@ -2,7 +2,6 @@
   <div class="col-6" v-if="maxEntities > 1">
     <q-card>
       <q-card-section>
-
           <div class="text-caption q-mb-xs">
             Active entities: {{ entityNumber }}
           </div>
@@ -15,8 +14,6 @@
             label
             label-always
           />
-
-
       </q-card-section>
     </q-card>
   </div>

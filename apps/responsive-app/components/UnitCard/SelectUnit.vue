@@ -1,7 +1,6 @@
 <template>
   <div class="row items-center q-gutter-x-sm">
     <q-btn label="Pick a Unit" color="primary" @click="dialogVisible = true" />
-    <q-btn round flat color="grey" icon="settings" />
     <q-dialog v-model="dialogVisible">
       <q-card class="custom">
         <q-card-section class="q-card-section-custom">

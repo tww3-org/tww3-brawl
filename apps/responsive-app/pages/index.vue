@@ -28,16 +28,15 @@
     
     <!-- Entity Sliders -->
     <div class="entity-sliders-container" v-if="unitStore.leftUnit || unitStore.rightUnit">
-      <div class="entity-slider" v-if="unitStore.leftUnit">
-        Store: {{ unitStore.leftUnit.entityNumber }}
+      <div class="entity-slider" v-if="unitStore.leftUnit && unitStore.leftUnit.entityNumber > 1">
         <EntitySliders 
           :entity-number="unitStore.leftUnit.entityNumber" 
           :max-entities="unitStore.leftUnit.selection?.unit?.num_men || 1"
           @update:entity-number="(value) => unitStore.setLeftUnitEntityCount(value)"
         />
       </div>
-      <div class="entity-slider" v-if="unitStore.rightUnit">
-        Store: {{ unitStore.rightUnit.entityNumber }}
+      <div v-else class="entity-slider"></div>
+      <div class="entity-slider" v-if="unitStore.rightUnit && unitStore.rightUnit.entityNumber > 1">
         <EntitySliders 
           :entity-number="unitStore.rightUnit.entityNumber" 
           :max-entities="unitStore.rightUnit.selection?.unit?.num_men || 1"
