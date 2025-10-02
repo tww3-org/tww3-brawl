@@ -14,17 +14,17 @@
     </div>
 
     <!-- Entity Sliders -->
-    <div class="entity-sliders-container" v-if="unitStore.leftUnit || unitStore.rightUnit">
+    <div class="entity-sliders-container" v-if="unitStore?.leftUnit?.selection?.unit || unitStore?.rightUnit?.selection?.unit">
       <div class="entity-slider">
-        <EntitySliders v-if="unitStore.leftUnit && (unitStore.leftUnit.selection?.unit?.num_men || 1) > 1"
+        <EntitySliders v-if="unitStore?.leftUnit?.selection?.unit && getMaxEntities(unitStore.leftUnit.selection.unit) > 1"
           :entity-number="unitStore.leftUnit.entityNumber"
           :max-entities="unitStore.leftUnit.selection?.unit?.num_men || 1"
           @update:entity-number="(value) => unitStore.setLeftUnitEntityCount(value)" />
       </div>
       <div class="entity-slider">
-        <EntitySliders v-if="unitStore.rightUnit && (unitStore.rightUnit.selection?.unit?.num_men || 1) > 1"
+        <EntitySliders v-if="unitStore?.rightUnit?.selection?.unit && getMaxEntities(unitStore.rightUnit.selection.unit) > 1"
           :entity-number="unitStore.rightUnit.entityNumber"
-          :max-entities="unitStore.rightUnit.selection?.unit?.num_men || 1"
+          :max-entities="getMaxEntities(unitStore.rightUnit.selection.unit)"
           @update:entity-number="(value) => unitStore.setRightUnitEntityCount(value)" />
       </div>
     </div>
@@ -42,6 +42,7 @@ import { useUnitStore } from '~/stores/unitStore'
 import type { UnitBonusPathes } from '~/types/unit'
 import UnitCard from '~/components/UnitCard/index.vue'
 import EntitySliders from '~/components/EntitySliders.vue'
+import { getMaxEntities } from '@tww3-brawl/sdk/src/utils/getMaxEntities'
 
 const unitStore = useUnitStore()
 

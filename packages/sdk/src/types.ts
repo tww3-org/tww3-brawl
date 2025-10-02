@@ -35,6 +35,8 @@ export interface Unit {
   recruitment_cost?: number;
   upkeep_cost?: number;
   land_unit: {
+    num_engines: number;
+    num_mounts: number;
     onscreen_name: string;
     bonus_hit_points: number;
     battle_entity: {

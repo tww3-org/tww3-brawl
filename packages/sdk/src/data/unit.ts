@@ -113,9 +113,12 @@ export async function fetchUnit(
       unit: unit.unit,
       caste: unit.caste,
       num_men: unit.num_men,
+
       recruitment_cost: Number(unit.recruitment_cost || 0),
       upkeep_cost: Number(unit.upkeep_cost || 0),
       land_unit: {
+        num_engines: unit.land_unit.num_engines || 0,
+        num_mounts: unit.land_unit.num_mounts || 0,
         onscreen_name: unit.land_unit?.onscreen_name || '',
         bonus_hit_points: Number(unit.land_unit?.bonus_hit_points || 0),
         battle_entity: {
