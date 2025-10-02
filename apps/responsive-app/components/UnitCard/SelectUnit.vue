@@ -90,10 +90,14 @@ import { getUnitPortrait } from '@tww3-brawl/sdk/src/utils/getUnitPortrait';
 import type { UnitSelection } from '~/types/unit';
 import type { Version } from '@tww3-brawl/sdk/src/types';
 import type { Faction } from '@tww3-brawl/sdk/src/types';
+import { useMemoryStore } from '~/stores/memoryStore';
 
 const carouselRef = ref<QCarousel | null>(null);
 const step = ref<'version' | 'faction' | 'unit'>('version');
 const dialogVisible = ref(false);
+
+// Initialize memory store
+const memoryStore = useMemoryStore();
 
 const props = defineProps<{
   unitSelection: UnitSelection | null
@@ -111,8 +115,18 @@ const selectedUnitSelection = ref<UnitSelection | null>(null);
 
 // Computed to safely access properties
 const selectedVersion = computed({
-  get: () => selectedUnitSelection.value?.version || null,
+  get: () => {
+    // Si on a une version dans selectedUnitSelection, l'utiliser
+    if (selectedUnitSelection.value?.version) {
+      return selectedUnitSelection.value.version;
+    }
+    // Sinon, utiliser la version en mémoire si elle existe
+    return memoryStore.last_version;
+  },
   set: (value: Version | null) => {
+    // Mettre à jour la mémoire
+    memoryStore.setLastVersion(value);
+    
     if (selectedUnitSelection.value) {
       selectedUnitSelection.value.version = value!;
     } else if (value) {
@@ -246,6 +260,23 @@ const groupedUnits = computed(() => {
   }
 
   return orderedGroups;
+});
+
+// Watch dialog visibility to start at the right step
+watch(dialogVisible, async (isVisible) => {
+  if (isVisible) {
+    console.log('memoryStore.last_version', memoryStore.last_version);
+    console.log('selectedUnitSelection.value', selectedUnitSelection.value);
+    // Si pas d'unité sélectionnée et qu'on a une version en mémoire, commencer à l'étape faction
+    if ((!selectedUnitSelection.value || !selectedUnitSelection.value.unit) && memoryStore.last_version) {
+      selectedVersion.value = memoryStore.last_version;
+      step.value = 'faction';
+      await refetchFactions();
+    } else {
+      // Sinon commencer à l'étape version
+      step.value = 'version';
+    }
+  }
 });
 
 // Refetch based on step
