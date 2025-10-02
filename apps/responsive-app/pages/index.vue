@@ -2,49 +2,33 @@
   <h1 class="title">TWW3 Brawl</h1>
   <div class="q-pa-md container">
     <div class=" justify-center items-center unit-cards-container">
-      <UnitCard 
-        orientation="left" 
-        class="bg-positive unit-card"
-        :modelValue="unitStore.leftUnit"
-        @update:modelValue="(value) => unitStore.setLeftUnit(value)"
-      />
-      <UnitCard 
-        orientation="right" 
-        class="bg-negative unit-card"
-        :modelValue="unitStore.rightUnit"
-        @update:modelValue="(value) => unitStore.setRightUnit(value)"
-      />
+      <UnitCard orientation="left" class="bg-positive unit-card" :modelValue="unitStore.leftUnit"
+        @update:modelValue="(value) => unitStore.setLeftUnit(value)" />
+      <UnitCard orientation="right" class="bg-negative unit-card" :modelValue="unitStore.rightUnit"
+        @update:modelValue="(value) => unitStore.setRightUnit(value)" />
     </div>
-    
+
     <!-- Reset Button -->
     <div class="text-center">
-      <q-btn 
-        label="Reset" 
-        color="warning" 
-        icon="refresh" 
-        @click="resetUnits"
-      />
+      <q-btn label="Reset" color="warning" icon="refresh" @click="resetUnits" />
     </div>
-    
+
     <!-- Entity Sliders -->
     <div class="entity-sliders-container" v-if="unitStore.leftUnit || unitStore.rightUnit">
-      <div class="entity-slider" v-if="unitStore.leftUnit && unitStore.leftUnit.entityNumber > 1">
-        <EntitySliders 
-          :entity-number="unitStore.leftUnit.entityNumber" 
+      <div class="entity-slider">
+        <EntitySliders v-if="unitStore.leftUnit && (unitStore.leftUnit.selection?.unit?.num_men || 1) > 1"
+          :entity-number="unitStore.leftUnit.entityNumber"
           :max-entities="unitStore.leftUnit.selection?.unit?.num_men || 1"
-          @update:entity-number="(value) => unitStore.setLeftUnitEntityCount(value)"
-        />
+          @update:entity-number="(value) => unitStore.setLeftUnitEntityCount(value)" />
       </div>
-      <div v-else class="entity-slider"></div>
-      <div class="entity-slider" v-if="unitStore.rightUnit && unitStore.rightUnit.entityNumber > 1">
-        <EntitySliders 
-          :entity-number="unitStore.rightUnit.entityNumber" 
+      <div class="entity-slider">
+        <EntitySliders v-if="unitStore.rightUnit && (unitStore.rightUnit.selection?.unit?.num_men || 1) > 1"
+          :entity-number="unitStore.rightUnit.entityNumber"
           :max-entities="unitStore.rightUnit.selection?.unit?.num_men || 1"
-          @update:entity-number="(value) => unitStore.setRightUnitEntityCount(value)"
-        />
+          @update:entity-number="(value) => unitStore.setRightUnitEntityCount(value)" />
       </div>
     </div>
-  
+
     <!-- Short Summary -->
     <ShortSummary />
 
@@ -87,11 +71,12 @@ h1 {
   text-align: center;
 }
 
-.container { 
-  text-align: center /* centre horizontalement */
+.container {
+  text-align: center
+    /* centre horizontalement */
 }
 
-.container > * {
+.container>* {
   max-width: 800px;
   margin: 16px auto 0;
 }
@@ -123,11 +108,9 @@ h1 {
   .unit-cards-container {
     flex-direction: column;
   }
-  
+
   .unit-card {
     width: 100%;
   }
 }
-
-
 </style>
