@@ -1,18 +1,21 @@
 <template>
-    <q-btn-dropdown>
-        <q-list>
-            <q-item v-for="mount in mount_options" :key="mount.mounted_unit" @click="selectMount(mount)" clickable v-close-popup>
-                <q-avatar>
-                    <img :src="getImageUrl(unit.version, mount.icon_name)">
-                </q-avatar>
+    <div class="row items-center">
 
-                {{ mount.mount_name }}
-            </q-item>
-        </q-list>
-    </q-btn-dropdown>
-    <q-avatar v-if="selectedIcon">
-        <img :src="getImageUrl(unit.version, selectedIcon)">
-    </q-avatar>
+        <q-btn-dropdown>
+            <q-list>
+                <q-item v-for="mount in mount_options" :key="mount.mounted_unit" @click="selectMount(mount)" clickable v-close-popup>
+                    <q-avatar>
+                        <img :src="getImageUrl(unit.version, mount.icon_name)">
+                    </q-avatar>
+    
+                    {{ mount.mount_name }}
+                </q-item>
+            </q-list>
+        </q-btn-dropdown>
+        <q-avatar>
+            <img :src="getImageUrl(unit.version, selectedIcon || '')">
+        </q-avatar>
+</div>
 </template>
 
 <script setup lang="ts">

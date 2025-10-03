@@ -3,43 +3,23 @@
     <div v-if="combatResult" class="combat-result">
       <!-- Winner information -->
       <div class="winner-section">
-        <h2 class="winner-title" :class="winnerClass">
-          {{ winnerName }} wins!
-        </h2>
+        <p>
+          <span class="winner-title text-emphasized" :class="winnerClass">{{ winnerName }}</span> wins!
+        </p>
         <p class="hits-info">
-          Takes {{ combatResult.hitsNeeded.toFixed(1) }} hits to defeat 
-          <span class="loser-name" :class="loserClass">{{ loserName }}</span>, with
+          Takes {{ combatResult.hitsNeeded.toFixed(1) }} hits to defeat
+          <span class="loser-name text-emphasized" :class="loserClass">{{ loserName }}</span>, with
         </p>
       </div>
 
       <!-- Health display with circular progress -->
       <div class="health-display">
 
-        <q-circular-progress
-        show-value
-        font-size="12px"
-        :value="combatResult.remainingHealth * 100"
-        size="50px"
-        :thickness="0.22"
-        :color="healthColor"
-        track-color="grey-3"
-        class="q-ma-md"
-      >
-      {{ (combatResult.remainingHealth * 100).toFixed(1) }}%
-      </q-circular-progress>
-
-        <q-circular-progress
-          :model-value="33"
-          color="blue"
-          size="36px"
-          :thickness="0.8"
-          show-value
-          font-size="16px"
-          class="health-progress"
-        >
+        <q-circular-progress show-value :value="combatResult.remainingHealth * 100" size="70px"
+          :thickness="0.22" :color="healthColor" track-color="grey-3" class="q-ma-md">
           {{ (combatResult.remainingHealth * 100).toFixed(1) }}%
         </q-circular-progress>
-        <p class="health-label">Remaining Health</p>
+        <span class="health-label">Remaining Health</span>
       </div>
     </div>
 
@@ -61,21 +41,21 @@ const combatResult = computed(() => unitStore.combatResult);
 // Computed properties for display
 const winnerName = computed(() => {
   if (!combatResult.value) return '';
-  
-  const winnerUnit = combatResult.value.winner === 'left' 
-    ? unitStore.leftUnit?.selection.unit 
+
+  const winnerUnit = combatResult.value.winner === 'left'
+    ? unitStore.leftUnit?.selection.unit
     : unitStore.rightUnit?.selection.unit;
-    
+
   return winnerUnit?.land_unit?.onscreen_name || 'Unknown Unit';
 });
 
 const loserName = computed(() => {
   if (!combatResult.value) return '';
-  
-  const loserUnit = combatResult.value.winner === 'left' 
-    ? unitStore.rightUnit?.selection.unit 
+
+  const loserUnit = combatResult.value.winner === 'left'
+    ? unitStore.rightUnit?.selection.unit
     : unitStore.leftUnit?.selection.unit;
-    
+
   return loserUnit?.land_unit?.onscreen_name || 'Unknown Unit';
 });
 
@@ -91,8 +71,8 @@ const loserClass = computed(() => {
 
 // Health color based on percentage with 5 tiers
 const healthColor = computed(() => {
-  const health = (combatResult.value?.remainingHealth  || 0 )* 100;
-  
+  const health = (combatResult.value?.remainingHealth || 0) * 100;
+
   if (health >= 80) return 'green';
   if (health >= 60) return 'light-green';
   if (health >= 40) return 'orange';
@@ -101,7 +81,7 @@ const healthColor = computed(() => {
 });
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .short-summary {
   padding: 20px;
   text-align: center;
@@ -132,7 +112,7 @@ const healthColor = computed(() => {
 
 .health-display {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   gap: 10px;
 }
@@ -144,7 +124,6 @@ const healthColor = computed(() => {
 .health-label {
   font-size: 0.9rem;
   color: #666;
-  margin: 0;
 }
 
 .no-combat {
@@ -152,8 +131,6 @@ const healthColor = computed(() => {
   color: #666;
   font-style: italic;
 }
-
-
 
 /* Loser name styling */
 .loser-name {

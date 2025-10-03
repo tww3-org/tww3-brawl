@@ -53,6 +53,16 @@ const config: NuxtConfig = {
 
   css: ['~/assets/styles/main.scss'],
 
+  vite: {
+    css: {
+      preprocessorOptions: {
+        scss: {
+          additionalData: '@use "~/assets/styles/variables.scss" as *;'
+        }
+      }
+    }
+  },
+
   quasar: {
     extras: {
       fontIcons: ['material-icons'],

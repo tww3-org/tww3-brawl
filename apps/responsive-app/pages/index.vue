@@ -77,7 +77,7 @@ h1 {
     /* centre horizontalement */
 }
 
-.container>* {
+.container > * {
   max-width: 800px;
   margin: 16px auto 0;
 }
@@ -102,7 +102,6 @@ h1 {
 
 .unit-card {
   width: 50%;
-  height: 450px;
 }
 
 @media (max-width: 768px) {

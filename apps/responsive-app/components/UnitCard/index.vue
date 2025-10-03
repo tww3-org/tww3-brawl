@@ -1,17 +1,20 @@
 <template>
   <q-card class="unit-card">
-    <q-img :src="unitImageUrl" :ratio="16 / 9" fit="contain" class="unit-image" />
+    <q-card-section>
+      <q-img :src="unitImageUrl" :ratio="16 / 9" fit="contain" class="unit-image" alt="Unit Portrait" />
+      <div class="unit-label text-xl">{{ unitTitle }}
+      </div>
+    </q-card-section>
+
 
     <q-card-section :class="orientation" class="card-section">
-      <div class="text-h6">{{ unitTitle }}</div>
-
-      <div class="q-mt-md" :class="{ 'flex justify-end': orientation === 'right' }">
+      <div class="q-mt-md row justify-between">
         <SelectUnit :unitSelection="unitSelection" :version="version"
           @update:unitSelection="(value) => updateUnitSelection(value)" @update:version="(value) => version = value" />
+        <MountPicker v-if="unitSelection?.unit?.battle_mounts?.length && unitSelection?.unit?.battle_mounts?.length > 0"
+          :unit="unitSelection.unit" @update:unit="(value) => updateUnit(value)" />
       </div>
 
-      <MountPicker v-if="unitSelection?.unit?.battle_mounts?.length && unitSelection?.unit?.battle_mounts?.length > 0"
-        :unit="unitSelection.unit" @update:unit="(value) => updateUnit(value)" />
     </q-card-section>
   </q-card>
 </template>
@@ -19,7 +22,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { getUnitPortrait } from '@tww3-brawl/sdk/src/utils/getUnitPortrait'
-import  { type UnitSelection, type UnitWithEntityNumberAndBonus, defaultUnitBonus } from '~/types/unit'
+import { type UnitSelection, type UnitWithEntityNumberAndBonus, defaultUnitBonus } from '~/types/unit'
 import SelectUnit from './SelectUnit.vue'
 import MountPicker from './MountPicker.vue'
 import type { Unit } from '@tww3-brawl/sdk/src/types'
@@ -86,7 +89,17 @@ const unitImageUrl = computed(() => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+.unit-label {
+  @include text-emphasized;
+  height: calc(var(--font-size-base) * 4);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;   /* limite à 2 lignes */
+  line-clamp: 2;           /* propriété standard */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .unit-card {
   display: flex;
   flex-direction: column;
@@ -100,6 +113,7 @@ const unitImageUrl = computed(() => {
 
 .card-section {
   margin-top: auto;
+  flex: row;
 }
 
 .right {

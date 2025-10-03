@@ -7,27 +7,28 @@
           <q-carousel ref="carouselRef" :padding="false" v-model="step" :autoplay="false" transition-prev="slide-left"
             transition-next="slide-right" aria-hidden="true" class="q-carousel-custom">
 
-                         <q-carousel-slide name="version" key="version">
-               <div class="q-mb-md">
-                 <q-select v-model="selectedVersion" :options="versionOptions" :loading="versionsLoading"
-                   label="Versions" dense outlined option-label="name" option-value="id" />
-                 <div v-if="versions && step === 'version'" class="version-icons-row">
-                   <div v-for="version in versions" :key="version.id" class="version-icon-container"
-                     :class="{ selected: selectedVersion && selectedVersion.id === version.id }"
-                     @click="selectVersionAndNext(version)">
-                     <div class="version-icon">{{ version.name?.charAt(0) || 'V' }}</div>
-                     <div class="version-label">{{ version.name }}</div>
-                   </div>
-                 </div>
-               </div>
- 
-             </q-carousel-slide>
+            <q-carousel-slide name="version" key="version">
+              <div class="q-mb-md">
+                <q-select v-model="selectedVersion" :options="versionOptions" :loading="versionsLoading"
+                  label="Versions" dense outlined option-label="name" option-value="id" />
+                <div v-if="versions && step === 'version'" class="version-icons-row">
+                  <div v-for="version in versions" :key="version.id" class="version-icon-container"
+                    :class="{ selected: selectedVersion && selectedVersion.id === version.id }"
+                    @click="selectVersionAndNext(version)">
+                    <div class="version-icon">{{ version.name?.charAt(0) || 'V' }}</div>
+                    <div class="version-label">{{ version.name }}</div>
+                  </div>
+                </div>
+              </div>
+
+            </q-carousel-slide>
 
             <q-carousel-slide name="faction" key="faction">
               <div class="q-mb-md">
                 <q-select v-model="selectedFaction" :options="factionOptions" :loading="factionsLoading"
-                  :disable="!selectedVersion || factionsLoading" label="Faction" dense outlined option-label="screen_name" option-value="key" />
-                  <div v-if="factions && step === 'faction'" class="faction-icons-row">
+                  :disable="!selectedVersion || factionsLoading" label="Faction" dense outlined
+                  option-label="screen_name" option-value="key" />
+                <div v-if="factions && step === 'faction'" class="faction-icons-row">
                   <div v-for="faction in factions" :key="faction.key" class="faction-icon-container"
                     :class="{ selected: selectedFaction && selectedFaction.key === faction.key }"
                     @click="selectFactionAndNext(faction)">
@@ -40,26 +41,26 @@
             </q-carousel-slide>
 
             <q-carousel-slide name="unit" key="unit">
-                <div class="q-mb-md">
-                  <div v-if="units && Object.keys(groupedUnits).length > 0">
-                    <div v-for="(unitsList, groupName) in groupedUnits" :key="groupName" class="unit-group-block">
-                      <div class="group-label">{{ groupName }}</div>
-                      <div class="unit-icons-row">
-                        <div v-for="unit in unitsList" :key="unit.unit" class="unit-icon-container"
-                          :class="{ selected: selectedUnit && selectedUnit.unit === unit.unit }"
-                          @click="selectUnitAndFinish(unit)">
-                          <img v-if="getUnitPortrait(versionId, unit)" :src="getUnitPortrait(versionId, unit)"
-                            :alt="unit.land_unit?.onscreen_name || unit.unit" class="unit-icon" />
-                          <div class="unit-label">{{ unit.land_unit?.onscreen_name || unit.unit }}</div>
-                        </div>
+              <div class="q-mb-md">
+                <div v-if="units && Object.keys(groupedUnits).length > 0">
+                  <div v-for="(unitsList, groupName) in groupedUnits" :key="groupName" class="unit-group-block">
+                    <div class="group-label">{{ groupName }}</div>
+                    <div class="unit-icons-row">
+                      <div v-for="unit in unitsList" :key="unit.unit" class="unit-icon-container"
+                        :class="{ selected: selectedUnit && selectedUnit.unit === unit.unit }"
+                        @click="selectUnitAndFinish(unit)">
+                        <img v-if="getUnitPortrait(versionId, unit)" :src="getUnitPortrait(versionId, unit)"
+                          :alt="unit.land_unit?.onscreen_name || unit.unit" class="unit-icon" />
+                        <div class="unit-label">{{ unit.land_unit?.onscreen_name || unit.unit }}</div>
                       </div>
-
                     </div>
-                  </div>
-                  <div v-else>
-                    <q-spinner color="primary" />
+
                   </div>
                 </div>
+                <div v-else>
+                  <q-spinner color="primary" />
+                </div>
+              </div>
             </q-carousel-slide>
           </q-carousel>
         </q-card-section>
@@ -68,9 +69,10 @@
           <q-btn v-else label="Back" flat dense @click="goToPreviousStep" />
 
           <q-btn v-if="step !== 'unit'"
-            :disable="(step === 'version' && !selectedVersion) || (step === 'faction' && !selectedFaction)"
-            label="Next" color="primary" flat dense @click="goToNextStep" />
-          <q-btn v-else :disable="!selectedUnit || !selectedVersion || !selectedFaction" label="Finish" color="primary" flat dense
+            :disable="(step === 'version' && !selectedVersion) || (step === 'faction' && !selectedFaction)" label="Next"
+            color="primary" flat dense @click="goToNextStep" />
+          <q-btn v-else :disable="!selectedUnit || !selectedVersion || !selectedFaction" label="Finish" color="primary"
+            flat dense
             @click="() => { dialogVisible = false; if (selectedUnitSelection) emit('update:unitSelection', selectedUnitSelection) }" />
         </q-card-actions>
       </q-card>
@@ -126,7 +128,7 @@ const selectedVersion = computed({
   set: (value: Version | null) => {
     // Mettre à jour la mémoire
     memoryStore.setLastVersion(value);
-    
+
     if (selectedUnitSelection.value) {
       selectedUnitSelection.value.version = value!;
     } else if (value) {
@@ -278,7 +280,7 @@ watch(dialogVisible, async (isVisible) => {
 watch(step, async (newStep) => {
   if (newStep === 'version') {
     // Versions are already loaded by useVersions(), no need to refetch
-          // Reset faction and unit when returning to version
+    // Reset faction and unit when returning to version
     if (selectedUnitSelection.value) {
       selectedUnitSelection.value.faction = undefined as any;
       selectedUnitSelection.value.unit = undefined as any;
@@ -338,7 +340,10 @@ const selectUnitAndFinish = (unit: Unit) => {
 };
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+// Variables and mixins are now imported automatically from variables.scss
+
+// Dialog and carousel styles
 .custom {
   min-width: 90dvw;
   max-width: 90dvw;
@@ -362,34 +367,19 @@ const selectUnitAndFinish = (unit: Unit) => {
   margin-top: auto;
 }
 
+// Version styles
 .version-icons-row {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin-top: 1rem;
+  @include icon-row-layout;
 }
 
 .version-icon-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  border-radius: 8px;
-  padding: 0.5rem;
-  transition: box-shadow 0.2s, background 0.2s;
-}
-
-.version-icon-container.selected {
-  background: #e3f2fd;
-  box-shadow: 0 0 0 2px #1976d2;
+  @include icon-container-base;
+  @include icon-container-states;
 }
 
 .version-icon {
-  width: 48px;
-  height: 48px;
+  width: $icon-size;
+  height: $icon-size;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -402,78 +392,40 @@ const selectUnitAndFinish = (unit: Unit) => {
 }
 
 .version-label {
-  font-size: 0.85rem;
-  text-align: center;
-  max-width: 80px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  @include icon-label;
 }
 
+// Faction styles
 .faction-icons-row {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin-top: 1rem;
+  @include icon-row-layout;
 }
 
 .faction-icon-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  border-radius: 8px;
-  padding: 0.5rem;
-  transition: box-shadow 0.2s, background 0.2s;
-}
-
-.faction-icon-container.selected {
-  background: #e3f2fd;
-  box-shadow: 0 0 0 2px #1976d2;
+  @include icon-container-base;
+  @include icon-container-states;
 }
 
 .faction-icon {
-  width: 48px;
-  height: 48px;
+  width: $icon-size;
+  height: $icon-size;
   object-fit: contain;
   margin-bottom: 0.25rem;
 }
 
 .faction-label {
-  font-size: 0.85rem;
-  text-align: center;
-  max-width: 70px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  @include icon-label;
+  max-width: 70px; // Slightly smaller for faction names
 }
 
+// Unit styles
 .unit-icons-row {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-top: 1rem;
+  @include icon-row-layout;
 }
 
 .unit-icon-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  border-radius: 8px;
-  padding: 0.5rem;
-  transition: box-shadow 0.2s, background 0.2s;
+  @include icon-container-base;
+  @include icon-container-states;
   position: relative;
-}
-
-.unit-icon-container.selected {
-  background: #e3f2fd;
-  box-shadow: 0 0 0 2px #1976d2;
 }
 
 .unit-icon {
@@ -488,7 +440,7 @@ const selectUnitAndFinish = (unit: Unit) => {
   display: none;
   position: absolute;
   left: 50%;
-  top: 100%;
+  bottom: 100%;
   transform: translateX(-50%);
   background: rgba(30, 30, 30, 0.95);
   color: #fff;
@@ -497,7 +449,7 @@ const selectUnitAndFinish = (unit: Unit) => {
   font-size: 1rem;
   white-space: nowrap;
   z-index: 10;
-  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
   pointer-events: none;
 }
 
@@ -505,6 +457,7 @@ const selectUnitAndFinish = (unit: Unit) => {
   display: block;
 }
 
+// Group label
 .group-label {
   font-size: 1rem;
   font-weight: bold;

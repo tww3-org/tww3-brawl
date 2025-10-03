@@ -1,0 +1,66 @@
+// Variables for consistent styling across components
+$hover-background: #e3f2fd;
+$selected-background: #e3f2fd;
+$hover-border-color: #1976d2;
+$selected-border-color: #1976d2;
+$transition-duration: 0.2s;
+$border-radius: 8px;
+$icon-size: 48px;
+$label-font-size: 0.85rem;
+$label-max-width: 80px;
+
+// Mixin for common container styles
+@mixin icon-container-base {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  border-radius: $border-radius;
+  padding: 0.5rem;
+  transition: box-shadow $transition-duration, background $transition-duration;
+}
+
+// Mixin for hover and selected states
+@mixin icon-container-states {
+  &:hover {
+    background: $hover-background;
+    box-shadow: 0 0 0 2px $hover-border-color;
+  }
+
+  &.selected {
+    background: $selected-background;
+    box-shadow: 0 0 0 2px $selected-border-color;
+  }
+}
+
+// Mixin for icon rows layout
+@mixin icon-row-layout {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+// Mixin for label styles
+@mixin icon-label {
+  font-size: $label-font-size;
+  text-align: center;
+  max-width: $label-max-width;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Mixins for typography
+@mixin text-size($size) {
+  font-size: var(--font-size-#{$size});
+}
+
+@mixin text-emphasized {
+  font-family: "CaslonAntique", 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+    Arial, 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
+}
+
+
