@@ -51,7 +51,7 @@ const config: NuxtConfig = {
     '@nuxt/icon',
   ],
 
-  css: ['~/assets/styles/main.css'],
+  css: ['~/assets/styles/main.scss'],
 
   quasar: {
     extras: {

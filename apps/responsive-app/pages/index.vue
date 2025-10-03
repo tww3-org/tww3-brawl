@@ -1,5 +1,5 @@
 <template>
-  <h1 class="title">TWW3 Brawl</h1>
+  <h1>TWW3 Brawl</h1>
   <div class="q-pa-md container">
     <div class=" justify-center items-center unit-cards-container">
       <UnitCard orientation="left" class="bg-positive unit-card" :modelValue="unitStore.leftUnit"
