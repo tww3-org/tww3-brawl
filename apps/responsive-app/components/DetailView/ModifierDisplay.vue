@@ -28,5 +28,11 @@ const emit = defineEmits<{
 <style scoped lang="scss">
 .q-btn {
     font-size: var(--font-size-sm);
+    
+    @media (max-width: 1024px) {
+    border: 2px solid currentColor;
+        margin-right: 0.05rem;
+        margin-left: 0.05rem;
+    }
 }
 </style>
