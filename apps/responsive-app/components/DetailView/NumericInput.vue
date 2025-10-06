@@ -1,6 +1,6 @@
 <template>
-    <q-input v-bind:model-value="totalValue" dense standout="custom-behavior" borderless :placeholder="baseValue"
-        type="number" debounce="500" @update:model-value="updateTotalValue">
+    <q-input v-bind:model-value="totalValue" dense standout="custom-behavior" :placeholder="baseValue" type="number"
+        debounce="500" @update:model-value="updateTotalValue" @focus="onFocusSelectAll">
         <template #append>
             <q-badge floating v-if="modifier !== 0" :color="modifier > 0 ? 'green' : 'red'">{{ modifier }}</q-badge>
         </template>
@@ -50,23 +50,44 @@ function onReset() {
     bonus.value = 0
     emit('update:modelValue', bonus.value)
 }
+
+function onFocusSelectAll(e: Event) {
+    const target = e.target as HTMLInputElement | null
+    // next frame ensures DOM is ready and focus applied before selecting
+    requestAnimationFrame(() => target?.select())
+}
 </script>
 
-<style scoped lang="scss">  
+<style scoped lang="scss">
 .q-field {
     font-size: var(--font-size-sm);
 }
 </style>
 
 <style lang="scss">
+.q-input {
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        appearance: none;
+        margin: 0;
+    }
+    input[type=number] {
+        -moz-appearance: textfield;
+        appearance: none;
+      }
+    input {
+        &:hover {
+            cursor: pointer;
+        }
+
+        &:focus {
+            cursor: text;
+        }
+    }
+}
 .custom-behavior {
-    background-color: green;
-    border: 2px solid rgba(0, 0, 0, 0.2);
-    border-radius: 12px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
-    transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease, background-color 150ms ease;
     transform: scale(2);
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
     z-index: 1;
 }
 </style>

@@ -24,3 +24,9 @@ const emit = defineEmits<{
     reset: []
 }>()
 </script>
+
+<style scoped lang="scss">
+.q-btn {
+    font-size: var(--font-size-sm);
+}
+</style>
