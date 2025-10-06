@@ -34,7 +34,11 @@ const emit = defineEmits<{
 function updateTotalValue(value: string | number | null) {
     const num = typeof value === 'string' ? Number(value) : (value ?? 0)
     bonus.value = num - props.baseValue
+    
     emit('update:modelValue', bonus.value)
+    
+    // remove focus from the active input after updating the model
+    requestAnimationFrame(() => (document.activeElement as HTMLElement | null)?.blur())
 }
 
 function onModify(value: number) {
@@ -66,7 +70,7 @@ function onFocusSelectAll(e: Event) {
 
 <style lang="scss">
 .q-input {
-    input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-inner-spin-button,
     input[type=number]::-webkit-outer-spin-button {
         -webkit-appearance: none;
         appearance: none;
