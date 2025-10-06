@@ -33,7 +33,11 @@
     <ShortSummary />
 
     <!-- Detail View -->
-    <DetailView :leftUnit="unitStore.leftUnit" :rightUnit="unitStore.rightUnit" @update="onUpdate" />
+    <DetailView :leftUnit="unitStore.leftUnit" :rightUnit="unitStore.rightUnit" @update="onUpdate"/>
+
+    <div style="min-height: 25vh;">
+
+    </div>
   </div>
 </template>
 
@@ -78,7 +82,7 @@ h1 {
 }
 
 .container > * {
-  max-width: 800px;
+  max-width: 1000px;
   margin: 16px auto 0;
 }
 

@@ -1,5 +1,4 @@
 <template>
-  <NumericInput v-bind:model-value="value" :baseValue="10" label="Test" :modifier="0" @update:model-value="onUpdate" />
 </template>
 
 <script setup lang="ts">

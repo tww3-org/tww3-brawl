@@ -27,7 +27,8 @@ export function defaultUnitBonus(): UnitBonus {
 
 export type UnitPaths = Paths<Required<Unit>>;
 
-export const UnitBonusPathes = [
+export const UnitBonusPathes: UnitPaths[] = [
+  'health.unit',
   'armor',
   'attack',
   'defense',
@@ -36,19 +37,19 @@ export const UnitBonusPathes = [
   'damage.bonus_v_large',
   'damage.bonus_v_infantry',
   'resistance.physical',
-  'resistance.magical',
+  'resistance.fire',
   'resistance.ward_save',
 ] as const;
 
 export type UnitBonusPathes = typeof UnitBonusPathes[number];
 
-export const statistics: { path: Paths<Required<Unit>>, color: string, label: string }[] = [
+export const statistics: { path: UnitPaths, color: string, label: string }[] = [
   { path: 'health.unit', color: 'green', label: 'Health' },
   { path: 'attack', color: 'blue', label: 'Attack' },
   { path: 'damage.normal', color: 'green', label: 'Damage Normal' },
   { path: 'damage.piercing', color: 'green', label: 'Damage Piercing' },
-  { path: 'damage.bonus_v_large', color: 'green', label: 'Damage Bonus V Large' },
-  { path: 'damage.bonus_v_infantry', color: 'green', label: 'Damage Bonus V Infantry' },
+  { path: 'damage.bonus_v_large', color: 'green', label: 'Bonus V Large' },
+  { path: 'damage.bonus_v_infantry', color: 'green', label: 'Bonus V Infantry' },
   { path: 'defense', color: 'red', label: 'Defense' },
   { path: 'armor', color: 'orange', label: 'Armor' },
   { path: 'resistance.physical', color: 'pink', label: 'Resistance Physical' },

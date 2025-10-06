@@ -1,5 +1,5 @@
 <template>
-    <q-markup-table separator="none" flat bordered>
+    <q-markup-table separator="none" flat bordered v-if="leftUnit?.selection?.unit || rightUnit?.selection?.unit">
         <thead>
             <tr>
                 <th scope="col" class="text-right unit-column"><b>{{ leftUnit?.selection?.unit?.land_unit?.onscreen_name }}</b>
@@ -55,7 +55,20 @@ function onUpdate(unit_side: 'left' | 'right', path: UnitBonusPathes, value: num
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+thead {
+    @include text-emphasized;
+    th {
+        font-size: var(--font-size-md);
+    }
+}
+
+tbody {
+    td {
+        font-size: var(--font-size-sm);
+    }
+}
+
 /* Contrôle de la largeur des colonnes */
 .unit-column {
     width: 50%;
@@ -63,6 +76,7 @@ function onUpdate(unit_side: 'left' | 'right', path: UnitBonusPathes, value: num
 
 
 .stat-column {
+    @include text-emphasized;
     width: 100px;
     /* Colonne des statistiques prend 30% */
 }
