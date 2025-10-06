@@ -1,7 +1,10 @@
 <template>
     <div class="container" :class="{ 'reverse': orientation === 'right' }">
-        <div class="left base" :class="{ 'right': orientation === 'right' }">{{ value }}</div>
-        <div class="left bonus" :class="{ 'right': orientation === 'right' }" >{{ bonus }}</div>
+        <div class="left base" :class="{ 'right': orientation === 'right' }">
+            <NumericInput v-if="typeof value === 'number'" :modifier="bonus" :baseValue="value" @update:model-value="onUpdate" />
+            <template v-else>{{ value }}</template>
+        </div>
+        <div class="left bonus" :class="{ 'right': orientation === 'right' }">{{ bonus }}</div>
         <ModifierDisplay v-if="isUpdatable" @modify="onModify" @reset="onReset" />
     </div>
 </template>
@@ -9,6 +12,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import ModifierDisplay from './ModifierDisplay.vue';
+import NumericInput from './NumericInput.vue';
 
 const emit = defineEmits<{
     update: [value: number]
@@ -24,6 +28,11 @@ function onModify(value: number) {
 function onReset() {
     bonus.value = 0
     console.log('onReset', bonus.value)
+    emit('update', bonus.value)
+}
+
+function onUpdate(value: number) {
+    bonus.value = value
     emit('update', bonus.value)
 }
 
