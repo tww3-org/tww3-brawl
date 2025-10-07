@@ -12,7 +12,7 @@
   "files": ["env.d.ts"],
   "include": ["scripts/**/*"],
   "references": [
-    { "path": "./apps/responsive-app" },
+    { "path": "./apps/responsive-app/tsconfig.build.json" },
     { "path": "./packages/sdk" }
   ]
 }
