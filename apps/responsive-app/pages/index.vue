@@ -52,13 +52,24 @@ import DetailView from '~/components/DetailView/index.vue'
 const unitStore = useUnitStore()
 const detailViewRef: Ref<typeof DetailView | null> = ref(null)
 
-const handleSelectionUpdate = (unit_side: 'left' | 'right', value: UnitWithEntityNumberAndBonus | null) => {
+const handleSelectionUpdate = (unit_side: 'left' | 'right', value: {unitWithEntityNumberAndBonus: UnitWithEntityNumberAndBonus | null, mount_changed: boolean}) => {
   if (unit_side === 'left') {
-    unitStore.setLeftUnit(value)
-    detailViewRef.value?.reset('left')
+    const unitBonus = unitStore.leftUnit?.bonus ?? null;
+    unitStore.setLeftUnit(value.unitWithEntityNumberAndBonus)
+    if (!value.mount_changed) {
+      detailViewRef.value?.reset('left')
+    } else {
+      unitStore.setLeftUnitBonus(unitBonus)
+    }
+    console.log('DEBUG leftUnit', unitStore.leftUnit)
   } else {
-    unitStore.setRightUnit(value)
-    detailViewRef.value?.reset('right')
+    const unitBonus = unitStore.rightUnit?.bonus ?? null;
+    unitStore.setRightUnit(value.unitWithEntityNumberAndBonus)
+    if (!value.mount_changed) {
+      detailViewRef.value?.reset('right')
+    } else {
+      unitStore.setRightUnitBonus(unitBonus)
+    }
   }
 }
 

@@ -40,7 +40,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: UnitWithEntityNumberAndBonus | null]
+  'update:modelValue': [{unitWithEntityNumberAndBonus: UnitWithEntityNumberAndBonus | null, mount_changed: boolean}]
 }>()
 
 
@@ -49,11 +49,12 @@ function updateUnit(value: Unit) {
   const defaultEntityCount = Math.min(15, maxEntityCount);
   if (props.modelValue) {
     props.modelValue.selection.unit = value;
-    emit('update:modelValue', {
+    
+    emit('update:modelValue', {unitWithEntityNumberAndBonus: {
       selection: props.modelValue.selection,
       entityNumber: defaultEntityCount,
       bonus: props.modelValue.bonus
-    })
+    }, mount_changed: true})
   }
 }
 
@@ -61,11 +62,11 @@ function updateUnitSelection(value: UnitSelection) {
   const maxEntityCount = value.unit?.num_men || 1;
   const defaultEntityCount = Math.min(15, maxEntityCount);
 
-  emit('update:modelValue', {
+  emit('update:modelValue', { unitWithEntityNumberAndBonus: {
     selection: value,
     entityNumber: defaultEntityCount,
     bonus: defaultUnitBonus()
-  })
+  }, mount_changed: false})
 
 }
 // Computed for unit title
