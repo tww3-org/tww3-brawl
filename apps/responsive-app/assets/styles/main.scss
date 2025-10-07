@@ -118,6 +118,17 @@ h6 {
   line-height: 1.5;
   margin-bottom: 0.5em;
 }
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  color: revert;
+  text-decoration: revert;
+}
+
 // Utility classes generated from mixins
 .text-xs { @include text-size(xs); }
 .text-sm { @include text-size(sm); }
