@@ -61,7 +61,6 @@ const handleSelectionUpdate = (unit_side: 'left' | 'right', value: {unitWithEnti
     } else {
       unitStore.setLeftUnitBonus(unitBonus)
     }
-    console.log('DEBUG leftUnit', unitStore.leftUnit)
   } else {
     const unitBonus = unitStore.rightUnit?.bonus ?? null;
     unitStore.setRightUnit(value.unitWithEntityNumberAndBonus)

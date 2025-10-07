@@ -51,7 +51,7 @@ function onModify(value: number) {
 }
 
 function onReset() {
-    bonus.value = 0
+    reset()
     emit('update:modelValue', bonus.value)
 }
 
@@ -60,6 +60,14 @@ function onFocusSelectAll(e: Event) {
     // next frame ensures DOM is ready and focus applied before selecting
     requestAnimationFrame(() => target?.select())
 }
+
+function reset() {
+    bonus.value = 0
+}
+
+defineExpose({
+    reset
+})
 </script>
 
 <style scoped lang="scss">

@@ -10,6 +10,13 @@
                 }}</b>
                 </th>
             </tr>
+            <tr>
+                <th scope="col" class="unit-column"><q-btn label="Reset" color="warning" icon="refresh" @click="onReset('left')" />
+                </th>
+                <th scope="col" class="stat-column"></th>
+                <th scope="col" class="unit-column"><q-btn label="Reset" color="warning" icon="refresh" @click="onReset('right')" />
+                </th>
+            </tr>
         </thead>
         <tbody>
             <tr v-for="statistic in statistics" :key="statistic.path">
@@ -39,7 +46,7 @@
 import type { Unit } from '@tww3-brawl/sdk/src/types';
 import { type Paths, getTyped } from '~/shared/jsonpath';
 import type { UnitWithEntityNumberAndBonus } from '~/types/unit'
-import { UnitBonusPathes } from '~/types/unit'
+import { UnitBonusPathes, defaultUnitBonus } from '~/types/unit'
 import { statistics } from '~/types/unit'
 import ValueDisplay from './ValueDisplay.vue'
 
@@ -59,6 +66,22 @@ function onUpdate(unit_side: 'left' | 'right', path: UnitBonusPathes, value: num
 const rightUnitRef: Ref<Array<InstanceType<typeof ValueDisplay>>> = ref([])
 const leftUnitRef: Ref<Array<InstanceType<typeof ValueDisplay>>> = ref([])
 
+
+function onReset(unit_side: 'left' | 'right') {
+    reset(unit_side)
+    for (const path of UnitBonusPathes) {
+        emit('update', unit_side, path, 0)
+    }
+    if (unit_side === 'left') {
+        if (props.leftUnit) {
+            props.leftUnit.bonus = defaultUnitBonus()
+        }
+    } else {
+        if (props.rightUnit) {
+            props.rightUnit.bonus = defaultUnitBonus()
+        }
+    }
+}
 function reset(unit_side: 'left' | 'right') {
     if (unit_side === 'left') {
         leftUnitRef.value.forEach((instance) => instance?.reset())

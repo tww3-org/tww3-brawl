@@ -1,7 +1,7 @@
 <template>
     <div class="container" :class="{ 'reverse': orientation === 'right' }">
         <div class="left base" :class="{ 'right': orientation === 'right' }">
-            <NumericInput v-if="typeof value === 'number' && isUpdatable" :modifier="bonus" :baseValue="value" @update:model-value="onUpdate" :direction="orientation" />
+            <NumericInput ref="numericInputRef" v-if="typeof value === 'number' && isUpdatable" :modifier="bonus" :baseValue="value" @update:model-value="onUpdate" :direction="orientation" />
             <template v-else>{{ value }}</template>
         </div>
     </div>
@@ -30,9 +30,10 @@ const props = withDefaults(defineProps<{
 })
 
 const bonus = ref<number>(props.bonus)
-
+const numericInputRef = ref<InstanceType<typeof NumericInput> | null>(null)
 function reset() {
     bonus.value = 0
+    numericInputRef.value?.reset()
 }
 
 defineExpose({
