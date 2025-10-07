@@ -48,7 +48,8 @@
                     <div class="unit-icons-row">
                       <div v-for="unit in unitsList" :key="unit.unit" class="unit-icon-container"
                         @click="selectUnitAndFinish(unit)">
-                        <UnitPortrait :versionId="versionId" :unit="unit" :selected="selectedUnit && selectedUnit.unit === unit.unit" />
+                        <UnitPortrait :versionId="versionId" :unit="unit"
+                          :selected="selectedUnit && selectedUnit.unit === unit.unit" />
                         <div class="unit-label">{{ unit.land_unit?.onscreen_name || unit.unit }}</div>
                       </div>
                     </div>
@@ -423,8 +424,9 @@ const selectUnitAndFinish = (unit: Unit) => {
 
 .unit-icon-container {
   @include icon-container-base;
-  padding:0;
-  gap:0;
+  padding: 0;
+  gap: 0;
+  position: relative;
 }
 
 .unit-icon {
@@ -452,8 +454,12 @@ const selectUnitAndFinish = (unit: Unit) => {
   pointer-events: none;
 }
 
-.unit-icon-container:hover .unit-label {
-  display: block;
+.unit-icon-container:hover  {
+  
+
+  .unit-label {
+    display: block;
+  }
 }
 
 // Group label
