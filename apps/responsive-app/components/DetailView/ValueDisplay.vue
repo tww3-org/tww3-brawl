@@ -30,6 +30,14 @@ const props = withDefaults(defineProps<{
 })
 
 const bonus = ref<number>(props.bonus)
+
+function reset() {
+    bonus.value = 0
+}
+
+defineExpose({
+    reset
+})
 </script>
 
 <style scoped>

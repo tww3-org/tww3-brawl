@@ -3,9 +3,9 @@
   <div class="q-pa-md container">
     <div class=" justify-center items-center unit-cards-container">
       <UnitCard orientation="left" class="bg-positive unit-card" :modelValue="unitStore.leftUnit"
-        @update:modelValue="(value) => unitStore.setLeftUnit(value)" />
+        @update:modelValue="(value) => handleSelectionUpdate('left', value)" />
       <UnitCard orientation="right" class="bg-negative unit-card" :modelValue="unitStore.rightUnit"
-        @update:modelValue="(value) => unitStore.setRightUnit(value)" />
+        @update:modelValue="(value) => handleSelectionUpdate('right', value)" />
     </div>
 
     <!-- Reset Button -->
@@ -33,7 +33,7 @@
     <ShortSummary />
 
     <!-- Detail View -->
-    <DetailView :leftUnit="unitStore.leftUnit" :rightUnit="unitStore.rightUnit" @update="onUpdate"/>
+    <DetailView ref="detailViewRef" :leftUnit="unitStore.leftUnit" :rightUnit="unitStore.rightUnit" @update="onUpdate"/>
 
     <div style="min-height: 25vh;">
 
@@ -43,12 +43,24 @@
 
 <script setup lang="ts">
 import { useUnitStore } from '~/stores/unitStore'
-import type { UnitBonusPathes } from '~/types/unit'
+import type { UnitBonusPathes, UnitWithEntityNumberAndBonus } from '~/types/unit'
 import UnitCard from '~/components/UnitCard/index.vue'
 import EntitySliders from '~/components/EntitySliders.vue'
 import { getMaxEntities } from '@tww3-brawl/sdk/src/utils/getMaxEntities'
+import DetailView from '~/components/DetailView/index.vue'
 
 const unitStore = useUnitStore()
+const detailViewRef: Ref<typeof DetailView | null> = ref(null)
+
+const handleSelectionUpdate = (unit_side: 'left' | 'right', value: UnitWithEntityNumberAndBonus | null) => {
+  if (unit_side === 'left') {
+    unitStore.setLeftUnit(value)
+    detailViewRef.value?.reset('left')
+  } else {
+    unitStore.setRightUnit(value)
+    detailViewRef.value?.reset('right')
+  }
+}
 
 const onUpdate = (unit_side: 'left' | 'right', path: UnitBonusPathes, value: number) => {
   if (unit_side === 'left') {

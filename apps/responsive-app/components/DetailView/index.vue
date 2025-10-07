@@ -2,17 +2,19 @@
     <q-markup-table separator="none" flat bordered v-if="leftUnit?.selection?.unit || rightUnit?.selection?.unit">
         <thead>
             <tr>
-                <th scope="col" class="text-right unit-column"><b>{{ leftUnit?.selection?.unit?.land_unit?.onscreen_name }}</b>
+                <th scope="col" class="text-right unit-column"><b>{{ leftUnit?.selection?.unit?.land_unit?.onscreen_name
+                }}</b>
                 </th>
                 <th scope="col" class="text-center stat-column"><b>Statistic</b></th>
-                <th scope="col" class="text-left unit-column"><b>{{ rightUnit?.selection?.unit?.land_unit?.onscreen_name }}</b>
+                <th scope="col" class="text-left unit-column"><b>{{ rightUnit?.selection?.unit?.land_unit?.onscreen_name
+                }}</b>
                 </th>
             </tr>
         </thead>
         <tbody>
             <tr v-for="statistic in statistics" :key="statistic.path">
                 <td class="unit-column" v-if="leftUnit?.selection?.unit">
-                    <ValueDisplay
+                    <ValueDisplay ref="leftUnitRef"
                         :value="getTyped<Required<Unit>, Paths<Required<Unit>>>(leftUnit.selection.unit as Required<Unit>, (statistic.path) as Paths<Required<Unit>>) as number | boolean"
                         :bonus="leftUnit.bonus[statistic.path as UnitBonusPathes]"
                         :isUpdatable="UnitBonusPathes.includes(statistic.path as UnitBonusPathes)"
@@ -21,7 +23,7 @@
                 </td>
                 <td class="text-center stat-column">{{ statistic.label }}</td>
                 <td class="unit-column" v-if="rightUnit?.selection?.unit">
-                    <ValueDisplay
+                    <ValueDisplay ref="rightUnitRef"
                         :value="getTyped<Required<Unit>, Paths<Required<Unit>>>(rightUnit.selection.unit as Required<Unit>, (statistic.path) as Paths<Required<Unit>>) as number | boolean"
                         :bonus="rightUnit.bonus[statistic.path as UnitBonusPathes]"
                         :isUpdatable="UnitBonusPathes.includes(statistic.path as UnitBonusPathes)"
@@ -53,11 +55,27 @@ const emit = defineEmits<{
 function onUpdate(unit_side: 'left' | 'right', path: UnitBonusPathes, value: number) {
     emit('update', unit_side, path, value)
 }
+
+const rightUnitRef: Ref<Array<InstanceType<typeof ValueDisplay>>> = ref([])
+const leftUnitRef: Ref<Array<InstanceType<typeof ValueDisplay>>> = ref([])
+
+function reset(unit_side: 'left' | 'right') {
+    if (unit_side === 'left') {
+        leftUnitRef.value.forEach((instance) => instance?.reset())
+    } else {
+        rightUnitRef.value.forEach((instance) => instance?.reset())
+    }
+}
+
+defineExpose({
+    reset
+})
 </script>
 
 <style scoped lang="scss">
 thead {
     @include text-emphasized;
+
     th {
         font-size: var(--font-size-md);
     }
