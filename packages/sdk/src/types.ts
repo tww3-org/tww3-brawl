@@ -75,7 +75,9 @@ export interface Unit {
   is_large?: boolean;
   general_portrait?: string;
   unit_card_url?: string;
+  icon: string;
   group?: string;
+  special_categories?: string[];
 }
 
 /**

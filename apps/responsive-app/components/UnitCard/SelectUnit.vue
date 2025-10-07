@@ -47,10 +47,8 @@
                     <div class="group-label">{{ groupName }}</div>
                     <div class="unit-icons-row">
                       <div v-for="unit in unitsList" :key="unit.unit" class="unit-icon-container"
-                        :class="{ selected: selectedUnit && selectedUnit.unit === unit.unit }"
                         @click="selectUnitAndFinish(unit)">
-                        <img v-if="getUnitPortrait(versionId, unit)" :src="getUnitPortrait(versionId, unit)"
-                          :alt="unit.land_unit?.onscreen_name || unit.unit" class="unit-icon" />
+                        <UnitPortrait :versionId="versionId" :unit="unit" :selected="selectedUnit && selectedUnit.unit === unit.unit" />
                         <div class="unit-label">{{ unit.land_unit?.onscreen_name || unit.unit }}</div>
                       </div>
                     </div>
@@ -83,6 +81,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import type { QCarousel } from 'quasar';
+import UnitPortrait from './UnitPortrait.vue';
 import type { Unit } from '@tww3-brawl/sdk/src/types';
 import { useVersions } from '~/composables/useVersions';
 import { useFactions } from '~/composables/useFactions';
@@ -424,8 +423,8 @@ const selectUnitAndFinish = (unit: Unit) => {
 
 .unit-icon-container {
   @include icon-container-base;
-  @include icon-container-states;
-  position: relative;
+  padding:0;
+  gap:0;
 }
 
 .unit-icon {

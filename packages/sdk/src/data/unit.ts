@@ -88,9 +88,13 @@ export async function fetchUnit(
             general_portrait: true,
           },
           ui_unit_group: {
+            icon: true,
             parent_group: {
               onscreen_name: true,
             },
+          },
+          unit_sets: {
+            special_category: true,
           },
         },
       },
@@ -173,10 +177,12 @@ export async function fetchUnit(
         ward_save: Number(unit.land_unit?.damage_mod_all || 0),
       },
       is_large: unit.land_unit?.battle_entity?.size !== 'small',
+      icon: unit.ui_unit_group?.icon || '',
       general_portrait:
         unit.custom_battle_permissions?.[0]?.general_portrait || '',
       group: unit.ui_unit_group?.parent_group?.onscreen_name || '',
       unit_card_url: unit.land_unit?.variant?.unit_card_url || '',
+      special_categories: Array.from(new Set(unit.unit_sets?.map(set => set?.special_category) as string[])) || [],
     };
 
     return adaptedUnit;
