@@ -5,6 +5,10 @@ const base_attack = 40
 const min_att_def_layer = 8
 const max_att_def_layer = 90
 
+const max_resist = 95
+const min_fire_resist = -100
+const max_fire_resist = 100
+
 /**
  * Calculates the attack ratio between an attacker and defender unit.
  * This represents the probability of a successful hit based on attack vs defense stats.
@@ -74,10 +78,10 @@ export function calculateResistRatio(attacker: Unit, defender: Unit): number {
     // Ward save applies to all damage types
     // Physical resistance only applies to non-magical damage
     // Fire resistance only applies to fire damage
-    return (wardSave 
+    return Math.min(max_resist,(wardSave 
         + (isMagical ? 0: Math.max(physicalResist, 0)) // Physical resist
-        + (isFire ? Math.min(Math.max(fireResist, -100), 100):  0) // Fire resist
-    )/100
+        + (isFire ? Math.min(Math.max(fireResist, min_fire_resist), max_fire_resist):  0) // Fire resist
+    ))/100
 }
 
 /**
