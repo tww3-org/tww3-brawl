@@ -5,7 +5,6 @@ export function getMaxEntities(unit: Unit) {
     return 1;
   }
   if (unit.land_unit.num_engines > 0) {
-    console.log('num_engines', unit.land_unit.num_engines);
     return unit.land_unit.num_engines;
   }
   return unit.num_men;
