@@ -28,6 +28,7 @@ import MountPicker from './MountPicker.vue'
 import type { Unit, Version } from '@tww3-brawl/sdk/src/types'
 import { getTwwStatUrl } from '@tww3-brawl/sdk/src/utils/getTwwStat'
 import { useUnitStore } from '~/stores/unitStore'
+import { getMaxEntities } from '@tww3-brawl/sdk/src/utils/getMaxEntities'
 
 const unitStore = useUnitStore()
 const unitSelection = computed(() => props.modelValue?.selection || null)
@@ -62,7 +63,7 @@ function updateUnit(value: Unit) {
 }
 
 function updateUnitSelection(value: UnitSelection) {
-  const maxEntityCount = value.unit?.num_men || 1;
+  const maxEntityCount = getMaxEntities(value.unit!);
   const defaultEntityCount = Math.min(15, maxEntityCount);
 
   emit('update:modelValue', { unitWithEntityNumberAndBonus: {

@@ -18,7 +18,7 @@
       <div class="entity-slider">
         <EntitySliders v-if="unitStore?.leftUnit?.selection?.unit && getMaxEntities(unitStore.leftUnit.selection.unit) > 1"
           :entity-number="unitStore.leftUnit.entityNumber"
-          :max-entities="unitStore.leftUnit.selection?.unit?.num_men || 1"
+          :max-entities="getMaxEntities(unitStore.leftUnit.selection.unit)"
           @update:entity-number="(value) => unitStore.setLeftUnitEntityCount(value)" />
       </div>
       <div class="entity-slider">

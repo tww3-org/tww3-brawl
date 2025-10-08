@@ -1,8 +1,12 @@
 import { Unit } from '../types';
 
 export function getMaxEntities(unit: Unit) {
-  if (unit.land_unit.num_engines > 0 && (unit.land_unit.num_engines !== unit.num_men) || (unit.land_unit.num_mounts > 0 && unit.land_unit.num_mounts !== unit.num_men)) {
+  if (['Hero','Lord'].includes(unit.caste)) {
     return 1;
   }
-  return unit.num_men || 1;
+  if (unit.land_unit.num_engines > 0) {
+    console.log('num_engines', unit.land_unit.num_engines);
+    return unit.land_unit.num_engines;
+  }
+  return unit.num_men;
 }
