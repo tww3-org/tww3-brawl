@@ -8,7 +8,7 @@ $border-radius: 8px;
 $icon-size: 48px;
 $label-font-size: 0.85rem;
 $label-max-width: 80px;
-
+$square-icon-size: 150px;
 // Mixin for common container styles
 @mixin icon-container-base {
   display: flex;
@@ -47,8 +47,6 @@ $label-max-width: 80px;
 @mixin icon-label {
   font-size: $label-font-size;
   text-align: center;
-  max-width: $label-max-width;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -61,6 +59,11 @@ $label-max-width: 80px;
 @mixin text-emphasized {
   font-family: "CaslonAntique", 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
     Arial, 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
+}
+
+@mixin emphazed-card {
+  transform: scale(1.1);
+  z-index: 1;
 }
 
 

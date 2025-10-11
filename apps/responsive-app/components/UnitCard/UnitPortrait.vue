@@ -31,16 +31,12 @@ const props = withDefaults(defineProps<{
     display: none;
 }
 
-@mixin emphazed {
-    transform: scale(1.1);
-    z-index: 1;
+.selected {
+    @include emphazed-card;
+
     .unit-hover {
         display: block;
     }
-}
-
-.selected {
-    @include emphazed;
 }
 
 .unit-portrait {
@@ -76,7 +72,11 @@ const props = withDefaults(defineProps<{
     }
 
     &:hover {
-        @include emphazed;
+        @include emphazed-card;
+        
+        .unit-hover {
+            display: block;
+        }
     }
 }
 </style>

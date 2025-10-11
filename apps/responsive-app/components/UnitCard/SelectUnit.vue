@@ -11,13 +11,11 @@
               <div class="q-mb-md">
                 <q-select v-model="selectedVersion" :options="versionOptions" :loading="versionsLoading"
                   label="Versions" dense outlined option-label="name" option-value="id" />
-                <div v-if="versions && step === 'version'" class="version-icons-row">
-                  <div v-for="version in versions" :key="version.id" class="version-icon-container"
-                    :class="{ selected: selectedVersion && selectedVersion.id === version.id }"
-                    @click="selectVersionAndNext(version)">
-                    <div class="version-icon">{{ version.name?.charAt(0) || 'V' }}</div>
-                    <div class="version-label">{{ version.name }}</div>
-                  </div>
+
+                  <div v-if="versions && step === 'version'" class="version-icons-row">
+                    <SquarePortrait v-if="versions && step === 'version'" v-for="version in versions" :key="version.id" :label="version.name" :imageUrl="getVersionPortrait(version)" 
+                    :selected="(selectedVersion && selectedVersion.id === version.id) || false"
+                    @click="selectVersionAndNext(version)"/>
                 </div>
               </div>
 
@@ -88,7 +86,8 @@ import { useVersions } from '~/composables/useVersions';
 import { useFactions } from '~/composables/useFactions';
 import { useFactionUnits } from '~/composables/useFactionUnits';
 import { getFactionPortrait } from '@tww3-brawl/sdk/src/utils/getFactionPortrait';
-import { getUnitPortrait } from '@tww3-brawl/sdk/src/utils/getUnitPortrait';
+import SquarePortrait from './SquarePortrait.vue';
+import { getVersionPortrait } from '@tww3-brawl/sdk/src/utils/getVersionPortrait';
 import type { UnitSelection } from '~/types/unit';
 import type { Version } from '@tww3-brawl/sdk/src/types';
 import type { Faction } from '@tww3-brawl/sdk/src/types';
@@ -163,6 +162,7 @@ const selectedUnit = computed({
 const { data: versions, isLoading: versionsLoading } = useVersions();
 const versionOptions = computed(() => {
   if (!versions.value) return [];
+  console.log(versions.value);
   return versions.value;
 });
 
@@ -342,6 +342,10 @@ const selectUnitAndFinish = (unit: Unit) => {
 
 <style scoped lang="scss">
 // Variables and mixins are now imported automatically from variables.scss
+@mixin square-icon-size {
+  width: $square-icon-size;
+  height: $square-icon-size;
+}
 
 // Dialog and carousel styles
 .custom {
@@ -370,11 +374,13 @@ const selectUnitAndFinish = (unit: Unit) => {
 // Version styles
 .version-icons-row {
   @include icon-row-layout;
+  gap: 0.1rem;
 }
 
 .version-icon-container {
   @include icon-container-base;
   @include icon-container-states;
+  @include square-icon-size;
 }
 
 .version-icon {
@@ -403,6 +409,7 @@ const selectUnitAndFinish = (unit: Unit) => {
 .faction-icon-container {
   @include icon-container-base;
   @include icon-container-states;
+  @include square-icon-size;
 }
 
 .faction-icon {
@@ -414,7 +421,6 @@ const selectUnitAndFinish = (unit: Unit) => {
 
 .faction-label {
   @include icon-label;
-  max-width: 70px; // Slightly smaller for faction names
 }
 
 // Unit styles
