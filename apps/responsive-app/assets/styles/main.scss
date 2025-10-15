@@ -1,4 +1,4 @@
-// Typography scale variables
+// CSS Custom Properties for responsive sizing and typography
 :root {
   // Base font size (16px par défaut, mais vous pouvez l'ajuster)
   --base-font-size: 25px;
@@ -15,6 +15,19 @@
   --font-size-2xl: calc(var(--base-font-size) * var(--scale-ratio) * var(--scale-ratio) * var(--scale-ratio)); // 31.25px
   --font-size-3xl: calc(var(--base-font-size) * var(--scale-ratio) * var(--scale-ratio) * var(--scale-ratio) * var(--scale-ratio)); // 39.06px
   --font-size-4xl: calc(var(--base-font-size) * var(--scale-ratio) * var(--scale-ratio) * var(--scale-ratio) * var(--scale-ratio) * var(--scale-ratio)); // 48.83px
+  
+  // Component sizing variables (responsive)
+  --icon-size: 48px;
+  --label-font-size: 0.85rem;
+  --label-max-width: 80px;
+  --square-icon-size: 150px;
+}
+
+// Mobile responsive adjustments
+@media (max-width: 900px) {
+  :root {
+    --square-icon-size: 90px;
+  }
 }
 
 // Import Calson Antique font family

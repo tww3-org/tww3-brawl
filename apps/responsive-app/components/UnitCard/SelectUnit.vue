@@ -13,9 +13,11 @@
                   label="Versions" dense outlined option-label="name" option-value="id" />
 
                   <div v-if="versions && step === 'version'" class="version-icons-row">
-                    <SquarePortrait v-if="versions && step === 'version'" v-for="version in versions" :key="version.id" :label="version.name" :imageUrl="getVersionPortrait(version)" 
+                    <SquarePortrait v-if="versions && step === 'version'" v-for="version in versions" :key="version.id" :label="version.name" 
                     :selected="(selectedVersion && selectedVersion.id === version.id) || false"
-                    @click="selectVersionAndNext(version)"/>
+                    @click="selectVersionAndNext(version)">
+                      <img :src="getVersionPortrait(version)" class="square-icon-image" :alt="version.name" />
+                    </SquarePortrait>
                 </div>
               </div>
 
@@ -27,13 +29,13 @@
                   :disable="!selectedVersion || factionsLoading" label="Faction" dense outlined
                   option-label="screen_name" option-value="key" />
                 <div v-if="factions && step === 'faction'" class="faction-icons-row">
-                  <div v-for="faction in factions" :key="faction.key" class="faction-icon-container"
-                    :class="{ selected: selectedFaction && selectedFaction.key === faction.key }"
+                  <SquarePortrait v-for="faction in factions" :key="faction.key" 
+                    :label="faction.subculture?.name || faction.key" 
+                    :selected="(selectedFaction && selectedFaction.key === faction.key) || false"
                     @click="selectFactionAndNext(faction)">
-                    <img v-if="getFactionPortrait(versionId, faction)" :src="getFactionPortrait(versionId, faction)"
-                      :alt="faction.screen_name || faction.key" class="faction-icon" />
-                    <div class="faction-label">{{ faction.subculture?.name || faction.key }}</div>
-                  </div>
+                    <img v-if="getFactionPortrait(versionId, faction)"
+                    :src="getFactionPortrait(versionId, faction)" :alt="faction.screen_name || faction.key" />
+                  </SquarePortrait>
                 </div>
               </div>
             </q-carousel-slide>
@@ -343,8 +345,12 @@ const selectUnitAndFinish = (unit: Unit) => {
 <style scoped lang="scss">
 // Variables and mixins are now imported automatically from variables.scss
 @mixin square-icon-size {
-  width: $square-icon-size;
-  height: $square-icon-size;
+  width: var(--square-icon-size);
+  height: var(--square-icon-size);
+}
+
+.square-icon-image {
+  width: calc(var(--square-icon-size) - 10px);
 }
 
 // Dialog and carousel styles
@@ -384,8 +390,8 @@ const selectUnitAndFinish = (unit: Unit) => {
 }
 
 .version-icon {
-  width: $icon-size;
-  height: $icon-size;
+  width: var(--icon-size);
+  height: var(--icon-size);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -413,8 +419,8 @@ const selectUnitAndFinish = (unit: Unit) => {
 }
 
 .faction-icon {
-  width: $icon-size;
-  height: $icon-size;
+  width: var(--icon-size);
+  height: var(--icon-size);
   object-fit: contain;
   margin-bottom: 0.25rem;
 }

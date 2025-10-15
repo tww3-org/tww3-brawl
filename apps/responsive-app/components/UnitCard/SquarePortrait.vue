@@ -2,7 +2,9 @@
   <div class="container" :class="{ 'selected': selected }">
     <img :src="getSquareBorder(versionId)">
     <img :src="getSquareHover(versionId)" class="square-hover">
-    <img v-if="imageUrl" :src="imageUrl" :alt="label" class="item-card__image" fit="contain" />
+    <slot>
+      <img v-if="imageUrl" :src="imageUrl" :alt="label" class="item-card__image" fit="contain" />
+    </slot>
     <div class="label"> {{ label }} </div>
   </div>
 </template>
@@ -36,8 +38,8 @@ withDefaults(defineProps<Props>(), {
 .container {
   padding: 0;
   gap: 0;
-  width: $square-icon-size;
-  height: $square-icon-size;
+  width: var(--square-icon-size);
+  height: var(--square-icon-size);
 
   overflow: hidden;
   display: flex;
@@ -56,24 +58,24 @@ withDefaults(defineProps<Props>(), {
 
   img:nth-child(1) {
     position: absolute;
-    width: $square-icon-size;
-    height: $square-icon-size;
+    width: var(--square-icon-size);
+    height: var(--square-icon-size);
   }
 
   img:nth-child(2) {
     position: absolute;
-    width: $square-icon-size;
-    height: $square-icon-size;
+    width: var(--square-icon-size);
+    height: var(--square-icon-size);
   }
 
   img:nth-child(3) {
-    width: calc($square-icon-size - 10px);
+    width: calc(var(--square-icon-size) - 10px);
   }
 
 
   .label {
     overflow: ellipsis;
-    text-align: center;
+    text-align: center; 
   }
 
   .square-hover {

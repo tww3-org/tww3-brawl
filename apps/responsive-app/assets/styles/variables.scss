@@ -1,14 +1,11 @@
-// Variables for consistent styling across components
+// SCSS Variables for consistent styling (fixed values)
 $hover-background: #e3f2fd;
 $selected-background: #e3f2fd;
 $hover-border-color: #1976d2;
 $selected-border-color: #1976d2;
 $transition-duration: 0.2s;
 $border-radius: 8px;
-$icon-size: 48px;
-$label-font-size: 0.85rem;
-$label-max-width: 80px;
-$square-icon-size: 150px;
+
 // Mixin for common container styles
 @mixin icon-container-base {
   display: flex;
@@ -45,7 +42,7 @@ $square-icon-size: 150px;
 
 // Mixin for label styles
 @mixin icon-label {
-  font-size: $label-font-size;
+  font-size: var(--label-font-size);
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
