@@ -1,0 +1,159 @@
+// Font declarations for the application
+// This file contains all @font-face declarations for custom fonts
+
+// ========================================
+// CaslonAntique Font Family
+// ========================================
+@font-face {
+  font-family: 'CaslonAntique';
+  src: url('~/assets/fonts/caslon-antique/CaslonAntique.ttf') format('truetype');
+  font-weight: 400; // normal
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CaslonAntique';
+  src: url('~/assets/fonts/caslon-antique/CaslonAntique-Bold.ttf') format('truetype');
+  font-weight: 700; // bold
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CaslonAntique';
+  src: url('~/assets/fonts/caslon-antique/CaslonAntique-Italic.ttf') format('truetype');
+  font-weight: 400; // normal
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CaslonAntique';
+  src: url('~/assets/fonts/caslon-antique/CaslonAntique-BoldItalic.ttf') format('truetype');
+  font-weight: 700; // bold
+  font-style: italic;
+  font-display: swap;
+}
+
+// ========================================
+// IBM Plex Sans Font Family
+// ========================================
+@font-face {
+  font-family: 'IBMPlexSans';
+  src: url('~/assets/fonts/ibm-plex/IBMPlexSans-Thin.ttf') format('truetype');
+  font-weight: 100; // thin
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBMPlexSans';
+  src: url('~/assets/fonts/ibm-plex/IBMPlexSans-ThinItalic.ttf') format('truetype');
+  font-weight: 100; // thin
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBMPlexSans';
+  src: url('~/assets/fonts/ibm-plex/IBMPlexSans-ExtraLight.ttf') format('truetype');
+  font-weight: 200; // extra light
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBMPlexSans';
+  src: url('~/assets/fonts/ibm-plex/IBMPlexSans-ExtraLightItalic.ttf') format('truetype');
+  font-weight: 200; // extra light
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBMPlexSans';
+  src: url('~/assets/fonts/ibm-plex/IBMPlexSans-Light.ttf') format('truetype');
+  font-weight: 300; // light
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBMPlexSans';
+  src: url('~/assets/fonts/ibm-plex/IBMPlexSans-LightItalic.ttf') format('truetype');
+  font-weight: 300; // light
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBMPlexSans';
+  src: url('~/assets/fonts/ibm-plex/IBMPlexSans-Regular.ttf') format('truetype');
+  font-weight: 400; // regular
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBMPlexSans';
+  src: url('~/assets/fonts/ibm-plex/IBMPlexSans-Italic.ttf') format('truetype');
+  font-weight: 400; // regular
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBMPlexSans';
+  src: url('~/assets/fonts/ibm-plex/IBMPlexSans-Medium.ttf') format('truetype');
+  font-weight: 500; // medium
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBMPlexSans';
+  src: url('~/assets/fonts/ibm-plex/IBMPlexSans-MediumItalic.ttf') format('truetype');
+  font-weight: 500; // medium
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBMPlexSans';
+  src: url('~/assets/fonts/ibm-plex/IBMPlexSans-SemiBold.ttf') format('truetype');
+  font-weight: 600; // semi bold
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBMPlexSans';
+  src: url('~/assets/fonts/ibm-plex/IBMPlexSans-SemiBoldItalic.ttf') format('truetype');
+  font-weight: 600; // semi bold
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBMPlexSans';
+  src: url('~/assets/fonts/ibm-plex/IBMPlexSans-Bold.ttf') format('truetype');
+  font-weight: 700; // bold
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBMPlexSans';
+  src: url('~/assets/fonts/ibm-plex/IBMPlexSans-BoldItalic.ttf') format('truetype');
+  font-weight: 700; // bold
+  font-style: italic;
+  font-display: swap;
+}
+
+// ========================================
+// Font Family Variables
+// ========================================
+// These variables can be used throughout the application
+$font-primary: 'IBMPlexSans', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+$font-display: 'CaslonAntique', 'IBMPlexSans', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;

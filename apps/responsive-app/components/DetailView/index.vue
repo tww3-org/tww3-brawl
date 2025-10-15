@@ -117,8 +117,7 @@ tbody {
 
 
 .stat-column {
-    @include text-emphasized;
+    padding: 0px;
     width: 100px;
-    /* Colonne des statistiques prend 30% */
 }
 </style>
