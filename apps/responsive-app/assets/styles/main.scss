@@ -52,7 +52,8 @@ body {
   background-image: url('/images/background.7150c980.jpg');
   background-size: cover;
   background-attachment: fixed;
-  height: 100vh;
+  height: 100dvh;
+
 }
 
 // Typography hierarchy using the scale
@@ -63,6 +64,7 @@ h1 {
   line-height: 1.2;
   margin-bottom: 0.5em;
   font-style: italic;
+  color: red;
 }
 
 h2 {

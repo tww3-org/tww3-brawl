@@ -85,6 +85,7 @@ const healthColor = computed(() => {
 .short-summary {
   padding: 20px;
   text-align: center;
+  @include blurred-background;
 }
 
 .combat-result {
