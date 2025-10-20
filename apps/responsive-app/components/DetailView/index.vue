@@ -1,5 +1,5 @@
 <template>
-    <q-markup-table separator="none" flat bordered v-if="leftUnit?.selection?.unit || rightUnit?.selection?.unit">
+    <q-markup-table separator="none" flat bordered v-if="leftUnit?.selection?.unit && rightUnit?.selection?.unit">
         <thead>
             <tr>
                 <th scope="col" class="text-right unit-column"><b>{{ leftUnit?.selection?.unit?.land_unit?.onscreen_name
