@@ -48,6 +48,11 @@ body {
   font-size: 1rem; // Utilise la taille de base
   font-weight: 500; // Trait plus épais (normal = 400, medium = 500, semi-bold = 600)
   line-height: 1.2; // Hauteur de ligne confortable
+
+  background-image: url('/images/background.7150c980.jpg');
+  background-size: cover;
+  background-attachment: fixed;
+  height: 100vh;
 }
 
 // Typography hierarchy using the scale
