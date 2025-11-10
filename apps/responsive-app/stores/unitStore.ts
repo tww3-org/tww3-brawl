@@ -1,71 +1,51 @@
-import { defineStore } from 'pinia'
-import { defaultUnitBonus, unitWithBonus, type UnitBonus, type UnitSelection, type UnitWithEntityNumberAndBonus } from '~/types/unit'
-import { calculateWinner } from '@tww3-brawl/sdk/src/logic/twoSideCalculations'
+import { defineStore } from 'pinia';
+import {
+  defaultUnitBonus,
+  unitWithBonus,
+  type UnitBonus,
+  type UnitWithEntityNumberAndBonus,
+} from '~/types/unit';
+import { calculateWinner } from '@tww3-brawl/sdk/src/logic/twoSideCalculations';
 
 export const useUnitStore = defineStore('unit', {
   state: () => {
     return {
-      leftUnit: null as UnitWithEntityNumberAndBonus | null,
-      rightUnit: null as UnitWithEntityNumberAndBonus | null,
-    }
+      left: null as UnitWithEntityNumberAndBonus | null,
+      right: null as UnitWithEntityNumberAndBonus | null,
+    };
   },
   actions: {
-    setLeftUnit(selection: UnitWithEntityNumberAndBonus | null) {
+    setUnit(
+      unit_side: 'left' | 'right',
+      selection: UnitWithEntityNumberAndBonus | null
+    ) {
       if (selection) {
-        // const maxEntityCount = selection.unit?.num_men || 1;
-        // const defaultEntityCount = Math.max(1, maxEntityCount / 10);
-        
-        this.leftUnit = selection;
-        this.leftUnit.bonus = defaultUnitBonus();
+        this[unit_side] = selection;
+        this[unit_side].bonus = defaultUnitBonus();
       } else {
-        this.leftUnit = null;
+        this[unit_side] = null;
       }
     },
-    setRightUnit(selection: UnitWithEntityNumberAndBonus | null) {
-      if (selection) {
-        // const maxEntityCount = selection.unit?.num_men || 1;
-        // const defaultEntityCount = Math.max(1, maxEntityCount / 10);
-        
-        this.rightUnit = selection
-        this.rightUnit.bonus = defaultUnitBonus();
-      } else {
-        this.rightUnit = null;
-      }
-    },
-    setLeftUnitBonus(unitBonus: UnitBonus | null) {
-      if (!this.leftUnit) {
+    setUnitBonus(unit_side: 'left' | 'right', bonus: UnitBonus | null) {
+      if (!this[unit_side]) {
         return;
       }
-      if (unitBonus ) {  
-        this.leftUnit.bonus = unitBonus;
+      if (bonus) {
+        this[unit_side].bonus = bonus;
       } else {
-        this.leftUnit.bonus = defaultUnitBonus();
+        this[unit_side].bonus = defaultUnitBonus();
       }
     },
-    setRightUnitBonus(unitBonus: UnitBonus | null) {
-      if (!this.rightUnit) {
+    setUnitEntityCount(unit_side: 'left' | 'right', entityCount: number) {
+      if (!this[unit_side]) {
         return;
       }
-      if (unitBonus ) {  
-        this.rightUnit.bonus = unitBonus;
-      } else {
-        this.rightUnit.bonus = defaultUnitBonus();
-      }
-    },
-    setLeftUnitEntityCount(entityCount: number) {
-      if (this.leftUnit) {
-        this.leftUnit.entityNumber = entityCount;
-      }
-    },
-    setRightUnitEntityCount(entityCount: number) {
-      if (this.rightUnit) {
-        this.rightUnit.entityNumber = entityCount;
-      }
+      this[unit_side].entityNumber = entityCount;
     },
     clearUnits() {
-      this.leftUnit = null
-      this.rightUnit = null
-    }
+      this.left = null;
+      this.right = null;
+    },
   },
   getters: {
     /**
@@ -73,13 +53,16 @@ export const useUnitStore = defineStore('unit', {
      * @returns Object with winner, hits needed, and remaining health, or null if units are not selected
      */
     combatResult(): ReturnType<typeof calculateWinner> | null {
-      if (!this.leftUnit?.selection.unit || !this.rightUnit?.selection.unit) {
-        return null
+      if (!this.left?.selection.unit || !this.right?.selection.unit) {
+        return null;
       }
-      return calculateWinner(unitWithBonus(this.leftUnit), unitWithBonus(this.rightUnit))
-    }
+      return calculateWinner(
+        unitWithBonus(this.left),
+        unitWithBonus(this.right)
+      );
+    },
   },
   persist: {
     storage: piniaPluginPersistedstate.localStorage(),
   },
-})
+});

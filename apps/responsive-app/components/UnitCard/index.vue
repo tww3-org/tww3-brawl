@@ -98,11 +98,11 @@ const twwStatUrl = computed(() => {
   if (unitSelection.value?.unit && unitSelection.value?.version?.id) {
     unitAndVersion.push({unit: unitSelection.value.unit, version: unitSelection.value.version})
   }
-  if (props.orientation === 'left' && unitStore.rightUnit?.selection?.unit && unitStore.rightUnit?.selection?.version?.id) {
-    unitAndVersion.push({unit: unitStore.rightUnit.selection.unit, version: unitStore.rightUnit.selection.version})
+  if (props.orientation === 'left' && unitStore.right?.selection?.unit && unitStore.right?.selection?.version?.id) {
+    unitAndVersion.push({unit: unitStore.right.selection.unit, version: unitStore.right.selection.version})
   }
-  if (props.orientation === 'right' && unitStore.leftUnit?.selection?.unit && unitStore.leftUnit?.selection?.version?.id) {
-    unitAndVersion.push({unit: unitStore.leftUnit.selection.unit, version: unitStore.leftUnit.selection.version})
+  if (props.orientation === 'right' && unitStore.left?.selection?.unit && unitStore.left?.selection?.version?.id) {
+    unitAndVersion.push({unit: unitStore.left.selection.unit, version: unitStore.left.selection.version})
   }
   return getTwwStatUrl(unitAndVersion)
 })

@@ -43,8 +43,8 @@ const winnerName = computed(() => {
   if (!combatResult.value) return '';
 
   const winnerUnit = combatResult.value.winner === 'left'
-    ? unitStore.leftUnit?.selection.unit
-    : unitStore.rightUnit?.selection.unit;
+    ? unitStore.left?.selection.unit
+    : unitStore.right?.selection.unit;
 
   return winnerUnit?.land_unit?.onscreen_name || 'Unknown Unit';
 });
@@ -53,8 +53,8 @@ const loserName = computed(() => {
   if (!combatResult.value) return '';
 
   const loserUnit = combatResult.value.winner === 'left'
-    ? unitStore.rightUnit?.selection.unit
-    : unitStore.leftUnit?.selection.unit;
+    ? unitStore.right?.selection.unit
+    : unitStore.left?.selection.unit;
 
   return loserUnit?.land_unit?.onscreen_name || 'Unknown Unit';
 });
