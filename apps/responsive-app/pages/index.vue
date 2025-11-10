@@ -1,8 +1,8 @@
 <template>
   <h1>TWW3 Brawl</h1>
   <div class="q-pa-md container">
-    <div class=" justify-center items-center unit-cards-container" v-for="unit_side in ['left', 'right']">
-      <UnitCard :orientation="unit_side as 'left' | 'right'" class="unit-card" :class="{ 'bg-positive': unit_side === 'left', 'bg-negative': unit_side === 'right' }" :modelValue="unitStore[unit_side as keyof typeof unitStore.$state]"
+    <div class=" justify-center items-center unit-cards-container" >
+      <UnitCard v-for="unit_side in ['left', 'right']" :orientation="unit_side as 'left' | 'right'" class="unit-card" :class="{ 'bg-positive': unit_side === 'left', 'bg-negative': unit_side === 'right' }" :modelValue="unitStore[unit_side as keyof typeof unitStore.$state]"
         @update:modelValue="(value) => handleSelectionUpdate(unit_side as 'left' | 'right', value)" />
     </div>
 
