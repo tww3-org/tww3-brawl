@@ -42,9 +42,18 @@ import UnitCard from '~/components/UnitCard/index.vue'
 import EntitySliders from '~/components/EntitySliders.vue'
 import { getMaxEntities } from '@tww3-brawl/sdk/src/utils/getMaxEntities'
 import DetailView from '~/components/DetailView/index.vue'
+import { useUrlSync } from '~/composables/useUrlSync'
+import { onMounted } from 'vue'
 
 const unitStore = useUnitStore()
 const detailViewRef: Ref<typeof DetailView | null> = ref(null)
+const { initializeFromUrl, watchStoreChanges } = useUrlSync()
+
+// Initialiser depuis l'URL au montage
+onMounted(async () => {
+  await initializeFromUrl()
+  watchStoreChanges()
+})
 
 const handleSelectionUpdate = (unit_side: 'left' | 'right', value: {unitWithEntityNumberAndBonus: UnitWithEntityNumberAndBonus | null, mount_changed: boolean}) => {
   
