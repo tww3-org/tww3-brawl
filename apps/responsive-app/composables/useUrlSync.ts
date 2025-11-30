@@ -32,7 +32,7 @@ export function useUrlSync() {
   /**
    * Décode les paramètres d'URL pour une unité
    */
-  function decodeUnitParams(param: string | string[] | undefined): { unit_id: string; version: string } | null {
+  function decodeUnitParams(param: string | undefined): { unit_id: string; version: string } | null {
     if (!param || typeof param !== 'string') {
       return null
     }
@@ -68,7 +68,9 @@ export function useUrlSync() {
   async function loadUnitFromUrl(
     param: string | string[] | undefined
   ): Promise<UnitWithEntityNumberAndBonus | null> {
-    const decoded = decodeUnitParams(param)
+    // Normaliser le paramètre : prendre le premier élément si c'est un tableau
+    const normalizedParam = Array.isArray(param) ? param[0] : param
+    const decoded = decodeUnitParams(normalizedParam)
     if (!decoded) {
       return null
     }
