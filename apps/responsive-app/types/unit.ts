@@ -39,6 +39,8 @@ export const UnitBonusPathes: UnitPaths[] = [
   'resistance.physical',
   'resistance.fire',
   'resistance.ward_save',
+  'recruitment_cost',
+  'upkeep_cost',
 ] as const;
 
 export type UnitBonusPathes = typeof UnitBonusPathes[number];
@@ -55,6 +57,8 @@ export const statistics: { path: UnitPaths, color: string, label: string }[] = [
   { path: 'resistance.physical', color: 'pink', label: 'Resistance Physical' },
   { path: 'resistance.fire', color: 'pink', label: 'Resistance Fire' },
   { path: 'resistance.ward_save', color: 'pink', label: 'Resistance Ward Save' },
+  { path: 'recruitment_cost', color: '#B8860B', label: 'Recruitment Cost' },
+  { path: 'upkeep_cost', color: '#B8860B', label: 'Upkeep Cost' },
 ] as const
 
 

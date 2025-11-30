@@ -39,6 +39,7 @@ export async function fetchFactionUnits(
             num_men: true,
             recruitment_cost: true,
             upkeep_cost: true,
+            multiplayer_cost: true,
             land_unit: {
               onscreen_name: true,
               bonus_hit_points: true,
@@ -133,6 +134,7 @@ export async function fetchFactionUnits(
           num_men: unit.num_men,
           recruitment_cost: Number(unit.recruitment_cost || 0),
           upkeep_cost: Number(unit.upkeep_cost || 0),
+          multiplayer_cost: Number(unit.multiplayer_cost || 0),
           land_unit: {
             num_engines: unit.land_unit?.num_engines || 0,
             num_mounts: unit.land_unit?.num_mounts || 0,

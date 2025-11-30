@@ -34,6 +34,7 @@ export interface Unit {
   num_men: number;
   recruitment_cost?: number;
   upkeep_cost?: number;
+  multiplayer_cost?: number;
   land_unit: {
     num_engines: number;
     num_mounts: number;
