@@ -3,8 +3,8 @@ import { useQueryClient } from '@tanstack/vue-query'
 import { useUnitStore } from '~/stores/unitStore'
 import { fetchUnit } from '@tww3-brawl/sdk'
 import { useGraphQLClient } from './useGraphQLClient'
-import type { UnitWithEntityNumberAndBonus } from '~/types/unit'
-import { defaultUnitBonus } from '~/types/unit'
+import type { UnitWithEntityNumberAndBonus, UnitBonus, UnitBonusPathes } from '~/types/unit'
+import { defaultUnitBonus, UnitBonusPathes } from '~/types/unit'
 import { getMaxEntities } from '@tww3-brawl/sdk/src/utils/getMaxEntities'
 import { useVersions } from './useVersions'
 
@@ -26,21 +26,49 @@ export function useUrlSync() {
     if (!unit?.selection?.unit || !unit?.selection?.version) {
       return null
     }
-    return `${unit.selection.unit.unit}|${unit.selection.version.id}`
+    const parts = [`${unit.selection.unit.unit}`, `${unit.selection.version.id}`]
+    
+    // Encoder les bonus : seulement ceux qui ont une valeur non nulle
+    for (const key of UnitBonusPathes) {
+      const value = unit.bonus[key]
+      if (value !== undefined && value !== 0) {
+        parts.push(`${key}=${value}`)
+      }
+    }
+    
+    return parts.join('|')
   }
 
   /**
    * Décode les paramètres d'URL pour une unité
    */
-  function decodeUnitParams(param: string | undefined): { unit_id: string; version: string } | null {
+  function decodeUnitParams(param: string | undefined): { unit_id: string; version: string; bonus: UnitBonus } | null {
     if (!param || typeof param !== 'string') {
       return null
     }
-    const [unit_id, version] = param.split('|')
+    const parts = param.split('|')
+    if (parts.length < 2) {
+      return null
+    }
+    
+    const [unit_id, version, ...bonusParts] = parts
     if (!unit_id || !version) {
       return null
     }
-    return { unit_id, version }
+    
+    // Décoder les bonus
+    const bonus = defaultUnitBonus()
+    for (const bonusPart of bonusParts) {
+      const [key, valueStr] = bonusPart.split('=')
+      if (key && valueStr !== undefined) {
+        const value = Number.parseFloat(valueStr)
+        if (!Number.isNaN(value) && UnitBonusPathes.includes(key as UnitBonusPathes)) {
+          bonus[key as UnitBonusPathes] = value
+        }
+      }
+    }
+    
+    return { unit_id, version, bonus }
   }
 
   /**
@@ -109,7 +137,7 @@ export function useUrlSync() {
           faction: undefined, // La faction sera déterminée automatiquement lors de la sélection
         },
         entityNumber: defaultEntityCount,
-        bonus: defaultUnitBonus(),
+        bonus: decoded.bonus,
       }
     } catch (error) {
       console.error('Error loading unit from URL:', error)
@@ -164,13 +192,15 @@ export function useUrlSync() {
       () => [
         unitStore.left?.selection?.unit?.unit,
         unitStore.left?.selection?.version?.id,
+        unitStore.left?.bonus,
         unitStore.right?.selection?.unit?.unit,
         unitStore.right?.selection?.version?.id,
+        unitStore.right?.bonus,
       ],
       () => {
         updateUrl()
       },
-      { immediate: false }
+      { immediate: false, deep: true }
     )
   }
 
