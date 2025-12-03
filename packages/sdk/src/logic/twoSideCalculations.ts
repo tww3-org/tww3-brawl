@@ -23,6 +23,69 @@ export interface CombatResult {
     remainingHealth: number
 }
 
+const GOLD_COST_KEYS = ['upkeep_cost', 'recruitment_cost', 'multiplayer_cost'] as const
+type GoldCostKey = (typeof GOLD_COST_KEYS)[number]
+
+/**
+ * Calculates gold efficiency between a winning unit and a losing unit.
+ *
+ * For each gold indicator (upkeep, recruitment and multiplayer cost), we compute:
+ * - winnerGoldDamageInflicted = loserGoldValue
+ * - loserGoldDamageInflicted = (1 - winRatio) * winnerGoldValue
+ * - ratioForStat = winnerGoldDamageInflicted / loserGoldDamageInflicted
+ *
+ * The final efficiency is the average of ratioForStat over all available indicators.
+ *
+ * @param winnerUnit - Unit that wins the duel
+ * @param loserUnit - Unit that loses the duel
+ * @param winRatio - Ratio between 0 and 1 representing how decisively the winner wins
+ * @returns Average gold efficiency ratio across the three gold indicators
+ */
+export function calculateGoldEfficiency(
+  winnerUnit: UnitWithEntityNumber,
+  loserUnit: UnitWithEntityNumber,
+  winRatio: number
+): number {
+  const winner = winnerUnit.selection.unit
+  const loser = loserUnit.selection.unit
+
+  if (!winner || !loser) {
+    return 0
+  }
+
+  // Ensure winRatio stays within [0, 1]
+  const clampedWinRatio = Math.min(1, Math.max(0, winRatio))
+
+  const ratios: number[] = []
+
+  for (const key of GOLD_COST_KEYS) {
+    const winnerGoldValue = winner[key]
+    const loserGoldValue = loser[key]
+
+    if (
+      typeof winnerGoldValue === 'number' &&
+      typeof loserGoldValue === 'number'
+    ) {
+      const winnerGoldDamageInflicted = loserGoldValue
+      const loserGoldDamageInflicted = (1 - clampedWinRatio) * winnerGoldValue
+
+      // Ratio = winner_gold_damage_inflicted / loser_gold_damage_inflicted
+      // Skip if loserGoldDamageInflicted is 0 to avoid division by zero
+      if (loserGoldDamageInflicted > 0) {
+        const ratioForStat = winnerGoldDamageInflicted / loserGoldDamageInflicted
+        ratios.push(ratioForStat)
+      }
+    }
+  }
+
+  if (ratios.length === 0) {
+    return 0
+  }
+
+  const sum = ratios.reduce((acc, value) => acc + value, 0)
+  return sum / ratios.length
+}
+
 /**
  * Calculates the winner between two units and provides detailed combat statistics.
  * 

@@ -1,5 +1,0 @@
-je voudrasi maintenant faire la logique pour calcluer une "gold efficiency". Pour cela, implémente une fonction calculateGoldEfficiency dans packages\sdk\src\logic\twoSideCalculations.ts, que prend en signature winnerUnit et loserUnit, de type UnitWithEntityNumber, ainsi que win_ratio, un float entre 0 et 1.
-Pour chacun des trois indicateurs, que sont upkeep_cost, recrutment_cost et multiplayer_cost, le calcul a effectué est :
-winner_gold_damage_inflicated = looser_gold_value (le winner élmimne une valeur équivalente à l'entiereté de l'unité défaite)
-looser_gold_damage_inflicted = (1 - win_ratio) * winner_gold_value
-Le ratio est alors la moyenne de winner_gold_damage_inflicted / looser_gold_value pour chacune des trois statistiques
