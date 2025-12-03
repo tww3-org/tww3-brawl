@@ -21,6 +21,11 @@
         </q-circular-progress>
         <span class="health-label">Remaining Health</span>
       </div>
+
+      <!-- Gold efficiency display -->
+      <p v-if="goldEfficiency !== null" class="gold-efficiency">
+        Gold Efficiency: <span class="gold-value">{{ goldEfficiency.toFixed(2) }}</span>
+      </p>
     </div>
 
     <div v-else class="no-combat">
@@ -32,6 +37,8 @@
 <script setup lang="ts">
 import { useUnitStore } from '~/stores/unitStore';
 import { computed } from 'vue';
+import { calculateGoldEfficiency } from '@tww3-brawl/sdk/src/logic/twoSideCalculations';
+import { unitWithBonus } from '~/types/unit';
 
 const unitStore = useUnitStore();
 
@@ -78,6 +85,30 @@ const healthColor = computed(() => {
   if (health >= 40) return 'orange';
   if (health >= 20) return 'deep-orange';
   return 'red';
+});
+
+// Calculate gold efficiency
+const goldEfficiency = computed(() => {
+  if (!combatResult.value || !unitStore.left || !unitStore.right) {
+    return null;
+  }
+
+  const winnerUnit = combatResult.value.winner === 'left'
+    ? unitStore.left
+    : unitStore.right;
+
+  const loserUnit = combatResult.value.winner === 'left'
+    ? unitStore.right
+    : unitStore.left;
+
+  // Use remainingHealth as winRatio (how decisively the winner wins)
+  const winRatio = combatResult.value.remainingHealth;
+
+  return calculateGoldEfficiency(
+    unitWithBonus(winnerUnit),
+    unitWithBonus(loserUnit),
+    winRatio
+  );
 });
 </script>
 
@@ -146,5 +177,16 @@ const healthColor = computed(() => {
 
 .loser-name.q-negative {
   background-color: rgba(193, 0, 21, 0.1);
+}
+
+.gold-efficiency {
+  font-size: 1rem;
+  color: #666;
+  margin: 10px 0 0 0;
+}
+
+.gold-value {
+  font-weight: bold;
+  color: #B8860B;
 }
 </style>
