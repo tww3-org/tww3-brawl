@@ -2,12 +2,10 @@
     <q-markup-table separator="none" flat bordered v-if="leftUnit?.selection?.unit && rightUnit?.selection?.unit">
         <thead>
             <tr>
-                <th scope="col" class="text-right unit-column"><b>{{ leftUnit?.selection?.unit?.land_unit?.onscreen_name
-                }}</b>
+                <th scope="col" class="text-right unit-column"><b>{{ leftUnitName }}</b>
                 </th>
                 <th scope="col" class="text-center stat-column"><b>Statistic</b></th>
-                <th scope="col" class="text-left unit-column"><b>{{ rightUnit?.selection?.unit?.land_unit?.onscreen_name
-                }}</b>
+                <th scope="col" class="text-left unit-column"><b>{{ rightUnitName }}</b>
                 </th>
             </tr>
             <tr>
@@ -44,6 +42,7 @@
 
 <script setup lang="ts">
 import type { Unit } from '@tww3-brawl/sdk/src/types';
+import { getUnitDisplayName } from '@tww3-brawl/sdk/src/utils/getUnitDisplayName';
 import { type Paths, getTyped } from '~/shared/jsonpath';
 import type { UnitWithEntityNumberAndBonus } from '~/types/unit'
 import { UnitBonusPathes, defaultUnitBonus } from '~/types/unit'
@@ -54,6 +53,15 @@ const props = defineProps<{
     leftUnit: UnitWithEntityNumberAndBonus | null
     rightUnit: UnitWithEntityNumberAndBonus | null
 }>()
+
+// Header names are pinned to the selection's captured displayName (set at
+// the moment of the original hero/unit pick) so they stay stable across
+// later mount swaps, falling back to getUnitDisplayName for units without a
+// pinned name yet (e.g. loaded via URL deep link) — see spec.md FR-008.
+const leftUnitName = computed(() => props.leftUnit?.selection?.displayName
+    || (props.leftUnit?.selection?.unit ? getUnitDisplayName(props.leftUnit.selection.unit) : ''))
+const rightUnitName = computed(() => props.rightUnit?.selection?.displayName
+    || (props.rightUnit?.selection?.unit ? getUnitDisplayName(props.rightUnit.selection.unit) : ''))
 
 const emit = defineEmits<{
     update: [unit_side: 'left' | 'right', path: UnitBonusPathes, value: number]

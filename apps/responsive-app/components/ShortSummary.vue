@@ -38,6 +38,7 @@
 import { useUnitStore } from '~/stores/unitStore';
 import { computed } from 'vue';
 import { calculateGoldEfficiency } from '@tww3-brawl/sdk/src/logic/twoSideCalculations';
+import { getUnitDisplayName } from '@tww3-brawl/sdk/src/utils/getUnitDisplayName';
 import { unitWithBonus } from '~/types/unit';
 
 const unitStore = useUnitStore();
@@ -49,21 +50,23 @@ const combatResult = computed(() => unitStore.combatResult);
 const winnerName = computed(() => {
   if (!combatResult.value) return '';
 
-  const winnerUnit = combatResult.value.winner === 'left'
-    ? unitStore.left?.selection.unit
-    : unitStore.right?.selection.unit;
+  const winnerSelection = combatResult.value.winner === 'left'
+    ? unitStore.left?.selection
+    : unitStore.right?.selection;
 
-  return winnerUnit?.land_unit?.onscreen_name || 'Unknown Unit';
+  return winnerSelection?.displayName
+    || (winnerSelection?.unit ? getUnitDisplayName(winnerSelection.unit) : 'Unknown Unit');
 });
 
 const loserName = computed(() => {
   if (!combatResult.value) return '';
 
-  const loserUnit = combatResult.value.winner === 'left'
-    ? unitStore.right?.selection.unit
-    : unitStore.left?.selection.unit;
+  const loserSelection = combatResult.value.winner === 'left'
+    ? unitStore.right?.selection
+    : unitStore.left?.selection;
 
-  return loserUnit?.land_unit?.onscreen_name || 'Unknown Unit';
+  return loserSelection?.displayName
+    || (loserSelection?.unit ? getUnitDisplayName(loserSelection.unit) : 'Unknown Unit');
 });
 
 const winnerClass = computed(() => {

@@ -1,11 +1,11 @@
 <template>
     <div class="unit-portrait" :class="{ selected: selected }">
         <img v-if="getUnitPortrait(versionId, unit)" :src="getUnitPortrait(versionId, unit)"
-        :alt="unit.land_unit?.onscreen_name || unit.unit" />
+        :alt="getUnitDisplayName(unit)" />
         <img v-if="getUnitSemicircle(versionId, unit)" :src="getUnitSemicircle(versionId, unit)"
-        :alt="unit.land_unit?.onscreen_name || unit.unit"/>
+        :alt="getUnitDisplayName(unit)"/>
         <img v-if="getUnitIcon(versionId, unit)" :src="getUnitIcon(versionId, unit)"
-        :alt="unit.land_unit?.onscreen_name || unit.unit" />
+        :alt="getUnitDisplayName(unit)" />
         <img :src="getUnitBorder(versionId)" />
         <img :src="getUnitHover(versionId)" class="unit-hover"/>
     </div>
@@ -14,6 +14,7 @@
 <script setup lang="ts">
 import type { Unit } from '@tww3-brawl/sdk/src/types';
 import { getUnitPortrait, getUnitIcon, getUnitSemicircle, getUnitBorder, getUnitHover } from '@tww3-brawl/sdk/src/utils/getUnitPortrait';
+import { getUnitDisplayName } from '@tww3-brawl/sdk/src/utils/getUnitDisplayName';
 
 const props = withDefaults(defineProps<{
     selected: boolean | null

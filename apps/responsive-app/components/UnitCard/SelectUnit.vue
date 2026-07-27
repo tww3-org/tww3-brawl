@@ -50,7 +50,7 @@
                         @click="selectUnitAndFinish(unit)">
                         <UnitPortrait :versionId="versionId" :unit="unit"
                           :selected="selectedUnit && selectedUnit.unit === unit.unit" />
-                        <div class="unit-label">{{ unit.land_unit?.onscreen_name || unit.unit }}</div>
+                        <div class="unit-label">{{ getUnitDisplayName(unit) }}</div>
                       </div>
                     </div>
 
@@ -88,6 +88,7 @@ import { useVersions } from '~/composables/useVersions';
 import { useFactions } from '~/composables/useFactions';
 import { useFactionUnits } from '~/composables/useFactionUnits';
 import { getFactionPortrait } from '@tww3-brawl/sdk/src/utils/getFactionPortrait';
+import { getUnitDisplayName, dedupeUnitEntries } from '@tww3-brawl/sdk/src/utils/getUnitDisplayName';
 import SquarePortrait from './SquarePortrait.vue';
 import { getVersionPortrait } from '@tww3-brawl/sdk/src/utils/getVersionPortrait';
 import type { UnitSelection } from '~/types/unit';
@@ -185,7 +186,7 @@ const factionKey = computed(() => selectedUnitSelection.value?.faction?.key ?? '
 const { data: units, isLoading: unitsLoading, refetch: refetchUnits } = useFactionUnits(versionId, factionKey);
 const unitOptions = computed(() => {
   if (!units.value) return [];
-  return units.value.map(u => ({ label: u.land_unit?.onscreen_name || u.unit, value: u.unit }));
+  return units.value.map(u => ({ label: getUnitDisplayName(u), value: u.unit }));
 });
 
 // Add computed to group units by group
@@ -197,26 +198,17 @@ const groupedUnits = computed(() => {
     if (!groups[group]) groups[group] = [];
     groups[group].push(unit);
   }
-  // Here, iterate over each group to keep only the first unit per land_unit.onscreen_name that has the least land_unit.battle_entity.hit_points for each group. This is to avoid duplicates that have the same name with different HP.
+  // Here, iterate over each group to keep only one entry per unit "family":
+  // the backend can return several raw entries for the same logical unit,
+  // e.g. mount variants of a hero (distinct `unit` ids sharing the same
+  // resolved name) or a resolved/raw-translation-key pair for the same unit.
+  // dedupeUnitEntries groups by resolved display name when available (which
+  // correctly collapses mount variants) and falls back to unit-id-suffix
+  // matching for raw-named entries — see @tww3-brawl/sdk getUnitDisplayName.ts
+  // and specs/001-fix-duplicate-unit-cards/spec.md FR-007.
   const filteredGroups: Record<string, typeof units.value> = {};
   for (const [groupName, unitsList] of Object.entries(groups)) {
-    // Group by onscreen_name
-    const byName: Record<string, typeof units.value> = {};
-    for (const unit of unitsList) {
-      const name = unit.land_unit?.onscreen_name || unit.unit;
-      if (!byName[name]) byName[name] = [];
-      byName[name].push(unit);
-    }
-    // For each name, keep the one with the least HP
-    const filtered: typeof units.value = [];
-    for (const name in byName) {
-      const minHpUnit = byName[name].sort((a, b) => {
-        const hpA = a.recruitment_cost || 0;
-        const hpB = b.recruitment_cost || 0;
-        return hpA - hpB;
-      })[0];
-      filtered.push(minHpUnit);
-    }
+    const filtered = dedupeUnitEntries(unitsList);
     // Sort units first by recruitment cost then alphabetically
     filtered.sort((a, b) => {
       const costA = a.recruitment_cost || 0;
@@ -227,9 +219,9 @@ const groupedUnits = computed(() => {
         return costA - costB;
       }
 
-      // If same price, sort alphabetically
-      const nameA = a.land_unit?.onscreen_name || a.unit;
-      const nameB = b.land_unit?.onscreen_name || b.unit;
+      // If same price, sort alphabetically by resolved display name (never a raw translation key)
+      const nameA = getUnitDisplayName(a);
+      const nameB = getUnitDisplayName(b);
       return nameA.localeCompare(nameB);
     });
     filteredGroups[groupName] = filtered;

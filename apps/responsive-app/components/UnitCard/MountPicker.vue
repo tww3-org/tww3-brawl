@@ -8,7 +8,7 @@
                         <img :src="getImageUrl(unit.version, mount.icon_name)">
                     </q-avatar>
     
-                    {{ mount.mount_name }}
+                    {{ getMountDisplayName(mount) }}
                 </q-item>
             </q-list>
         </q-btn-dropdown>
@@ -22,6 +22,7 @@
 import type { Unit } from '@tww3-brawl/sdk/src/types';
 import { CROSS_ICON_SUFFIX } from '@tww3-brawl/sdk/src/utils/constants';
 import { getImageUrl } from '@tww3-brawl/sdk/src/utils/getImageUrl';
+import { getMountDisplayName } from '@tww3-brawl/sdk/src/utils/getUnitDisplayName';
 import { useUnit } from '~/composables/useUnit';
 import { ref, computed, watch } from 'vue';
 

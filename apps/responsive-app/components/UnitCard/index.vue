@@ -22,6 +22,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { getUnitPortrait } from '@tww3-brawl/sdk/src/utils/getUnitPortrait'
+import { getUnitDisplayName } from '@tww3-brawl/sdk/src/utils/getUnitDisplayName'
 import { type UnitSelection, type UnitWithEntityNumberAndBonus, defaultUnitBonus } from '~/types/unit'
 import SelectUnit from './SelectUnit.vue'
 import MountPicker from './MountPicker.vue'
@@ -66,6 +67,11 @@ function updateUnitSelection(value: UnitSelection) {
   const maxEntityCount = getMaxEntities(value.unit!);
   const defaultEntityCount = Math.min(15, maxEntityCount);
 
+  // Pin the display name at the moment of the ORIGINAL pick, so it survives
+  // untouched across later mount swaps (updateUnit above never touches
+  // displayName) — see spec.md FR-008.
+  value.displayName = value.unit ? getUnitDisplayName(value.unit) : undefined;
+
   emit('update:modelValue', { unitWithEntityNumberAndBonus: {
     selection: value,
     entityNumber: defaultEntityCount,
@@ -75,8 +81,11 @@ function updateUnitSelection(value: UnitSelection) {
 }
 // Computed for unit title
 const unitTitle = computed(() => {
-  if (unitSelection.value?.unit?.land_unit?.onscreen_name) {
-    return unitSelection.value.unit.land_unit.onscreen_name;
+  if (unitSelection.value?.displayName) {
+    return unitSelection.value.displayName;
+  }
+  if (unitSelection.value?.unit) {
+    return getUnitDisplayName(unitSelection.value.unit);
   }
   return 'Unit Title';
 });

@@ -7,6 +7,12 @@ export interface UnitSelection {
   unit?: Unit;
   version?: Version;
   faction?: Faction;
+  // Name pinned at the moment of the original hero/unit pick (see
+  // updateUnitSelection in UnitCard/index.vue). Kept stable across later
+  // mount swaps (updateUnit), which replace `unit` with the mounted
+  // variant's own data but must NOT change the displayed card title
+  // (spec.md FR-008).
+  displayName?: string;
 }
 
 // Type for unit with active entity count
