@@ -66,6 +66,12 @@ be done directly.
 - **Before every commit (main agent, mandatory):** `pnpm lint` and
   `pnpm typecheck` must both exit 0 — this covers edits the main agent made
   itself, which no `SubagentStop` hook sees.
-- Kill-switches: `VALIDATE_ON_EDIT=0`, `VERIFY_ON_SUBAGENT_STOP=0`. Both
+- **Cloud session start (automatic):** `.agents/hooks/session-start.sh` is a
+  `SessionStart` hook, active only when `CLAUDE_CODE_REMOTE=true`. It runs
+  `pnpm install` (which also runs `nuxt prepare`) and builds the gql/sdk
+  `dist/` when stale, so the two hooks above work on a fresh clone. It never
+  blocks the session: on failure it prints a warning and logs to
+  `$TMPDIR/session-start.log`.
+- Kill-switches: `VALIDATE_ON_EDIT=0`, `VERIFY_ON_SUBAGENT_STOP=0`. All
   hooks are bash scripts (Git Bash on Windows).
 <!-- MANUAL ADDITIONS END -->
