@@ -1,4 +1,4 @@
-import { Version } from "../types";
+import type { Version } from "../types";
 import { IMG_BASE_URL } from "./constants";
 
 export function getVersionPortrait(version: Version) {

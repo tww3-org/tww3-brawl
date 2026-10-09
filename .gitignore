@@ -40,3 +40,6 @@ tmp/
 
 # Scripts
 scripts/_temp
+
+# TypeScript incremental build info
+*.tsbuildinfo

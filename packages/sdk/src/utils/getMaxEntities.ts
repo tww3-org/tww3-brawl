@@ -1,4 +1,4 @@
-import { Unit } from '../types';
+import type { Unit } from '../types';
 
 export function getMaxEntities(unit: Unit) {
   if (['Hero','Lord'].includes(unit.caste)) {

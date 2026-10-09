@@ -8,7 +8,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "app": "pnpm --filter @tww3-brawl/responsive-app",
     "sdk": "pnpm --filter @tww3-brawl/sdk",
-    "gql": "pnpm --filter @tww3-brawl/gql"
+    "gql": "pnpm --filter @tww3-brawl/gql",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "pnpm -r --no-bail --if-present run typecheck"
   },
   "keywords": [],
   "author": "",
@@ -22,15 +25,21 @@
     "packages/*"
   ],
   "devDependencies": {
+    "@eslint/js": "10.0.1",
     "@nx/workspace": "^20.3.1",
     "@supabase/supabase-js": "^2.47.12",
     "@types/node": "^22.10.5",
     "adm-zip": "^0.5.16",
     "dotenv": "^16.4.7",
+    "eslint": "10.12.0",
+    "eslint-plugin-vue": "10.11.1",
+    "globals": "17.13.0",
     "mime-types": "^2.1.35",
     "nx": "^20.3.1",
     "pnpm": "8.15.9",
-    "supabase": "^2.2.1"
+    "supabase": "^2.2.1",
+    "typescript-eslint": "8.71.1",
+    "vue-eslint-parser": "10.4.1"
   },
   "pnpm": {
     "overrides": {

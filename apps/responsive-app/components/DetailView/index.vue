@@ -20,7 +20,7 @@
             <tr v-for="statistic in statistics" :key="statistic.path">
                 <td class="unit-column" v-if="leftUnit?.selection?.unit">
                     <ValueDisplay ref="leftUnitRef"
-                        :value="getTyped<Required<Unit>, Paths<Required<Unit>>>(leftUnit.selection.unit as Required<Unit>, (statistic.path) as Paths<Required<Unit>>) as number | boolean"
+                        :value="getTyped<Required<Unit>, Paths<Required<Unit>>>(leftUnit.selection.unit as Required<Unit>, (statistic.path) as Paths<Required<Unit>>) as (number | boolean)"
                         :bonus="leftUnit.bonus[statistic.path as UnitBonusPathes]"
                         :isUpdatable="UnitBonusPathes.includes(statistic.path as UnitBonusPathes)"
                         @update="onUpdate('left', statistic.path as UnitBonusPathes, $event)" orientation="left" />
@@ -29,7 +29,7 @@
                 <td class="text-center stat-column">{{ statistic.label }}</td>
                 <td class="unit-column" v-if="rightUnit?.selection?.unit">
                     <ValueDisplay ref="rightUnitRef"
-                        :value="getTyped<Required<Unit>, Paths<Required<Unit>>>(rightUnit.selection.unit as Required<Unit>, (statistic.path) as Paths<Required<Unit>>) as number | boolean"
+                        :value="getTyped<Required<Unit>, Paths<Required<Unit>>>(rightUnit.selection.unit as Required<Unit>, (statistic.path) as Paths<Required<Unit>>) as (number | boolean)"
                         :bonus="rightUnit.bonus[statistic.path as UnitBonusPathes]"
                         :isUpdatable="UnitBonusPathes.includes(statistic.path as UnitBonusPathes)"
                         @update="onUpdate('right', statistic.path as UnitBonusPathes, $event)" orientation="right" />
@@ -82,10 +82,12 @@ function onReset(unit_side: 'left' | 'right') {
     }
     if (unit_side === 'left') {
         if (props.leftUnit) {
+            // eslint-disable-next-line vue/no-mutating-props -- store-backed object, reset in place
             props.leftUnit.bonus = defaultUnitBonus()
         }
     } else {
         if (props.rightUnit) {
+            // eslint-disable-next-line vue/no-mutating-props -- store-backed object, reset in place
             props.rightUnit.bonus = defaultUnitBonus()
         }
     }

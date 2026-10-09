@@ -53,6 +53,8 @@ function updateUnit(value: Unit) {
   const maxEntityCount = value.num_men || 1;
   const defaultEntityCount = Math.min(15, maxEntityCount);
   if (props.modelValue) {
+    // Intentional in-place update of the store-backed selection
+    // eslint-disable-next-line vue/no-mutating-props
     props.modelValue.selection.unit = value;
 
     emit('update:modelValue', {unitWithEntityNumberAndBonus: {

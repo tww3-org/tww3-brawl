@@ -13,10 +13,10 @@
                   label="Versions" dense outlined option-label="name" option-value="id" />
 
                   <div v-if="versions && step === 'version'" class="version-icons-row">
-                    <SquarePortrait v-if="versions && step === 'version'" v-for="version in versions" :key="version.id" :label="version.name" 
-                    :selected="(selectedVersion && selectedVersion.id === version.id) || false"
-                    @click="selectVersionAndNext(version)">
-                      <img :src="getVersionPortrait(version)" class="square-icon-image" :alt="version.name" />
+                    <SquarePortrait v-for="v in versions" :key="v.id" :label="v.name" 
+                    :selected="(selectedVersion && selectedVersion.id === v.id) || false"
+                    @click="selectVersionAndNext(v)">
+                      <img :src="getVersionPortrait(v)" class="square-icon-image" :alt="v.name" />
                     </SquarePortrait>
                 </div>
               </div>
@@ -103,7 +103,7 @@ const dialogVisible = ref(false);
 // Initialize memory store
 const memoryStore = useMemoryStore();
 
-const props = defineProps<{
+defineProps<{
   unitSelection: UnitSelection | null
   version: string | null
 }>();
@@ -141,9 +141,9 @@ const selectedVersion = computed({
 
 const selectedFaction = computed({
   get: () => selectedUnitSelection.value?.faction || null,
-  set: (value: Faction | null) => {
+  set: (value: Faction | null | undefined) => {
     if (selectedUnitSelection.value) {
-      selectedUnitSelection.value.faction = value!;
+      selectedUnitSelection.value.faction = value ?? undefined;
     } else if (value) {
       selectedUnitSelection.value = { unit: undefined, version: undefined, faction: value };
     }
@@ -152,9 +152,9 @@ const selectedFaction = computed({
 
 const selectedUnit = computed({
   get: () => selectedUnitSelection.value?.unit || null,
-  set: (value: Unit | null) => {
+  set: (value: Unit | null | undefined) => {
     if (selectedUnitSelection.value) {
-      selectedUnitSelection.value.unit = value!;
+      selectedUnitSelection.value.unit = value ?? undefined;
     } else if (value) {
       selectedUnitSelection.value = { unit: value, version: undefined, faction: undefined };
     }
@@ -183,11 +183,7 @@ const factionOptions = computed(() => {
 
 // Fetch units
 const factionKey = computed(() => selectedUnitSelection.value?.faction?.key ?? '');
-const { data: units, isLoading: unitsLoading, refetch: refetchUnits } = useFactionUnits(versionId, factionKey);
-const unitOptions = computed(() => {
-  if (!units.value) return [];
-  return units.value.map(u => ({ label: getUnitDisplayName(u), value: u.unit }));
-});
+const { data: units, refetch: refetchUnits } = useFactionUnits(versionId, factionKey);
 
 // Add computed to group units by group
 const groupedUnits = computed(() => {
@@ -276,14 +272,14 @@ watch(step, async (newStep) => {
     // Versions are already loaded by useVersions(), no need to refetch
     // Reset faction and unit when returning to version
     if (selectedUnitSelection.value) {
-      selectedUnitSelection.value.faction = undefined as any;
-      selectedUnitSelection.value.unit = undefined as any;
+      selectedUnitSelection.value.faction = undefined;
+      selectedUnitSelection.value.unit = undefined;
     }
   } else if (newStep === 'faction') {
     await refetchFactions();
     // Reset unit when going to faction
     if (selectedUnitSelection.value) {
-      selectedUnitSelection.value.unit = undefined as any;
+      selectedUnitSelection.value.unit = undefined;
     }
   } else if (newStep === 'unit') {
     await refetchUnits();
@@ -293,21 +289,21 @@ watch(step, async (newStep) => {
 // Explicit navigation functions
 const goToNextStep = () => {
   if (step.value === 'version' && selectedVersion.value) {
-    selectedFaction.value = undefined as any;
-    selectedUnit.value = undefined as any;
+    selectedFaction.value = undefined;
+    selectedUnit.value = undefined;
     step.value = 'faction';
   } else if (step.value === 'faction' && selectedFaction.value) {
-    selectedUnit.value = undefined as any;
+    selectedUnit.value = undefined;
     step.value = 'unit';
   }
 };
 
 const goToPreviousStep = () => {
   if (step.value === 'unit') {
-    selectedUnit.value = undefined as any;
+    selectedUnit.value = undefined;
     step.value = 'faction';
   } else if (step.value === 'faction') {
-    selectedFaction.value = undefined as any;
+    selectedFaction.value = undefined;
     step.value = 'version';
   }
 };

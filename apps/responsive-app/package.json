@@ -7,7 +7,8 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "@pinia/nuxt": "^0.11.2",
@@ -25,6 +26,8 @@
   },
   "devDependencies": {
     "@nuxt/icon": "1.13.0",
-    "sass": "^1.93.2"
+    "sass": "^1.93.2",
+    "typescript": "5.9.3",
+    "vue-tsc": "2.2.12"
   }
 }

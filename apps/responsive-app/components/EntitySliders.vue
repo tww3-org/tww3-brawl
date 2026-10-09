@@ -35,15 +35,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useUnitStore } from '~/stores/unitStore'
-
 interface Props {
   entityNumber: number
   maxEntities: number
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
 const emit = defineEmits<{
   'update:entityNumber': [value: number]

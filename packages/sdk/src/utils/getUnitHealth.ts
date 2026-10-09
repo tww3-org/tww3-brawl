@@ -32,7 +32,7 @@ export function unitHealth(unit: Partial<main_unit>) {
 
   const bonus = lu?.bonus_hit_points || 0;
 
-  let hp = 0;
+  let hp: number;
   if (engine_count) {
     // I hope someday I can sit down with a CA dev that explains to me how in hell this is actually computed in the game :P
     // Tests and experimentations in https://docs.google.com/spreadsheets/d/16MUdJds1PM7poKy6bUrzpbcNRbmV68y9NonT5h_TJlE/edit#gid=1621620210

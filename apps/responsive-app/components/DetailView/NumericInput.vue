@@ -16,9 +16,9 @@
 <script setup lang="ts">
 import ModifierDisplay from './ModifierDisplay.vue';
 const props = withDefaults(defineProps<{
-    baseValue: number
-    modifier: number
-    direction: 'left' | 'right'
+    baseValue?: number
+    modifier?: number
+    direction?: 'left' | 'right'
 }>(), {
     baseValue: 0,
     modifier: 0,
