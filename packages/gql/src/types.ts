@@ -2,20 +2,18 @@ export default {
     "scalars": [
         0,
         1,
-        2,
+        3,
         6,
-        7,
-        10,
-        83,
-        84
+        8,
+        68,
+        69
     ],
     "types": {
-        "String": {},
-        "Boolean": {},
+        "CacheControlScope": {},
         "StringBoolean": {},
         "Query": {
             "ping": [
-                0
+                3
             ],
             "versions": [
                 4
@@ -24,33 +22,31 @@ export default {
                 5,
                 {
                     "tww_version": [
-                        0,
+                        3,
                         "String!"
                     ]
                 }
             ],
             "__typename": [
-                0
+                3
             ]
         },
+        "String": {},
         "gameVersion": {
             "game": [
-                0
+                3
             ],
             "id": [
-                0
+                3
             ],
             "name": [
-                0
+                3
             ],
             "__typename": [
-                0
+                3
             ]
         },
         "tww": {
-            "rules": [
-                12
-            ],
             "tww_version": [
                 6
             ],
@@ -58,636 +54,465 @@ export default {
                 4
             ],
             "units": [
-                57,
+                9,
                 {
                     "offset": [
-                        7,
+                        68,
                         "Int!"
                     ],
                     "size": [
-                        7,
+                        68,
                         "Int!"
                     ],
                     "includeQb": [
-                        1
+                        69
                     ],
                     "includeSummoned": [
-                        1
+                        69
                     ],
                     "includeBosses": [
-                        1
+                        69
                     ],
                     "includeSouthenRealms": [
-                        1
+                        69
                     ],
                     "includeKislev": [
-                        1
+                        69
                     ],
                     "query": [
-                        0
+                        3
                     ]
                 }
             ],
             "unit": [
-                57,
+                9,
                 {
                     "id": [
-                        0
+                        3
                     ]
                 }
             ],
             "factions": [
-                65,
+                49,
                 {
                     "include_non_mp": [
-                        2
-                    ]
-                }
-            ],
-            "faction": [
-                65,
-                {
-                    "id": [
-                        0
-                    ]
-                }
-            ],
-            "unit_stats": [
-                68
-            ],
-            "abilities": [
-                34,
-                {
-                    "offset": [
-                        7,
-                        "Int!"
-                    ],
-                    "size": [
-                        7,
-                        "Int!"
-                    ],
-                    "special_ability_group": [
-                        0
-                    ],
-                    "query": [
-                        0
-                    ],
-                    "noGroupsOnly": [
                         1
                     ]
                 }
             ],
-            "ability": [
-                34,
+            "faction": [
+                49,
                 {
                     "id": [
-                        0
+                        3
+                    ]
+                }
+            ],
+            "unit_stats": [
+                16
+            ],
+            "abilities": [
+                32,
+                {
+                    "offset": [
+                        68,
+                        "Int!"
+                    ],
+                    "size": [
+                        68,
+                        "Int!"
+                    ],
+                    "special_ability_group": [
+                        3
+                    ],
+                    "query": [
+                        3
+                    ],
+                    "noGroupsOnly": [
+                        69
+                    ]
+                }
+            ],
+            "ability": [
+                32,
+                {
+                    "id": [
+                        3
                     ]
                 }
             ],
             "fatigue_effects": [
-                62
+                13
             ],
             "fatigue_morale_effects": [
-                11
+                7
             ],
             "unit_experience_bonuses": [
-                63
+                14
             ],
             "campaign_difficulty_handicap_effects": [
-                69
+                59
             ],
             "unit_stats_land_experience_bonuses": [
-                9
+                15
             ],
             "ui_tagged_images": [
-                8
+                64
             ],
             "kv": [
-                11,
+                7,
                 {
                     "name": [
-                        0,
+                        3,
                         "String!"
                     ]
                 }
             ],
             "character_trait_levels": [
-                70
+                55
             ],
             "unit_stat_localisations": [
-                80
+                17
             ],
             "attributes": [
-                25
+                41
             ],
             "special_ability_groups": [
                 33
             ],
             "ui_text_replacements": [
-                81
+                67
             ],
             "unit_stat_to_size_scaling_values": [
-                82
+                18
             ],
             "__typename": [
-                0
+                3
             ]
         },
         "ID": {},
-        "Int": {},
-        "ui_tagged_image": {
-            "key": [
-                6
-            ],
-            "image_path": [
-                0
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "unit_stats_land_experience_bonuse": {
-            "xp_level": [
-                7
-            ],
-            "fatigue": [
-                7
-            ],
-            "mp_fixed_cost": [
-                7
-            ],
-            "mp_experience_cost_multiplier": [
-                10
-            ],
-            "additional_melee_cp": [
-                7
-            ],
-            "additional_missile_cp": [
-                7
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "Float": {},
         "kvp": {
             "key": [
                 6
             ],
             "value": [
-                10
+                8
             ],
             "description": [
-                0
+                3
             ],
             "__typename": [
-                0
+                3
             ]
         },
-        "rule": {
+        "Float": {},
+        "main_unit": {
+            "unit": [
+                6
+            ],
+            "land_unit": [
+                19
+            ],
+            "num_men": [
+                68
+            ],
+            "multiplayer_cost": [
+                68
+            ],
+            "weight": [
+                3
+            ],
+            "recruitment_cost": [
+                68
+            ],
+            "upkeep_cost": [
+                68
+            ],
+            "create_time": [
+                68
+            ],
+            "caste": [
+                3
+            ],
+            "ui_unit_group": [
+                65
+            ],
+            "tier": [
+                68
+            ],
+            "is_high_threat": [
+                1
+            ],
+            "mount_name": [
+                3
+            ],
+            "battle_mounts": [
+                25
+            ],
+            "factions": [
+                49,
+                {
+                    "include_non_mp": [
+                        1
+                    ]
+                }
+            ],
+            "custom_battle_permissions": [
+                11
+            ],
+            "bullet_points": [
+                12
+            ],
+            "unit_sets": [
+                10
+            ],
+            "can_siege": [
+                1
+            ],
+            "barrier_health": [
+                8
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "unit_set": {
             "key": [
+                6
+            ],
+            "special_category": [
+                3
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "unit_custom_battle_permission": {
+            "faction": [
+                3
+            ],
+            "general_unit": [
+                1
+            ],
+            "unit": [
+                3
+            ],
+            "general_portrait": [
+                3
+            ],
+            "set_piece_character": [
+                52
+            ],
+            "campaign_exclusive": [
+                1
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "bullet_point": {
+            "key": [
+                6
+            ],
+            "state": [
+                3
+            ],
+            "sort_order": [
+                68
+            ],
+            "onscreen_name": [
+                3
+            ],
+            "tooltip": [
+                3
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "unit_fatigue_effect": {
+            "key": [
+                6
+            ],
+            "fatigue_threshold": [
+                68
+            ],
+            "fatigue_level": [
+                3
+            ],
+            "scalar_speed": [
+                8
+            ],
+            "stat_melee_attack": [
+                8
+            ],
+            "stat_reloading": [
+                8
+            ],
+            "stat_armour": [
+                8
+            ],
+            "stat_charge_bonus": [
+                8
+            ],
+            "stat_melee_damage_ap": [
+                8
+            ],
+            "stat_melee_defence": [
+                8
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "unit_experience_bonus": {
+            "stat": [
                 6
             ],
             "value": [
-                10
+                68
             ],
-            "description": [
-                0
+            "growth_rate": [
+                8
+            ],
+            "growth_scalar": [
+                8
             ],
             "__typename": [
-                0
+                3
             ]
         },
-        "melee_weapon": {
+        "unit_stats_land_experience_bonuse": {
+            "xp_level": [
+                68
+            ],
+            "fatigue": [
+                68
+            ],
+            "mp_fixed_cost": [
+                68
+            ],
+            "mp_experience_cost_multiplier": [
+                8
+            ],
+            "additional_melee_cp": [
+                68
+            ],
+            "additional_missile_cp": [
+                68
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "unit_stat": {
             "key": [
                 6
             ],
-            "bonus_v_cavalry": [
-                7
+            "sort_order": [
+                68
             ],
-            "bonus_v_large": [
-                7
-            ],
-            "bonus_v_infantry": [
-                7
-            ],
-            "damage": [
-                7
-            ],
-            "ap_damage": [
-                7
-            ],
-            "first_strike": [
-                7
-            ],
-            "weapon_length": [
-                10
-            ],
-            "melee_weapon_type": [
-                0
-            ],
-            "splash_attack_target_size": [
-                0
-            ],
-            "splash_attack_max_attacks": [
-                7
-            ],
-            "splash_attack_power_multiplier": [
-                10
-            ],
-            "ignition_amount": [
-                7
-            ],
-            "is_magical": [
-                2
-            ],
-            "contact_phase": [
-                40
-            ],
-            "collision_attack_max_targets": [
-                7
-            ],
-            "collision_attack_max_targets_cooldown": [
-                7
-            ],
-            "melee_attack_interval": [
-                10
-            ],
-            "building_damage": [
-                7
+            "icon": [
+                3
             ],
             "__typename": [
-                0
+                3
             ]
         },
-        "explosion": {
-            "key": [
+        "unit_stat_localisation": {
+            "stat_key": [
                 6
             ],
-            "detonation_radius": [
-                10
-            ],
-            "detonation_duration": [
-                10
-            ],
-            "detonation_speed": [
-                7
-            ],
-            "detonation_damage": [
-                7
-            ],
-            "shrapnel_type": [
-                0
-            ],
-            "shrapnel_amount": [
-                7
-            ],
-            "distance_from_target": [
-                7
-            ],
-            "contact_phase_effect": [
-                40
-            ],
-            "ignition_amount": [
-                7
-            ],
-            "is_magical": [
-                2
-            ],
-            "detonation_damage_ap": [
-                7
-            ],
-            "detonation_force": [
-                7
+            "onscreen_name": [
+                3
             ],
             "__typename": [
-                0
+                3
             ]
         },
-        "projectile": {
-            "key": [
+        "unit_stat_to_size_scaling_value": {
+            "stat": [
                 6
             ],
-            "category": [
-                0
+            "size": [
+                3
             ],
-            "shot_type": [
-                0
+            "single_entity_value": [
+                8
             ],
-            "explosion": [
-                14
-            ],
-            "projectile_number": [
-                7
-            ],
-            "effective_range": [
-                7
-            ],
-            "minimum_range": [
-                7
-            ],
-            "max_elevation": [
-                7
-            ],
-            "muzzle_velocity": [
-                7
-            ],
-            "marksmanship_bonus": [
-                10
-            ],
-            "spread": [
-                10
-            ],
-            "damage": [
-                7
-            ],
-            "ap_damage": [
-                7
-            ],
-            "can_bounce": [
-                2
-            ],
-            "collision_radius": [
-                10
-            ],
-            "base_reload_time": [
-                10
-            ],
-            "calibration_distance": [
-                10
-            ],
-            "calibration_area": [
-                10
-            ],
-            "bonus_v_infantry": [
-                7
-            ],
-            "bonus_v_cavalry": [
-                7
-            ],
-            "bonus_v_large": [
-                7
-            ],
-            "overhead_stat_effect": [
-                40
-            ],
-            "shockwave_radius": [
-                10
-            ],
-            "can_damage_buildings": [
-                2
-            ],
-            "contact_stat_effect": [
-                40
-            ],
-            "gravity": [
-                10
-            ],
-            "burst_size": [
-                7
-            ],
-            "burst_shot_delay": [
-                10
-            ],
-            "mass": [
-                7
-            ],
-            "homing_param": [
-                0
-            ],
-            "ignition_amount": [
-                7
-            ],
-            "is_magical": [
-                2
-            ],
-            "can_target_airborne": [
-                2
-            ],
-            "fixed_elevation": [
-                7
-            ],
-            "projectile_penetration": [
-                16
-            ],
-            "expiry_range": [
-                7
-            ],
-            "is_beam_launch_burst": [
-                2
-            ],
-            "expire_on_impact": [
-                2
-            ],
-            "can_roll": [
-                2
-            ],
-            "trail_always_on": [
-                2
-            ],
-            "shots_per_volley": [
-                7
+            "multi_entity_value": [
+                8
             ],
             "__typename": [
-                0
-            ]
-        },
-        "projectile_penetration": {
-            "key": [
-                0
-            ],
-            "entity_size_cap": [
-                0
-            ],
-            "max_penetration": [
-                7
-            ],
-            "description": [
-                0
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "missile_weapon": {
-            "key": [
-                6
-            ],
-            "default_projectile": [
-                15
-            ],
-            "use_secondary_ammo_pool": [
-                2
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "unit_shield_type": {
-            "key": [
-                6
-            ],
-            "parry_chance": [
-                7
-            ],
-            "material": [
-                0
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "bullet_point_generator": {
-            "bullet_point_enum": [
-                0
-            ],
-            "text_override": [
-                0
-            ],
-            "unit_class": [
-                0
-            ],
-            "unit_stat": [
-                0
-            ],
-            "unit_stat_threshold": [
-                7
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "unit_class": {
-            "key": [
-                6
-            ],
-            "onscreen": [
-                0
-            ],
-            "sort_priority": [
-                7
-            ],
-            "bullet_point_generators": [
-                19
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "armour": {
-            "key": [
-                6
-            ],
-            "armour_value": [
-                7
-            ],
-            "__typename": [
-                0
+                3
             ]
         },
         "land_unit": {
             "key": [
-                0
+                3
             ],
             "accuracy": [
-                7
+                68
             ],
             "category": [
-                0
+                3
             ],
             "charge_bonus": [
-                7
-            ],
-            "dismounted_charge_bonus": [
-                7
-            ],
-            "dismounted_melee_attack": [
-                7
-            ],
-            "historical_description_text": [
-                0
+                68
             ],
             "melee_attack": [
-                7
+                68
             ],
             "melee_defence": [
-                7
+                68
             ],
             "ground_stat_effect_group": [
-                23
+                30
             ],
             "morale": [
-                7
+                68
             ],
             "bonus_hit_points": [
-                7
+                68
             ],
             "short_description_text": [
-                0
-            ],
-            "visibility_spotting_range_min": [
-                7
-            ],
-            "visibility_spotting_range_max": [
-                7
-            ],
-            "attribute_group": [
-                0
-            ],
-            "spot_dist_tree": [
-                7
-            ],
-            "spot_dist_scrub": [
-                7
+                3
             ],
             "reload": [
-                7
-            ],
-            "hiding_scalar": [
-                10
+                68
             ],
             "secondary_ammo": [
-                7
+                68
             ],
             "primary_ammo": [
-                7
+                68
             ],
             "damage_mod_flame": [
-                7
-            ],
-            "damage_mod_flames": [
-                7
+                68
             ],
             "damage_mod_magic": [
-                7
+                68
             ],
             "damage_mod_physical": [
-                7
+                68
             ],
             "damage_mod_missile": [
-                7
-            ],
-            "damage_mod_missiles": [
-                7
+                68
             ],
             "damage_mod_all": [
-                7
+                68
             ],
             "num_engines": [
-                7
+                68
             ],
             "num_mounts": [
-                7
-            ],
-            "ai_usage_group": [
-                0
+                68
             ],
             "can_skirmish": [
-                2
+                1
             ],
             "onscreen_name": [
-                0
+                3
             ],
             "armour": [
                 21
@@ -696,88 +521,79 @@ export default {
                 20
             ],
             "mount": [
-                26
+                23
             ],
             "primary_melee_weapon": [
-                13
+                42
             ],
             "primary_missile_weapon": [
-                17
+                46
             ],
             "shield": [
-                18
+                22
             ],
             "attributes": [
-                25
+                41
             ],
             "abilities": [
-                34
+                32
             ],
             "special_ability_groups": [
                 33
             ],
             "battle_entity": [
-                32
-            ],
-            "engine": [
-                27
-            ],
-            "officers": [
                 28
             ],
-            "variant": [
-                44
-            ],
-            "articulated_vehicle_entity": [
-                32
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "ground_type_stat_effect_group": {
-            "group_name": [
-                0
-            ],
-            "onscreen_name": [
-                0
-            ],
-            "stat_effects": [
+            "engine": [
                 24
             ],
-            "__typename": [
-                0
-            ]
-        },
-        "ground_type_to_stat_effect": {
-            "ground_type": [
-                0
+            "battle_personalities": [
+                26
             ],
-            "affected_stat": [
-                0
+            "variant": [
+                29
             ],
-            "multiplier": [
-                10
-            ],
-            "affected_group": [
-                0
+            "articulated_vehicle_entity": [
+                28
             ],
             "__typename": [
-                0
+                3
             ]
         },
-        "attribute": {
+        "unit_class": {
             "key": [
                 6
             ],
-            "bullet_text": [
-                0
+            "__typename": [
+                3
+            ]
+        },
+        "armour": {
+            "key": [
+                6
             ],
-            "imbued_effect_text": [
-                0
+            "armour_value": [
+                68
             ],
             "__typename": [
-                0
+                3
+            ]
+        },
+        "unit_shield_type": {
+            "key": [
+                6
+            ],
+            "parry_chance": [
+                68
+            ],
+            "shield_defence_value": [
+                68
+            ],
+            "shield_armour_value": [
+                68
+            ],
+            "__typename": [
+                3
             ]
         },
         "mount": {
@@ -785,13 +601,13 @@ export default {
                 6
             ],
             "battle_entity": [
-                32
+                28
             ],
             "variant": [
-                0
+                3
             ],
             "__typename": [
-                0
+                3
             ]
         },
         "engine": {
@@ -799,87 +615,58 @@ export default {
                 6
             ],
             "engine_type": [
-                0
+                3
             ],
             "missile_weapon": [
-                17
+                46
             ],
             "battle_entity": [
-                32
+                28
             ],
             "__typename": [
-                0
-            ]
-        },
-        "land_unit_officers": {
-            "officer_1": [
-                30
-            ],
-            "additionnal_personalities": [
-                30
-            ],
-            "__typename": [
-                0
+                3
             ]
         },
         "battle_mount": {
             "base_unit": [
-                0
+                3
             ],
             "mounted_unit": [
-                0
+                3
             ],
             "icon_name": [
-                0
+                3
             ],
             "mount_name": [
-                0
-            ],
-            "localised_description": [
-                0
+                3
             ],
             "__typename": [
-                0
+                3
             ]
         },
         "battle_personality": {
             "key": [
                 6
             ],
-            "type": [
-                0
-            ],
-            "missile_type": [
-                15
-            ],
-            "variant": [
-                44
-            ],
             "battle_entity": [
-                32
-            ],
-            "rider_attachment_point": [
-                0
+                28
             ],
             "battle_entity_stats": [
-                31
-            ],
-            "autonomous_rider_hero": [
-                2
+                27
             ],
             "__typename": [
-                0
+                3
             ]
         },
         "battle_entity_stats": {
             "primary_melee_weapon": [
-                13
+                42
             ],
             "primary_missile_weapon": [
-                17
+                46
             ],
             "__typename": [
-                0
+                3
             ]
         },
         "battle_entity": {
@@ -887,554 +674,67 @@ export default {
                 6
             ],
             "type": [
-                0
+                3
             ],
             "walk_speed": [
-                10
+                8
             ],
             "run_speed": [
-                10
+                8
             ],
             "acceleration": [
-                10
+                8
             ],
             "deceleration": [
-                10
+                8
             ],
             "charge_speed": [
-                10
-            ],
-            "crawl_speed": [
-                7
+                8
             ],
             "charge_distance_commence_run": [
-                10
+                8
             ],
             "charge_distance_adopt_charge_pose": [
-                10
+                8
             ],
             "charge_distance_pick_target": [
-                10
-            ],
-            "shape": [
-                0
+                8
             ],
             "radius": [
-                10
+                8
             ],
             "mass": [
-                10
+                8
             ],
             "height": [
-                10
-            ],
-            "fire_arc_close": [
-                10
+                8
             ],
             "turn_speed": [
-                10
+                8
             ],
             "hit_points": [
-                7
-            ],
-            "min_turning_speed": [
-                10
+                68
             ],
             "fly_speed": [
-                10
+                8
             ],
             "flying_charge_speed": [
-                10
+                8
             ],
             "size": [
-                0
-            ],
-            "strafe_speed": [
-                10
+                3
             ],
             "combat_reaction_radius": [
-                10
-            ],
-            "entity_effects": [
-                0
+                8
             ],
             "hit_reactions_ignore_chance": [
-                10
+                8
             ],
             "knock_interrupts_ignore_chance": [
-                10
+                8
             ],
             "__typename": [
-                0
-            ]
-        },
-        "special_ability_group": {
-            "ability_group": [
-                6
-            ],
-            "icon_path": [
-                0
-            ],
-            "special_edition_mask": [
-                7
-            ],
-            "sort_order": [
-                7
-            ],
-            "is_naval": [
-                2
-            ],
-            "colour_r": [
-                7
-            ],
-            "colour_g": [
-                7
-            ],
-            "colour_b": [
-                7
-            ],
-            "button_name": [
-                0
-            ],
-            "abilities": [
-                34
-            ],
-            "name": [
-                0
-            ],
-            "is_composite_group": [
-                2
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "ability": {
-            "key": [
-                6
-            ],
-            "supercedes_ability": [
-                2
-            ],
-            "requires_effect_enabling": [
-                2
-            ],
-            "icon_name": [
-                0
-            ],
-            "uniqueness": [
-                0
-            ],
-            "is_unit_upgrade": [
-                2
-            ],
-            "is_hidden_in_ui": [
-                2
-            ],
-            "name": [
-                0
-            ],
-            "tooltip": [
-                0
-            ],
-            "type": [
-                43
-            ],
-            "unit_special_ability": [
-                37
-            ],
-            "overpower_option": [
-                34
-            ],
-            "phases": [
-                40
-            ],
-            "special_ability_groups": [
-                33
-            ],
-            "additional_ui_effects": [
-                35
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "additional_ui_effect": {
-            "key": [
-                6
-            ],
-            "localised_text": [
-                0
-            ],
-            "sort_order": [
-                7
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "invalid_usage_flag": {
-            "flag_key": [
-                6
-            ],
-            "flag_description": [
-                0
-            ],
-            "alt_description": [
-                0
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "special_ability": {
-            "key": [
-                6
-            ],
-            "active_time": [
-                10
-            ],
-            "recharge_time": [
-                10
-            ],
-            "num_uses": [
-                7
-            ],
-            "effect_range": [
-                7
-            ],
-            "affect_self": [
-                2
-            ],
-            "num_effected_friendly_units": [
-                7
-            ],
-            "num_effected_enemy_units": [
-                7
-            ],
-            "update_targets_every_frame": [
-                2
-            ],
-            "initial_recharge": [
-                10
-            ],
-            "target_friends": [
-                2
-            ],
-            "target_enemies": [
-                2
-            ],
-            "target_ground": [
-                2
-            ],
-            "target_intercept_range": [
-                7
-            ],
-            "assume_specific_behaviour": [
-                0
-            ],
-            "clear_current_order": [
-                2
-            ],
-            "wind_up_time": [
-                10
-            ],
-            "passive": [
-                2
-            ],
-            "unique_id": [
-                7
-            ],
-            "wind_up_stance": [
-                0
-            ],
-            "mana_cost": [
-                7
-            ],
-            "min_range": [
-                7
-            ],
-            "targetting_aoe": [
-                0
-            ],
-            "passive_aoe": [
-                0
-            ],
-            "active_aoe": [
-                0
-            ],
-            "activation_effect": [
-                0
-            ],
-            "vortex": [
-                39
-            ],
-            "miscast_chance": [
-                10
-            ],
-            "ai_usage": [
-                0
-            ],
-            "special_ability_display": [
-                0
-            ],
-            "additional_melee_cp": [
-                10
-            ],
-            "additional_missile_cp": [
-                10
-            ],
-            "bombardment": [
-                38
-            ],
-            "spawned_unit": [
-                22
-            ],
-            "miscast_explosion": [
-                14
-            ],
-            "parent_ability": [
-                37
-            ],
-            "activated_projectile": [
-                15
-            ],
-            "phases": [
-                40
-            ],
-            "invalid_targets": [
-                0
-            ],
-            "invalid_usages": [
-                0
-            ],
-            "auto_deactivate_flags": [
-                36
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "projectile_bombardments": {
-            "arrival_window": [
-                10
-            ],
-            "bombardment_key": [
-                6
-            ],
-            "num_projectiles": [
-                7
-            ],
-            "radius_spread": [
-                10
-            ],
-            "start_time": [
-                10
-            ],
-            "launch_source": [
-                0
-            ],
-            "launch_height": [
-                7
-            ],
-            "launch_height_underground": [
-                7
-            ],
-            "projectile_type": [
-                15
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "vortex": {
-            "change_max_angle": [
-                7
-            ],
-            "contact_effect": [
-                40
-            ],
-            "damage": [
-                7
-            ],
-            "damage_ap": [
-                7
-            ],
-            "duration": [
-                10
-            ],
-            "expansion_speed": [
-                10
-            ],
-            "goal_radius": [
-                10
-            ],
-            "infinite_height": [
-                2
-            ],
-            "move_change_freq": [
-                10
-            ],
-            "movement_speed": [
-                10
-            ],
-            "start_radius": [
-                10
-            ],
-            "vortex_key": [
-                6
-            ],
-            "ignition_amount": [
-                7
-            ],
-            "is_magical": [
-                2
-            ],
-            "detonation_force": [
-                7
-            ],
-            "launch_source": [
-                0
-            ],
-            "building_collision": [
-                0
-            ],
-            "height_off_ground": [
-                10
-            ],
-            "delay": [
-                10
-            ],
-            "num_vortexs": [
-                7
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "phase": {
-            "id": [
-                6
-            ],
-            "onscreen_name": [
-                0
-            ],
-            "duration": [
-                10
-            ],
-            "effect_type": [
-                0
-            ],
-            "requested_stance": [
-                0
-            ],
-            "unbreakable": [
-                2
-            ],
-            "cant_move": [
-                2
-            ],
-            "freeze_fatigue": [
-                2
-            ],
-            "fatigue_change_ratio": [
-                10
-            ],
-            "inspiration_aura_change_mod": [
-                10
-            ],
-            "ability_recharge_change": [
-                10
-            ],
-            "hp_change_frequency": [
-                10
-            ],
-            "heal_amount": [
-                10
-            ],
-            "damage_chance": [
-                10
-            ],
-            "damage_amount": [
-                7
-            ],
-            "max_damaged_entities": [
-                7
-            ],
-            "resurrect": [
-                2
-            ],
-            "mana_regen_mod": [
-                10
-            ],
-            "mana_max_depletion_mod": [
-                10
-            ],
-            "imbue_magical": [
-                2
-            ],
-            "imbue_ignition": [
-                10
-            ],
-            "imbue_contact": [
-                40
-            ],
-            "phase_display": [
-                0
-            ],
-            "stat_effects": [
-                41
-            ],
-            "attribute_effects": [
-                42
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "stat_effect": {
-            "phase": [
-                6
-            ],
-            "stat": [
-                0
-            ],
-            "value": [
-                10
-            ],
-            "how": [
-                0
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "attribute_effect": {
-            "phase": [
-                6
-            ],
-            "attribute": [
-                0
-            ],
-            "attribute_type": [
-                0
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "ability_type": {
-            "key": [
-                0
-            ],
-            "icon": [
-                0
-            ],
-            "onscreen_name": [
-                0
-            ],
-            "__typename": [
-                0
+                3
             ]
         },
         "unit_variant": {
@@ -1442,600 +742,717 @@ export default {
                 6
             ],
             "faction": [
-                0
+                3
             ],
             "name": [
-                0
+                3
             ],
             "variant": [
-                0
+                3
             ],
             "unit_card": [
-                0
+                3
             ],
             "unit_card_url": [
-                0
+                3
             ],
             "__typename": [
-                0
+                3
             ]
         },
-        "ui_unit_group": {
-            "icon": [
-                0
+        "ground_type_stat_effect_group": {
+            "group_name": [
+                3
             ],
+            "onscreen_name": [
+                3
+            ],
+            "stat_effects": [
+                31
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "ground_type_to_stat_effect": {
+            "ground_type": [
+                3
+            ],
+            "affected_stat": [
+                3
+            ],
+            "multiplier": [
+                8
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "ability": {
             "key": [
                 6
             ],
-            "parent_group": [
-                46
+            "supercedes_ability": [
+                1
+            ],
+            "requires_effect_enabling": [
+                1
+            ],
+            "icon_name": [
+                3
+            ],
+            "uniqueness": [
+                3
+            ],
+            "is_unit_upgrade": [
+                1
+            ],
+            "is_hidden_in_ui": [
+                1
             ],
             "name": [
-                0
+                3
             ],
             "tooltip": [
-                0
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "ui_unit_group_parent": {
-            "key": [
-                6
-            ],
-            "onscreen_name": [
-                0
-            ],
-            "icon": [
-                0
-            ],
-            "order": [
-                7
-            ],
-            "mp_cap": [
-                7
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "battle_set_piece_armies_character": {
-            "character_level": [
-                7
-            ],
-            "character_name": [
-                6
-            ],
-            "forename": [
-                0
-            ],
-            "magic_lore": [
-                0
-            ],
-            "num_men": [
-                7
-            ],
-            "surname": [
-                0
-            ],
-            "unit_type": [
-                0
-            ],
-            "agent_type": [
-                0
-            ],
-            "agent_subtype": [
-                0
-            ],
-            "portrait": [
-                0
-            ],
-            "character_model": [
-                7
-            ],
-            "skillset": [
-                0
-            ],
-            "male": [
-                2
-            ],
-            "ancillaries": [
-                48
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "ancillary": {
-            "key": [
-                6
-            ],
-            "onscreen_name": [
-                0
-            ],
-            "applies_to": [
-                0
-            ],
-            "transferrable": [
-                2
-            ],
-            "unique_to_world": [
-                2
-            ],
-            "unique_to_faction": [
-                2
-            ],
-            "precedence": [
-                7
-            ],
-            "legendary_item": [
-                2
-            ],
-            "uniqueness_score": [
-                7
-            ],
-            "turns_before_swap_allowed": [
-                7
-            ],
-            "randomly_dropped": [
-                2
-            ],
-            "provided_bodyguard_unit": [
-                0
-            ],
-            "provided_banner": [
-                50
-            ],
-            "subcategory": [
-                0
-            ],
-            "category": [
-                0
+                3
             ],
             "type": [
-                0
+                38
             ],
-            "ancillary_effects": [
-                49
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "ancillary_effect": {
-            "value": [
-                10
-            ],
-            "effect_scope": [
-                0
-            ],
-            "effect": [
-                54
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "banner": {
-            "banner": [
-                6
-            ],
-            "effect_bundle": [
-                51
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "effect_bundle": {
-            "key": [
-                6
-            ],
-            "localised_title": [
-                0
-            ],
-            "localised_description": [
-                0
-            ],
-            "ui_icon": [
-                0
-            ],
-            "bundle_target": [
-                0
-            ],
-            "priority": [
-                7
-            ],
-            "effect_bundle_effects": [
-                52
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "effect_bundle_effect": {
-            "effect": [
-                54
-            ],
-            "value": [
-                7
-            ],
-            "effect_scope": [
-                0
-            ],
-            "advancement_stage": [
-                0
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "agent_action": {
-            "ability": [
+            "unit_special_ability": [
                 34
             ],
-            "localised_action_name": [
-                0
-            ],
-            "localised_action_description": [
-                0
-            ],
-            "unique_id": [
-                0
-            ],
-            "critical_success_proportion_modifier": [
-                10
-            ],
-            "opportune_failure_proportion_modifier": [
-                10
-            ],
-            "critical_failure_proportion_modifier": [
-                10
-            ],
-            "chance_of_success": [
-                7
-            ],
-            "icon_path": [
-                0
-            ],
-            "show_action_info_in_ui": [
-                2
-            ],
-            "subculture": [
-                66
-            ],
-            "succeed_always_override": [
-                2
-            ],
-            "order": [
-                7
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "effect": {
-            "effect": [
-                6
-            ],
-            "icon": [
-                0
-            ],
-            "priority": [
-                7
-            ],
-            "description": [
-                0
-            ],
-            "icon_negative": [
-                0
-            ],
-            "category": [
-                0
-            ],
-            "is_positive_value_good": [
-                2
-            ],
-            "agent_actions": [
-                56
+            "overpower_option": [
+                32
             ],
             "phases": [
-                56
+                35
             ],
-            "attributes": [
-                56
+            "special_ability_groups": [
+                33
             ],
-            "abilities": [
-                56
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "effect_bonus_value": {
-            "on_agent_action": [
-                53
-            ],
-            "on_phase": [
-                40
-            ],
-            "on_ability": [
-                34
-            ],
-            "on_attribute_effect": [
-                42
+            "additional_ui_effects": [
+                39
             ],
             "__typename": [
-                0
+                3
             ]
         },
-        "effect_bonus": {
-            "bonus_value_id": [
-                0
-            ],
-            "value": [
-                55
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "main_unit": {
-            "unit": [
+        "special_ability_group": {
+            "ability_group": [
                 6
             ],
-            "land_unit": [
-                22
-            ],
-            "num_men": [
-                7
-            ],
-            "multiplayer_cost": [
-                7
-            ],
-            "weight": [
-                0
-            ],
-            "recruitment_cost": [
-                7
-            ],
-            "upkeep_cost": [
-                7
-            ],
-            "create_time": [
-                7
-            ],
-            "campaign_cap": [
-                7
-            ],
-            "multiplayer_cap": [
-                7
-            ],
-            "caste": [
-                0
-            ],
-            "unique_index": [
-                7
-            ],
-            "ui_unit_group": [
-                45
-            ],
-            "tier": [
-                7
-            ],
-            "is_high_threat": [
-                2
-            ],
-            "campaign_mount": [
-                60
-            ],
-            "mount_name": [
-                0
-            ],
-            "battle_mounts": [
-                29
-            ],
-            "melee_cp": [
-                10
-            ],
-            "missile_cp": [
-                10
-            ],
-            "is_monstrous": [
-                2
-            ],
-            "campaign_factions": [
-                65,
-                {
-                    "include_non_mp": [
-                        2
-                    ]
-                }
-            ],
-            "factions": [
-                65,
-                {
-                    "include_non_mp": [
-                        2
-                    ]
-                }
-            ],
-            "custom_battle_permissions": [
-                59
-            ],
-            "bullet_points": [
-                61
-            ],
-            "is_naval": [
-                2
-            ],
-            "unit_sets": [
-                58
-            ],
-            "agent_subtype": [
-                74
-            ],
-            "can_siege": [
-                2
-            ],
-            "barrier_health": [
-                10
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "unit_set": {
-            "key": [
-                6
-            ],
-            "use_unit_exp_level_range": [
-                2
-            ],
-            "min_unit_exp_level_inclusive": [
-                7
-            ],
-            "max_unit_exp_level_inclusive": [
-                7
-            ],
-            "special_category": [
-                0
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "unit_custom_battle_permission": {
-            "faction": [
-                0
-            ],
-            "general_unit": [
-                2
-            ],
-            "unit": [
-                0
-            ],
-            "siege_unit_attacker": [
-                2
-            ],
-            "siege_unit_defender": [
-                2
-            ],
-            "general_portrait": [
-                0
-            ],
-            "general_uniform": [
-                0
-            ],
-            "set_piece_character": [
-                47
-            ],
-            "campaign_exclusive": [
-                2
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "campaign_mount": {
-            "model": [
-                0
-            ],
-            "variant": [
-                0
-            ],
-            "scale": [
-                10
-            ],
-            "actor": [
-                0
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "bullet_point": {
-            "key": [
-                6
-            ],
-            "state": [
-                0
+            "icon_path": [
+                3
             ],
             "sort_order": [
-                7
+                68
             ],
-            "onscreen_name": [
-                0
+            "button_name": [
+                3
             ],
-            "tooltip": [
-                0
+            "abilities": [
+                32
+            ],
+            "name": [
+                3
+            ],
+            "is_composite_group": [
+                1
             ],
             "__typename": [
-                0
+                3
             ]
         },
-        "unit_fatigue_effect": {
+        "special_ability": {
             "key": [
                 6
             ],
-            "fatigue_threshold": [
-                7
+            "active_time": [
+                8
             ],
-            "fatigue_level": [
-                0
+            "recharge_time": [
+                8
             ],
-            "scalar_speed": [
-                10
+            "num_uses": [
+                68
             ],
-            "stat_melee_attack": [
-                10
+            "effect_range": [
+                68
             ],
-            "stat_reloading": [
-                10
+            "affect_self": [
+                1
             ],
-            "stat_armour": [
-                10
+            "num_effected_friendly_units": [
+                68
             ],
-            "stat_charge_bonus": [
-                10
+            "num_effected_enemy_units": [
+                68
             ],
-            "stat_melee_damage_ap": [
-                10
+            "update_targets_every_frame": [
+                1
             ],
-            "stat_melee_defense": [
-                10
+            "initial_recharge": [
+                8
             ],
-            "stat_melee_defence": [
-                10
+            "target_friends": [
+                1
+            ],
+            "target_enemies": [
+                1
+            ],
+            "target_ground": [
+                1
+            ],
+            "target_intercept_range": [
+                68
+            ],
+            "assume_specific_behaviour": [
+                3
+            ],
+            "clear_current_order": [
+                1
+            ],
+            "wind_up_time": [
+                8
+            ],
+            "passive": [
+                1
+            ],
+            "unique_id": [
+                68
+            ],
+            "wind_up_stance": [
+                3
+            ],
+            "mana_cost": [
+                68
+            ],
+            "min_range": [
+                68
+            ],
+            "targetting_aoe": [
+                3
+            ],
+            "passive_aoe": [
+                3
+            ],
+            "active_aoe": [
+                3
+            ],
+            "activation_effect": [
+                3
+            ],
+            "vortex": [
+                48
+            ],
+            "miscast_chance": [
+                8
+            ],
+            "ai_usage": [
+                3
+            ],
+            "special_ability_display": [
+                3
+            ],
+            "additional_melee_cp": [
+                8
+            ],
+            "additional_missile_cp": [
+                8
+            ],
+            "bombardment": [
+                47
+            ],
+            "spawned_unit": [
+                19
+            ],
+            "miscast_explosion": [
+                43
+            ],
+            "parent_ability": [
+                34
+            ],
+            "activated_projectile": [
+                44
+            ],
+            "phases": [
+                35
+            ],
+            "invalid_targets": [
+                3
+            ],
+            "invalid_usages": [
+                3
+            ],
+            "auto_deactivate_flags": [
+                40
             ],
             "__typename": [
-                0
+                3
             ]
         },
-        "unit_experience_bonus": {
-            "stat": [
+        "phase": {
+            "id": [
                 6
             ],
-            "value": [
-                7
+            "onscreen_name": [
+                3
             ],
-            "growth_rate": [
-                10
+            "duration": [
+                8
             ],
-            "growth_scalar": [
-                10
+            "effect_type": [
+                3
+            ],
+            "requested_stance": [
+                3
+            ],
+            "unbreakable": [
+                1
+            ],
+            "cant_move": [
+                1
+            ],
+            "freeze_fatigue": [
+                1
+            ],
+            "fatigue_change_ratio": [
+                8
+            ],
+            "inspiration_aura_change_mod": [
+                8
+            ],
+            "ability_recharge_change": [
+                8
+            ],
+            "hp_change_frequency": [
+                8
+            ],
+            "heal_amount": [
+                8
+            ],
+            "damage_chance": [
+                8
+            ],
+            "damage_amount": [
+                68
+            ],
+            "max_damaged_entities": [
+                68
+            ],
+            "resurrect": [
+                1
+            ],
+            "mana_regen_mod": [
+                8
+            ],
+            "mana_max_depletion_mod": [
+                8
+            ],
+            "imbue_magical": [
+                1
+            ],
+            "imbue_ignition": [
+                8
+            ],
+            "imbue_contact": [
+                35
+            ],
+            "phase_display": [
+                3
+            ],
+            "stat_effects": [
+                36
+            ],
+            "attribute_effects": [
+                37
             ],
             "__typename": [
-                0
+                3
             ]
         },
-        "military_group": {
-            "name": [
-                0
+        "stat_effect": {
+            "phase": [
+                6
+            ],
+            "stat": [
+                3
+            ],
+            "value": [
+                8
+            ],
+            "how": [
+                3
             ],
             "__typename": [
-                0
+                3
+            ]
+        },
+        "attribute_effect": {
+            "phase": [
+                6
+            ],
+            "attribute": [
+                3
+            ],
+            "attribute_type": [
+                3
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "ability_type": {
+            "key": [
+                3
+            ],
+            "icon": [
+                3
+            ],
+            "onscreen_name": [
+                3
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "additional_ui_effect": {
+            "key": [
+                6
+            ],
+            "localised_text": [
+                3
+            ],
+            "sort_order": [
+                68
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "invalid_usage_flag": {
+            "flag_key": [
+                6
+            ],
+            "flag_description": [
+                3
+            ],
+            "alt_description": [
+                3
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "attribute": {
+            "key": [
+                6
+            ],
+            "bullet_text": [
+                3
+            ],
+            "imbued_effect_text": [
+                3
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "melee_weapon": {
+            "key": [
+                6
+            ],
+            "bonus_v_large": [
+                68
+            ],
+            "bonus_v_infantry": [
+                68
+            ],
+            "damage": [
+                68
+            ],
+            "ap_damage": [
+                68
+            ],
+            "first_strike": [
+                68
+            ],
+            "weapon_length": [
+                8
+            ],
+            "splash_attack_target_size": [
+                3
+            ],
+            "splash_attack_max_attacks": [
+                68
+            ],
+            "splash_attack_power_multiplier": [
+                8
+            ],
+            "ignition_amount": [
+                68
+            ],
+            "is_magical": [
+                1
+            ],
+            "contact_phase": [
+                35
+            ],
+            "collision_attack_max_targets": [
+                68
+            ],
+            "collision_attack_max_targets_cooldown": [
+                68
+            ],
+            "melee_attack_interval": [
+                8
+            ],
+            "building_damage": [
+                68
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "explosion": {
+            "key": [
+                6
+            ],
+            "detonation_radius": [
+                8
+            ],
+            "detonation_damage": [
+                68
+            ],
+            "contact_phase_effect": [
+                35
+            ],
+            "ignition_amount": [
+                68
+            ],
+            "is_magical": [
+                1
+            ],
+            "detonation_damage_ap": [
+                68
+            ],
+            "detonation_force": [
+                68
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "projectile": {
+            "key": [
+                6
+            ],
+            "category": [
+                3
+            ],
+            "explosion": [
+                43
+            ],
+            "projectile_number": [
+                68
+            ],
+            "effective_range": [
+                68
+            ],
+            "max_elevation": [
+                68
+            ],
+            "marksmanship_bonus": [
+                8
+            ],
+            "spread": [
+                8
+            ],
+            "damage": [
+                68
+            ],
+            "ap_damage": [
+                68
+            ],
+            "collision_radius": [
+                8
+            ],
+            "base_reload_time": [
+                8
+            ],
+            "calibration_distance": [
+                8
+            ],
+            "calibration_area": [
+                8
+            ],
+            "bonus_v_infantry": [
+                68
+            ],
+            "bonus_v_large": [
+                68
+            ],
+            "overhead_stat_effect": [
+                35
+            ],
+            "can_damage_buildings": [
+                1
+            ],
+            "contact_stat_effect": [
+                35
+            ],
+            "burst_size": [
+                68
+            ],
+            "burst_shot_delay": [
+                8
+            ],
+            "mass": [
+                68
+            ],
+            "ignition_amount": [
+                68
+            ],
+            "is_magical": [
+                1
+            ],
+            "projectile_penetration": [
+                45
+            ],
+            "shots_per_volley": [
+                68
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "projectile_penetration": {
+            "key": [
+                3
+            ],
+            "entity_size_cap": [
+                3
+            ],
+            "max_penetration": [
+                68
+            ],
+            "description": [
+                3
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "missile_weapon": {
+            "key": [
+                6
+            ],
+            "default_projectile": [
+                44
+            ],
+            "use_secondary_ammo_pool": [
+                1
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "projectile_bombardments": {
+            "arrival_window": [
+                8
+            ],
+            "bombardment_key": [
+                6
+            ],
+            "num_projectiles": [
+                68
+            ],
+            "radius_spread": [
+                8
+            ],
+            "start_time": [
+                8
+            ],
+            "launch_source": [
+                3
+            ],
+            "launch_height": [
+                68
+            ],
+            "launch_height_underground": [
+                68
+            ],
+            "projectile_type": [
+                44
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "vortex": {
+            "change_max_angle": [
+                68
+            ],
+            "contact_effect": [
+                35
+            ],
+            "damage": [
+                68
+            ],
+            "damage_ap": [
+                68
+            ],
+            "duration": [
+                8
+            ],
+            "expansion_speed": [
+                8
+            ],
+            "goal_radius": [
+                8
+            ],
+            "infinite_height": [
+                1
+            ],
+            "move_change_freq": [
+                8
+            ],
+            "movement_speed": [
+                8
+            ],
+            "start_radius": [
+                8
+            ],
+            "vortex_key": [
+                6
+            ],
+            "ignition_amount": [
+                68
+            ],
+            "is_magical": [
+                1
+            ],
+            "detonation_force": [
+                68
+            ],
+            "launch_source": [
+                3
+            ],
+            "building_collision": [
+                3
+            ],
+            "height_off_ground": [
+                8
+            ],
+            "delay": [
+                8
+            ],
+            "num_vortexs": [
+                68
+            ],
+            "__typename": [
+                3
             ]
         },
         "faction": {
@@ -2043,134 +1460,121 @@ export default {
                 6
             ],
             "subculture": [
-                66
+                50
             ],
             "screen_name": [
-                0
+                3
             ],
             "screen_adjective": [
-                0
+                3
             ],
             "is_rebel": [
-                2
+                1
             ],
             "mp_available": [
-                2
+                1
             ],
             "flags_path": [
-                0
+                3
             ],
             "flags_url": [
-                0
+                3
             ],
             "name_group": [
-                0
+                3
             ],
             "primary_colour_hex": [
-                0
+                3
             ],
             "secondary_colour_hex": [
-                0
-            ],
-            "military_group": [
-                0
-            ],
-            "can_be_horde": [
-                2
-            ],
-            "faction_swapping_id": [
-                0
-            ],
-            "is_waaagh_faction": [
-                2
-            ],
-            "is_quest_faction": [
-                2
+                3
             ],
             "units": [
-                57,
+                9,
                 {
                     "groupHeroesAndLords": [
-                        2
+                        1
                     ]
                 }
             ],
             "__typename": [
-                0
+                3
             ]
         },
         "subculture": {
             "subculture": [
-                0
+                3
             ],
             "name": [
-                0
+                3
             ],
             "culture": [
-                67
+                51
             ],
             "__typename": [
-                0
+                3
             ]
         },
         "culture": {
             "key": [
-                0
+                3
             ],
             "name": [
-                0
+                3
             ],
             "__typename": [
-                0
+                3
             ]
         },
-        "unit_stat": {
+        "battle_set_piece_armies_character": {
+            "num_men": [
+                68
+            ],
+            "unit_type": [
+                3
+            ],
+            "ancillaries": [
+                53
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "ancillary": {
             "key": [
                 6
             ],
-            "max_value": [
-                7
+            "onscreen_name": [
+                3
             ],
-            "campaign_only": [
-                2
+            "precedence": [
+                68
             ],
-            "sort_order": [
-                7
+            "category": [
+                3
             ],
-            "localisation": [
-                0
+            "type": [
+                3
             ],
-            "icon": [
-                0
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "campaign_difficulty_handicap_effect": {
-            "key": [
-                6
-            ],
-            "campaign_difficulty_handicap": [
-                7
-            ],
-            "human": [
-                2
-            ],
-            "effect": [
+            "ancillary_effects": [
                 54
             ],
+            "__typename": [
+                3
+            ]
+        },
+        "ancillary_effect": {
+            "value": [
+                8
+            ],
             "effect_scope": [
-                0
+                3
             ],
-            "effect_value": [
-                0
-            ],
-            "optional_campaign_key": [
-                0
+            "effect": [
+                61
             ],
             "__typename": [
-                0
+                3
             ]
         },
         "character_trait_level": {
@@ -2178,77 +1582,62 @@ export default {
                 6
             ],
             "onscreen_name": [
-                0
+                3
             ],
             "character_trait": [
-                72
+                57
             ],
             "level": [
-                7
-            ],
-            "threshold_points": [
-                7
+                68
             ],
             "colour_text": [
-                0
+                3
             ],
             "explanation_text": [
-                0
-            ],
-            "removal_text": [
-                0
+                3
             ],
             "trait_level_effects": [
-                71
+                56
             ],
             "__typename": [
-                0
+                3
             ]
         },
         "trait_level_effect": {
             "effect": [
-                54
+                61
             ],
             "value": [
-                10
+                8
             ],
             "effect_scope": [
-                0
+                3
             ],
             "__typename": [
-                0
+                3
             ]
         },
         "character_trait": {
             "key": [
                 6
             ],
-            "no_going_back_level": [
-                7
-            ],
             "hidden": [
-                2
+                1
             ],
             "precedence": [
-                7
+                68
             ],
             "category": [
-                73
-            ],
-            "author": [
-                0
+                58
             ],
             "comment": [
-                0
-            ],
-            "ui_priority": [
-                7
+                3
             ],
             "antitrait": [
-                0
+                3
             ],
             "__typename": [
-                0
+                3
             ]
         },
         "trait_category": {
@@ -2256,243 +1645,164 @@ export default {
                 6
             ],
             "icon_path": [
-                0
+                3
             ],
             "__typename": [
-                0
+                3
             ]
         },
-        "agent_subtype": {
+        "campaign_difficulty_handicap_effect": {
             "key": [
                 6
             ],
-            "auto_generate": [
-                2
+            "campaign_difficulty_handicap": [
+                68
             ],
-            "is_caster": [
-                2
+            "human": [
+                1
             ],
-            "small_icon": [
-                0
+            "effect": [
+                61
             ],
-            "associated_unit_override": [
-                0
+            "effect_scope": [
+                3
             ],
-            "audio_voiceover_actor_group": [
-                0
+            "effect_value": [
+                3
             ],
-            "show_in_ui": [
-                2
-            ],
-            "cap": [
-                7
-            ],
-            "has_female_name": [
-                2
-            ],
-            "can_gain_xp": [
-                2
-            ],
-            "loyality_is_applicable": [
-                2
-            ],
-            "contributes_to_agent_cap": [
-                2
-            ],
-            "onscreen_name_override": [
-                0
-            ],
-            "description_text_override": [
-                0
-            ],
-            "character_skill_node_set": [
-                75
+            "optional_campaign_key": [
+                3
             ],
             "__typename": [
-                0
+                3
             ]
         },
-        "character_skill_node_set": {
-            "agent_key": [
-                0
+        "agent_action": {
+            "ability": [
+                32
             ],
-            "campaign_key": [
-                0
+            "unique_id": [
+                3
             ],
-            "faction_key": [
-                0
-            ],
-            "key": [
-                0
+            "icon_path": [
+                3
             ],
             "subculture": [
-                0
-            ],
-            "for_army": [
-                2
-            ],
-            "for_navy": [
-                2
-            ],
-            "agent_subtype_key": [
-                0
-            ],
-            "enc_title": [
-                0
-            ],
-            "character_skill_nodes": [
-                76
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "character_skill_node": {
-            "campaign_key": [
-                0
-            ],
-            "character_skill_key": [
-                0
-            ],
-            "character_skill_node_set_key": [
-                0
-            ],
-            "faction_key": [
-                0
-            ],
-            "indent": [
-                7
-            ],
-            "key": [
-                6
-            ],
-            "tier": [
-                7
-            ],
-            "subculture": [
-                0
-            ],
-            "points_on_creation": [
-                7
-            ],
-            "required_num_parents": [
-                7
-            ],
-            "visible_in_ui": [
-                2
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "character_skill": {
-            "image_path": [
-                0
-            ],
-            "key": [
-                6
-            ],
-            "localised_description": [
-                0
-            ],
-            "localised_name": [
-                0
-            ],
-            "unlocked_at_rank": [
-                7
-            ],
-            "is_background_skill": [
-                2
-            ],
-            "is_female_only_background_skill": [
-                2
-            ],
-            "is_male_only_background_skill": [
-                2
-            ],
-            "background_weighting": [
-                7
-            ],
-            "influence_cost": [
-                7
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "character_skill_category": {
-            "key": [
-                6
-            ],
-            "max_incident": [
-                7
-            ],
-            "min_incident": [
-                7
+                50
             ],
             "order": [
-                7
-            ],
-            "col_r": [
-                7
-            ],
-            "col_g": [
-                7
-            ],
-            "col_b": [
-                7
-            ],
-            "agent_subtype_override": [
-                0
+                68
             ],
             "__typename": [
-                0
+                3
             ]
         },
-        "character_skill_level_detail": {
-            "campaign_key": [
+        "effect": {
+            "effect": [
                 6
             ],
-            "faction_key": [
+            "icon": [
+                3
+            ],
+            "description": [
+                3
+            ],
+            "category": [
+                3
+            ],
+            "is_positive_value_good": [
+                1
+            ],
+            "phases": [
+                63
+            ],
+            "attributes": [
+                63
+            ],
+            "abilities": [
+                63
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "effect_bonus_value": {
+            "on_agent_action": [
+                60
+            ],
+            "on_phase": [
+                35
+            ],
+            "on_ability": [
+                32
+            ],
+            "on_attribute_effect": [
+                37
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "effect_bonus": {
+            "bonus_value_id": [
+                3
+            ],
+            "value": [
+                62
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "ui_tagged_image": {
+            "key": [
                 6
             ],
             "image_path": [
-                0
-            ],
-            "level": [
-                7
-            ],
-            "skill_key": [
-                0
-            ],
-            "subculture_key": [
-                0
-            ],
-            "unlocked_at_rank": [
-                7
-            ],
-            "localised_name": [
-                0
-            ],
-            "localised_description": [
-                0
+                3
             ],
             "__typename": [
-                0
+                3
             ]
         },
-        "unit_stat_localisation": {
-            "stat_key": [
+        "ui_unit_group": {
+            "icon": [
+                3
+            ],
+            "key": [
+                6
+            ],
+            "parent_group": [
+                66
+            ],
+            "name": [
+                3
+            ],
+            "tooltip": [
+                3
+            ],
+            "__typename": [
+                3
+            ]
+        },
+        "ui_unit_group_parent": {
+            "key": [
                 6
             ],
             "onscreen_name": [
-                0
+                3
             ],
-            "tooltip_text": [
-                0
+            "icon": [
+                3
+            ],
+            "order": [
+                68
+            ],
+            "mp_cap": [
+                68
             ],
             "__typename": [
-                0
+                3
             ]
         },
         "ui_text_replacement": {
@@ -2500,30 +1810,13 @@ export default {
                 6
             ],
             "localised_text": [
-                0
+                3
             ],
             "__typename": [
-                0
+                3
             ]
         },
-        "unit_stat_to_size_scaling_value": {
-            "stat": [
-                6
-            ],
-            "size": [
-                0
-            ],
-            "single_entity_value": [
-                10
-            ],
-            "multi_entity_value": [
-                10
-            ],
-            "__typename": [
-                0
-            ]
-        },
-        "CacheControlScope": {},
-        "Upload": {}
+        "Int": {},
+        "Boolean": {}
     }
 }
