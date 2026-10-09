@@ -1,9 +1,0 @@
-name = "tww3-brawl-cors-proxy"
-main = "src/index.ts"
-compatibility_date = "2026-10-01"
-workers_dev = true
-
-[vars]
-UPSTREAM_URL = "https://broker.twwstats.com/graphql"
-ALLOWED_ORIGINS = "https://tww3-org.github.io,http://localhost:3000"
-CACHE_TTL_SECONDS = "3600"

@@ -15,7 +15,6 @@ export default tseslint.config(
       '.specify/**',
       '.claude/**',
       '.agents/**',
-      'apps/cors-proxy/.wrangler/**',
     ],
   },
   js.configs.recommended,
@@ -30,12 +29,6 @@ export default tseslint.config(
         extraFileExtensions: ['.vue'],
         sourceType: 'module',
       },
-    },
-  },
-  {
-    files: ['apps/cors-proxy/**/*.ts'],
-    languageOptions: {
-      globals: { ...globals.serviceworker },
     },
   },
   {

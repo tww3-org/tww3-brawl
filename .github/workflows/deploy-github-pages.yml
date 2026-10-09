@@ -51,7 +51,6 @@ jobs:
         run: pnpm run app generate
         env:
           NUXT_APP_BASE_URL: /tww3-brawl/
-          GRAPHQL_API_URL: ${{ vars.GRAPHQL_API_URL }}
         
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
