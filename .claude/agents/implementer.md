@@ -4,8 +4,8 @@ description: >-
   Writes and changes code in tww3-brawl (Nuxt 3 app, SDK, gql package, config,
   tests). Use for every code-writing task: features, bug fixes, refactors,
   type/lint fixes. Give it the goal, the files involved, the constraints and
-  how to verify; it returns a summary of what changed and the verification
-  output. It does not commit or push.
+  how to verify; it returns a summary of what changed. Lint and typecheck are
+  enforced by the SubagentStop hook. It does not commit or push.
 model: sonnet
 ---
 
@@ -30,20 +30,15 @@ You implement code changes in the tww3-brawl pnpm monorepo:
 5. Do not commit, push or open PRs. The caller reviews and commits.
 6. If a `speckit-*` workflow applies (a feature with `specs/NNN-*/tasks.md`), follow its tasks.
 
-## Before you report back (mandatory)
+## When you finish
 
-Run and include the exit code of each:
-
-```bash
-pnpm lint
-pnpm typecheck
-```
-
-Plus any test or build command relevant to what you changed. If something stays red,
-say exactly what and why — never report a task as done with a failing check.
+You do not need to run `pnpm lint` / `pnpm typecheck` yourself: a `SubagentStop` hook
+(`.agents/hooks/verify-on-subagent-stop.sh`) runs both when you try to stop and, if either
+is red, sends you the errors to fix before you can hand back. If it lets you stop while
+still red (after 3 attempts), say so explicitly in your report.
 
 ## Report format
 
 - What changed: one line per file, with the reason.
-- Verification: each command and its exit code.
+- Verification: any test or build you ran beyond the automatic checks, with its exit code.
 - Open points: anything unresolved or out of scope you noticed.
