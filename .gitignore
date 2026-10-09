@@ -43,3 +43,6 @@ scripts/_temp
 
 # TypeScript incremental build info
 *.tsbuildinfo
+
+# Cloudflare Wrangler
+.wrangler/
