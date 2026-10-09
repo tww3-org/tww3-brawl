@@ -60,7 +60,7 @@ const versionRef = computed(() => props.unit.version);
 const unitKeyRef = computed(() => selectedMountKey.value || '');
 
 // Récupération de l'unité montée sélectionnée
-const { data: mountedUnit, isLoading: unitLoading, error: unitError, refetch: refetchMountedUnit } = useUnit(
+const { data: mountedUnit, refetch: refetchMountedUnit } = useUnit(
     versionRef,
     unitKeyRef
 );

@@ -17,7 +17,9 @@ type PathValue<T, P extends string> = P extends `${infer K}.${infer Rest}`
 type PropValue<T, K extends string> = K extends keyof T ? T[K] : never;
 
 export function getTyped<T, P extends Paths<T>>(obj: T, path: P): PathValue<T, P> {
-  return (path as string).split('.').reduce<any>((acc, key) => acc?.[key], obj);
+  return (path as string)
+    .split('.')
+    .reduce<unknown>((acc, key) => (acc as Record<string, unknown> | undefined)?.[key], obj) as PathValue<T, P>;
 }
 
 export function setTyped<T, P extends Paths<T>>(
@@ -26,11 +28,11 @@ export function setTyped<T, P extends Paths<T>>(
   value: Paths<T, P>
 ): void {
   const keys = (path as string).split('.');
-  let curr: any = obj;
+  let curr = obj as unknown as Record<string, unknown>;
   for (let i = 0; i < keys.length - 1; i++) {
     const k = keys[i];
     curr[k] ??= {};
-    curr = curr[k];
+    curr = curr[k] as Record<string, unknown>;
   }
   curr[keys[keys.length - 1]] = value;
 }

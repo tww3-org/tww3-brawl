@@ -1,4 +1,4 @@
-import { createClient, type Client } from '@tww3-brawl/gql';
+import { createClient } from '@tww3-brawl/gql';
 
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig();

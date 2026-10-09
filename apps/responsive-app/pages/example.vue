@@ -84,10 +84,10 @@ const columns = [
     { name: 'unit', label: 'ID', field: 'unit', sortable: true },
     { name: 'category', label: 'Catégorie', field: (row: Unit) => row.caste, sortable: true },
     { name: 'name', label: 'Nom', field: (row: Unit) => row.land_unit?.onscreen_name, sortable: true },
-    { name: 'health', label: 'PV', field: (row: Unit) => row.health?.unit, sortable: true, align: 'right' },
-    { name: 'armor', label: 'Armure', field: 'armor', sortable: true, align: 'right' },
-    { name: 'attack', label: 'Attaque', field: 'attack', sortable: true, align: 'right' },
-    { name: 'defense', label: 'Défense', field: 'defense', sortable: true, align: 'right' },
+    { name: 'health', label: 'PV', field: (row: Unit) => row.health?.unit, sortable: true, align: 'right' as const },
+    { name: 'armor', label: 'Armure', field: 'armor', sortable: true, align: 'right' as const },
+    { name: 'attack', label: 'Attaque', field: 'attack', sortable: true, align: 'right' as const },
+    { name: 'defense', label: 'Défense', field: 'defense', sortable: true, align: 'right' as const },
 ];
 
 

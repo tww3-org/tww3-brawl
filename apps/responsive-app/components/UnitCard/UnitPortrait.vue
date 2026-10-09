@@ -16,8 +16,8 @@ import type { Unit } from '@tww3-brawl/sdk/src/types';
 import { getUnitPortrait, getUnitIcon, getUnitSemicircle, getUnitBorder, getUnitHover } from '@tww3-brawl/sdk/src/utils/getUnitPortrait';
 import { getUnitDisplayName } from '@tww3-brawl/sdk/src/utils/getUnitDisplayName';
 
-const props = withDefaults(defineProps<{
-    selected: boolean | null
+withDefaults(defineProps<{
+    selected?: boolean | null
     versionId: string
     unit: Unit
 }>(), {

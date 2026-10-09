@@ -1,4 +1,4 @@
-import { Unit } from '../types'
+import type { Faction, Unit, Version } from '../types'
 import { averageHealthLostPerUnitPerHit } from './oneSideCalculations'
 import { getMaxEntities } from '../utils/getMaxEntities'
 
@@ -8,8 +8,8 @@ import { getMaxEntities } from '../utils/getMaxEntities'
 export interface UnitWithEntityNumber {
   selection: {
     unit?: Unit;
-    version?: any;
-    faction?: any;
+    version?: Version;
+    faction?: Faction;
   };
   entityNumber: number;
 }
@@ -24,7 +24,6 @@ export interface CombatResult {
 }
 
 const GOLD_COST_KEYS = ['upkeep_cost', 'recruitment_cost', 'multiplayer_cost'] as const
-type GoldCostKey = (typeof GOLD_COST_KEYS)[number]
 
 /**
  * Calculates gold efficiency between a winning unit and a losing unit.

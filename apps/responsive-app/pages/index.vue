@@ -2,8 +2,8 @@
   <h1>TWW3 Brawl</h1>
   <div class="q-pa-md container">
     <div class=" justify-center items-center unit-cards-container" >
-      <UnitCard v-for="unit_side in ['left', 'right']" :orientation="unit_side as 'left' | 'right'" class="unit-card" :class="{ 'bg-positive': unit_side === 'left', 'bg-negative': unit_side === 'right' }" :modelValue="unitStore[unit_side as keyof typeof unitStore.$state]"
-        @update:modelValue="(value) => handleSelectionUpdate(unit_side as 'left' | 'right', value)" />
+      <UnitCard v-for="unit_side in sides" :key="unit_side" :orientation="unit_side" class="unit-card" :class="{ 'bg-positive': unit_side === 'left', 'bg-negative': unit_side === 'right' }" :modelValue="unitStore[unit_side]"
+        @update:modelValue="(value) => handleSelectionUpdate(unit_side, value)" />
     </div>
 
     <!-- Reset Button -->
@@ -13,12 +13,12 @@
 
     <!-- Entity Sliders -->
     <div class="entity-sliders-container" v-if="unitStore?.left?.selection?.unit || unitStore?.right?.selection?.unit">
-      <template v-for="unit_side in ['left', 'right']">
+      <template v-for="unit_side in sides" :key="unit_side">
         <div class="entity-slider">
-          <EntitySliders v-if="unitStore?.[unit_side as keyof typeof unitStore.$state]?.selection?.unit && getMaxEntities(unitStore[unit_side as keyof typeof unitStore.$state]!.selection.unit!) > 1"
-            :entity-number="unitStore[unit_side as keyof typeof unitStore.$state]!.entityNumber"
-            :max-entities="getMaxEntities(unitStore[unit_side as keyof typeof unitStore.$state]!.selection.unit!)"
-            @update:entity-number="(value) => unitStore.setUnitEntityCount(unit_side as keyof typeof unitStore.$state, value)" />
+          <EntitySliders v-if="unitStore?.[unit_side]?.selection?.unit && getMaxEntities(unitStore[unit_side]!.selection.unit!) > 1"
+            :entity-number="unitStore[unit_side]!.entityNumber"
+            :max-entities="getMaxEntities(unitStore[unit_side]!.selection.unit!)"
+            @update:entity-number="(value) => unitStore.setUnitEntityCount(unit_side, value)" />
         </div>
       </template>
     </div>
@@ -45,6 +45,7 @@ import DetailView from '~/components/DetailView/index.vue'
 import { useUrlSync } from '~/composables/useUrlSync'
 import { onMounted } from 'vue'
 
+const sides = ['left', 'right'] as const
 const unitStore = useUnitStore()
 const detailViewRef: Ref<typeof DetailView | null> = ref(null)
 const { initializeFromUrl, watchStoreChanges } = useUrlSync()
