@@ -1,8 +1,10 @@
 <template>
   <q-card class="unit-card">
     <q-card-section>
-      <UnitPortrait v-if="unitSelection?.unit && unitSelection?.version?.id" :versionId="unitSelection.version.id"
-        :unit="unitSelection.unit" :interactive="false" class="unit-image" />
+      <div v-if="unitSelection?.unit && unitSelection?.version?.id" class="unit-image">
+        <UnitPortrait :versionId="unitSelection.version.id" :unit="unitSelection.unit" :interactive="false"
+          size="100%" />
+      </div>
       <q-img v-else :src="defaultUnitImageUrl" :ratio="16 / 9" fit="contain" class="unit-fallback-image"
         alt="Unit Portrait" />
       <div class="unit-label text-xl"><a v-if="twwStatUrl" :href="twwStatUrl" target="_blank">{{ unitTitle }}</a>
@@ -130,8 +132,10 @@ const twwStatUrl = computed(() => {
 }
 
 .unit-image {
-  width: fit-content;
-  margin: 0 auto;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  justify-content: center;
 }
 
 .unit-fallback-image {
