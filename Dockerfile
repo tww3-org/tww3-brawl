@@ -1,5 +1,5 @@
 # Utilisation de l'image de base Node.js 22 sur Debian Bullseye
-FROM node:20-bullseye
+FROM node:22-bullseye
 
 # Maintient du créateur ou de l'organisation
 LABEL maintainer="Guilhem <guilhem.heinrich@gmail.com>"
