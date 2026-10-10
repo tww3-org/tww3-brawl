@@ -1,7 +1,12 @@
 <template>
   <q-card class="unit-card">
     <q-card-section>
-      <q-img :src="unitImageUrl" :ratio="16 / 9" fit="contain" class="unit-image" alt="Unit Portrait" />
+      <div v-if="unitSelection?.unit && unitSelection?.version?.id" class="unit-image">
+        <UnitPortrait :versionId="unitSelection.version.id" :unit="unitSelection.unit" :interactive="false"
+          size="100%" />
+      </div>
+      <q-img v-else :src="defaultUnitImageUrl" :ratio="16 / 9" fit="contain" class="unit-fallback-image"
+        alt="Unit Portrait" />
       <div class="unit-label text-xl"><a v-if="twwStatUrl" :href="twwStatUrl" target="_blank">{{ unitTitle }}</a>
       </div>
     </q-card-section>
@@ -21,11 +26,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { getUnitPortrait } from '@tww3-brawl/sdk/src/utils/getUnitPortrait'
 import { getUnitDisplayName } from '@tww3-brawl/sdk/src/utils/getUnitDisplayName'
 import { type UnitSelection, type UnitWithEntityNumberAndBonus, defaultUnitBonus } from '~/types/unit'
 import SelectUnit from './SelectUnit.vue'
 import MountPicker from './MountPicker.vue'
+import UnitPortrait from './UnitPortrait.vue'
 import type { Unit, Version } from '@tww3-brawl/sdk/src/types'
 import { getTwwStatUrl } from '@tww3-brawl/sdk/src/utils/getTwwStat'
 import { useUnitStore } from '~/stores/unitStore'
@@ -92,17 +97,8 @@ const unitTitle = computed(() => {
   return 'Unit Title';
 });
 
-// Computed for unit image
-const unitImageUrl = computed(() => {
-  if (unitSelection.value?.unit && unitSelection.value?.version?.id) {
-
-    const portrait = getUnitPortrait(unitSelection.value.version.id, unitSelection.value.unit)
-    if (portrait) {
-      return portrait
-    }
-  }
-  return '/default-unit-image.jpg'
-})
+// Fallback image when no unit is selected
+const defaultUnitImageUrl = '/default-unit-image.jpg'
 
 const twwStatUrl = computed(() => {
   let unitAndVersion: {unit: Unit, version: Version}[] = [];
@@ -136,6 +132,13 @@ const twwStatUrl = computed(() => {
 }
 
 .unit-image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  justify-content: center;
+}
+
+.unit-fallback-image {
   width: 100%;
   height: auto;
   flex: 1;

@@ -1,12 +1,13 @@
 <template>
-    <div class="unit-portrait" :class="{ selected: selected }">
+    <div class="unit-portrait" :class="{ selected: selected, interactive: interactive }"
+        :style="{ '--unit-portrait-size': size }">
         <img v-if="getUnitPortrait(versionId, unit)" :src="getUnitPortrait(versionId, unit)"
-        :alt="getUnitDisplayName(unit)" />
+        :alt="getUnitDisplayName(unit)" class="unit-portrait__image" />
         <img v-if="getUnitSemicircle(versionId, unit)" :src="getUnitSemicircle(versionId, unit)"
-        :alt="getUnitDisplayName(unit)"/>
+        :alt="getUnitDisplayName(unit)" class="unit-portrait__semicircle" />
         <img v-if="getUnitIcon(versionId, unit)" :src="getUnitIcon(versionId, unit)"
-        :alt="getUnitDisplayName(unit)" />
-        <img :src="getUnitBorder(versionId)" />
+        :alt="getUnitDisplayName(unit)" class="unit-portrait__icon" />
+        <img :src="getUnitBorder(versionId)" class="unit-portrait__frame" />
         <img :src="getUnitHover(versionId)" class="unit-hover"/>
     </div>
 </template>
@@ -20,8 +21,13 @@ withDefaults(defineProps<{
     selected?: boolean | null
     versionId: string
     unit: Unit
+    interactive?: boolean
+    /** CSS height of the portrait; the 60 / 130 ratio is kept and every layer scales with it. */
+    size?: string
 }>(), {
-    selected: false
+    selected: false,
+    interactive: true,
+    size: '130px'
 });
 
 </script>
@@ -42,37 +48,38 @@ withDefaults(defineProps<{
 
 .unit-portrait {
     position: relative;
-    height:130px;
+    height: var(--unit-portrait-size);
+    aspect-ratio: 60 / 130;
 
-    img:nth-child(2) {
+    // Every layer is sized in % of the container (assets are designed for a 60x130 frame)
+    &__image,
+    &__frame,
+    .unit-hover {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    &__semicircle,
+    &__icon {
         position: absolute;
         bottom: 0;
-        left: 50%;  
+        left: 50%;
         transform: translateX(-50%);
-
+        height: auto;
     }
 
-    img:nth-child(3) {
-        position: absolute;
-        bottom: 0;
-        left: 50%;  
-        transform: translateX(-50%);
-
+    &__semicircle {
+        width: calc(55 / 60 * 100%);
     }
 
-    img:nth-child(4) {
-        position: absolute;
-        bottom: 0;
-        right: 0;  
+    &__icon {
+        width: calc(22 / 60 * 100%);
     }
 
-    img:nth-child(5) {
-        position: absolute;
-        bottom: 0;
-        right: 0;       
-    }
-
-    &:hover {
+    &.interactive:hover {
         @include emphazed-card;
         
         .unit-hover {
