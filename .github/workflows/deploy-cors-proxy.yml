@@ -1,0 +1,85 @@
+name: Deploy CORS proxy (Cloudflare Worker)
+
+on:
+  workflow_dispatch: # Manual trigger
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/cors-proxy/**'
+      - '.github/workflows/deploy-cors-proxy.yml'
+
+permissions:
+  contents: read
+
+# Un seul déploiement à la fois, sans annuler celui en cours.
+concurrency:
+  group: cors-proxy-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check Cloudflare secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          missing=0
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::Secret CLOUDFLARE_API_TOKEN is empty or missing (GitHub > Settings > Secrets and variables > Actions)."
+            missing=1
+          fi
+          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::Secret CLOUDFLARE_ACCOUNT_ID is empty or missing (GitHub > Settings > Secrets and variables > Actions)."
+            missing=1
+          fi
+          exit "$missing"
+
+      - name: Deploy Worker
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/cors-proxy
+          wranglerVersion: '4.149.0'
+          packageManager: pnpm
+          command: deploy
+
+      - name: Write deployment summary
+        env:
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
+        run: |
+          {
+            echo "## CORS proxy deployed"
+            echo ""
+            if [ -n "$DEPLOYMENT_URL" ]; then
+              url="${DEPLOYMENT_URL%/}"
+              echo "- Worker URL: ${url}"
+              echo "- GraphQL endpoint: \`${url}/graphql\`"
+              echo ""
+              echo "Next step: set the repository variable \`GRAPHQL_API_URL\` to \`${url}/graphql\`"
+              echo "(Settings > Secrets and variables > Actions > Variables), then re-run \"Deploy to GitHub Pages\"."
+            else
+              echo "The deployment URL was not exposed by the action. Read it from the wrangler output in the \"Deploy Worker\" step log."
+              echo ""
+              echo "Then set the repository variable \`GRAPHQL_API_URL\` to that URL followed by \`/graphql\`, and re-run \"Deploy to GitHub Pages\"."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
