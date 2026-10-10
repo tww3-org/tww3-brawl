@@ -1,5 +1,5 @@
 <template>
-    <div class="unit-portrait" :class="{ selected: selected }">
+    <div class="unit-portrait" :class="{ selected: selected, interactive: interactive }">
         <img v-if="getUnitPortrait(versionId, unit)" :src="getUnitPortrait(versionId, unit)"
         :alt="getUnitDisplayName(unit)" />
         <img v-if="getUnitSemicircle(versionId, unit)" :src="getUnitSemicircle(versionId, unit)"
@@ -20,8 +20,10 @@ withDefaults(defineProps<{
     selected?: boolean | null
     versionId: string
     unit: Unit
+    interactive?: boolean
 }>(), {
-    selected: false
+    selected: false,
+    interactive: true
 });
 
 </script>
@@ -72,7 +74,7 @@ withDefaults(defineProps<{
         right: 0;       
     }
 
-    &:hover {
+    &.interactive:hover {
         @include emphazed-card;
         
         .unit-hover {
