@@ -26,8 +26,9 @@ export function useUrlSync() {
     if (!unit?.selection?.unit || !unit?.selection?.version) {
       return null
     }
-    const parts = [`${unit.selection.unit.unit}`, `${unit.selection.version.id}`]
-    
+    // Le nombre d'entités est toujours encodé (clé `n`, distincte des clés de bonus)
+    const parts = [`${unit.selection.unit.unit}`, `${unit.selection.version.id}`, `n=${unit.entityNumber}`]
+
     // Encoder les bonus : seulement ceux qui ont une valeur non nulle
     for (const key of UnitBonusPathes) {
       const value = unit.bonus[key]
@@ -42,7 +43,9 @@ export function useUrlSync() {
   /**
    * Décode les paramètres d'URL pour une unité
    */
-  function decodeUnitParams(param: string | undefined): { unit_id: string; version: string; bonus: UnitBonus } | null {
+  function decodeUnitParams(
+    param: string | undefined
+  ): { unit_id: string; version: string; bonus: UnitBonus; entityNumber?: number } | null {
     if (!param || typeof param !== 'string') {
       return null
     }
@@ -56,10 +59,18 @@ export function useUrlSync() {
       return null
     }
     
-    // Décoder les bonus
+    // Décoder le nombre d'entités (`n`) et les bonus
     const bonus = defaultUnitBonus()
+    let entityNumber: number | undefined
     for (const bonusPart of bonusParts) {
       const [key, valueStr] = bonusPart.split('=')
+      if (key === 'n' && valueStr !== undefined) {
+        const n = Number.parseInt(valueStr, 10)
+        if (Number.isFinite(n) && n > 0) {
+          entityNumber = n
+        }
+        continue
+      }
       if (key && valueStr !== undefined) {
         const value = Number.parseFloat(valueStr)
         if (!Number.isNaN(value) && UnitBonusPathes.includes(key as UnitBonusPathes)) {
@@ -68,7 +79,7 @@ export function useUrlSync() {
       }
     }
     
-    return { unit_id, version, bonus }
+    return { unit_id, version, bonus, entityNumber }
   }
 
   /**
@@ -128,7 +139,11 @@ export function useUrlSync() {
       }
 
       const maxEntityCount = getMaxEntities(unit)
-      const defaultEntityCount = Math.min(15, maxEntityCount)
+      // Nombre d'entités de l'URL borné à [1, max], sinon valeur par défaut
+      const entityCount =
+        decoded.entityNumber !== undefined
+          ? Math.max(1, Math.min(decoded.entityNumber, maxEntityCount))
+          : Math.min(15, maxEntityCount)
 
       return {
         selection: {
@@ -136,7 +151,7 @@ export function useUrlSync() {
           version: version,
           faction: undefined, // La faction sera déterminée automatiquement lors de la sélection
         },
-        entityNumber: defaultEntityCount,
+        entityNumber: entityCount,
         bonus: decoded.bonus,
       }
     } catch (error) {
@@ -192,9 +207,11 @@ export function useUrlSync() {
       () => [
         unitStore.left?.selection?.unit?.unit,
         unitStore.left?.selection?.version?.id,
+        unitStore.left?.entityNumber,
         unitStore.left?.bonus,
         unitStore.right?.selection?.unit?.unit,
         unitStore.right?.selection?.version?.id,
+        unitStore.right?.entityNumber,
         unitStore.right?.bonus,
       ],
       () => {
