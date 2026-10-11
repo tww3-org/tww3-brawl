@@ -1,14 +1,14 @@
 <template>
-    <q-dialog v-model="open" no-route-dismiss>
+    <q-dialog v-model="open" no-route-dismiss @hide="onHide">
         <q-card class="modifier-dialog">
             <q-card-section class="text-h6">{{ title }}</q-card-section>
             <q-card-section class="text-center">
                 <div class="summary">
                     {{ baseValue }} → {{ total }}
-                    <span v-if="bonus !== 0" :class="bonus > 0 ? 'text-green' : 'text-red'">({{ bonus > 0 ? '+' : '' }}{{ bonus }})</span>
+                    <span v-if="draft !== 0" :class="draft > 0 ? 'text-green' : 'text-red'">({{ draft > 0 ? '+' : '' }}{{ draft }})</span>
                 </div>
                 <ModifierDisplay class="steps" @modify="onModify" @reset="onReset" />
-                <q-input :model-value="total" dense outlined type="number" debounce="500" label="Valeur"
+                <q-input :model-value="total" dense outlined type="number" label="Valeur"
                     @update:model-value="onInput" @focus="onFocusSelectAll" />
             </q-card-section>
             <q-card-actions align="right">
@@ -34,19 +34,33 @@ const emit = defineEmits<{
     update: [bonus: number]
 }>()
 
-const total = computed(() => props.baseValue + props.bonus)
+// Brouillon local : la valeur n'est enregistrée qu'à la fermeture du dialogue
+const draft = ref(props.bonus)
+const total = computed(() => props.baseValue + draft.value)
+
+watch(open, (isOpen) => {
+    if (isOpen) {
+        draft.value = props.bonus
+    }
+})
+
+function onHide() {
+    if (draft.value !== props.bonus) {
+        emit('update', draft.value)
+    }
+}
 
 function onModify(step: number) {
-    emit('update', applyModifierStep(props.bonus, step, props.baseValue))
+    draft.value = applyModifierStep(draft.value, step, props.baseValue)
 }
 
 function onReset() {
-    emit('update', 0)
+    draft.value = 0
 }
 
 function onInput(value: string | number | null) {
     const num = typeof value === 'string' ? Number(value) : (value ?? 0)
-    emit('update', num - props.baseValue)
+    draft.value = num - props.baseValue
 }
 
 function onFocusSelectAll(e: Event) {

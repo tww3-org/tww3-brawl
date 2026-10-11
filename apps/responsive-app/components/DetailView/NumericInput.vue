@@ -28,6 +28,7 @@ const props = withDefaults(defineProps<{
 
 const totalValue = computed(() => props.baseValue + props.modifier)
 const bonus = ref(props.modifier)
+watch(() => props.modifier, (v) => { bonus.value = v })
 const emit = defineEmits<{
     (e: 'update:modelValue', value: number): void
 }>()
