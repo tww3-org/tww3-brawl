@@ -29,6 +29,11 @@
     <!-- Detail View -->
     <DetailView ref="detailViewRef" :leftUnit="unitStore.left" :rightUnit="unitStore.right" @update="onUpdate"/>
 
+    <!-- Share Button -->
+    <div class="text-center" v-if="unitStore.left?.selection?.unit || unitStore.right?.selection?.unit">
+      <q-btn :label="shareLabel" :icon="shareIcon" :color="shareColor" @click="shareUrl" />
+    </div>
+
     <div style="min-height: 25vh;">
 
     </div>
@@ -43,7 +48,8 @@ import EntitySliders from '~/components/EntitySliders.vue'
 import { getMaxEntities } from '@tww3-brawl/sdk/src/utils/getMaxEntities'
 import DetailView from '~/components/DetailView/index.vue'
 import { useUrlSync } from '~/composables/useUrlSync'
-import { onMounted } from 'vue'
+import { onMounted, onBeforeUnmount } from 'vue'
+import { copyToClipboard } from 'quasar'
 
 const sides = ['left', 'right'] as const
 const unitStore = useUnitStore()
@@ -78,6 +84,38 @@ const onUpdate = (unit_side: 'left' | 'right', path: UnitBonusPathes, value: num
 const resetUnits = () => {
   unitStore.clearUnits()
 }
+
+// Bouton de partage : état du retour visuel (idle | copied | error)
+const shareState = ref<'idle' | 'copied' | 'error'>('idle')
+let shareTimeout: ReturnType<typeof setTimeout> | null = null
+
+const shareLabel = computed(() => ({ idle: 'Partager', copied: 'Lien copié !', error: 'Échec de la copie' })[shareState.value])
+const shareIcon = computed(() => ({ idle: 'share', copied: 'check', error: 'error' })[shareState.value])
+const shareColor = computed(() => ({ idle: 'primary', copied: 'secondary', error: 'warning' })[shareState.value])
+
+const clearShareTimeout = () => {
+  if (shareTimeout) {
+    clearTimeout(shareTimeout)
+    shareTimeout = null
+  }
+}
+
+// Copie l'URL courante (déjà synchronisée par useUrlSync) dans le presse-papiers
+const shareUrl = async () => {
+  clearShareTimeout()
+  try {
+    await copyToClipboard(window.location.href)
+    shareState.value = 'copied'
+  } catch {
+    shareState.value = 'error'
+  }
+  shareTimeout = setTimeout(() => {
+    shareState.value = 'idle'
+    shareTimeout = null
+  }, 2000)
+}
+
+onBeforeUnmount(clearShareTimeout)
 </script>
 
 <style scoped>
