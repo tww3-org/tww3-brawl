@@ -22,10 +22,21 @@
         <span class="health-label">Remaining Health</span>
       </div>
 
-      <!-- Gold efficiency display -->
-      <p v-if="goldEfficiency !== null" class="gold-efficiency">
-        Gold Efficiency: <span class="gold-value">{{ goldEfficiency.toFixed(2) }}</span>
-      </p>
+      <!-- Gold damage display: one circle shared between left (positive) and right (negative) -->
+      <div v-if="goldDamage" class="gold-display">
+        <q-circular-progress show-value :value="goldDamage.leftShare" size="70px"
+          :thickness="0.22" color="positive" track-color="negative" class="q-ma-md">
+          {{ Math.round(goldDamage.leftShare) }}%
+        </q-circular-progress>
+        <div class="gold-info">
+          <span class="gold-label">Gold damage</span>
+          <span class="gold-amounts">
+            <span class="text-positive">{{ Math.round(goldDamage.left) }}</span>
+            /
+            <span class="text-negative">{{ Math.round(goldDamage.right) }}</span>
+          </span>
+        </div>
+      </div>
     </div>
 
     <div v-else class="no-combat">
@@ -37,7 +48,7 @@
 <script setup lang="ts">
 import { useUnitStore } from '~/stores/unitStore';
 import { computed } from 'vue';
-import { calculateGoldEfficiency } from '@tww3-brawl/sdk/src/logic/twoSideCalculations';
+import { calculateGoldDamage } from '@tww3-brawl/sdk/src/logic/twoSideCalculations';
 import { getUnitDisplayName } from '@tww3-brawl/sdk/src/utils/getUnitDisplayName';
 import { unitWithBonus } from '~/types/unit';
 
@@ -90,28 +101,36 @@ const healthColor = computed(() => {
   return 'red';
 });
 
-// Calculate gold efficiency
-const goldEfficiency = computed(() => {
+// Calculate gold damage inflicted by each side
+const goldDamage = computed(() => {
   if (!combatResult.value || !unitStore.left || !unitStore.right) {
     return null;
   }
 
-  const winnerUnit = combatResult.value.winner === 'left'
-    ? unitStore.left
-    : unitStore.right;
-
-  const loserUnit = combatResult.value.winner === 'left'
-    ? unitStore.right
-    : unitStore.left;
+  const winnerIsLeft = combatResult.value.winner === 'left';
+  const winnerUnit = winnerIsLeft ? unitStore.left : unitStore.right;
+  const loserUnit = winnerIsLeft ? unitStore.right : unitStore.left;
 
   // Use remainingHealth as winRatio (how decisively the winner wins)
-  const winRatio = combatResult.value.remainingHealth;
-
-  return calculateGoldEfficiency(
+  const result = calculateGoldDamage(
     unitWithBonus(winnerUnit),
     unitWithBonus(loserUnit),
-    winRatio
+    combatResult.value.remainingHealth
   );
+
+  if (!result) return null;
+
+  // Map winner/loser amounts back to left/right sides
+  const left = winnerIsLeft ? result.winner : result.loser;
+  const right = winnerIsLeft ? result.loser : result.winner;
+  const total = left + right;
+
+  return {
+    left,
+    right,
+    // Neutral 50% when there is no gold damage at all
+    leftShare: total > 0 ? (left / total) * 100 : 50
+  };
 });
 </script>
 
@@ -182,14 +201,25 @@ const goldEfficiency = computed(() => {
   background-color: rgba(193, 0, 21, 0.1);
 }
 
-.gold-efficiency {
-  font-size: 1rem;
-  color: #666;
-  margin: 10px 0 0 0;
+.gold-display {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
 }
 
-.gold-value {
+.gold-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.gold-label {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.gold-amounts {
   font-weight: bold;
-  color: #B8860B;
 }
 </style>

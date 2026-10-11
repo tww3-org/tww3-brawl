@@ -23,66 +23,55 @@ export interface CombatResult {
     remainingHealth: number
 }
 
-const GOLD_COST_KEYS = ['upkeep_cost', 'recruitment_cost', 'multiplayer_cost'] as const
+/**
+ * Gold damage inflicted by each unit of a duel
+ */
+export interface GoldDamage {
+  winner: number
+  loser: number
+}
 
 /**
- * Calculates gold efficiency between a winning unit and a losing unit.
+ * Calculates the gold damage inflicted by a winning unit and a losing unit.
  *
- * For each gold indicator (upkeep, recruitment and multiplayer cost), we compute:
- * - winnerGoldDamageInflicted = loserGoldValue
- * - loserGoldDamageInflicted = (1 - winRatio) * winnerGoldValue
- * - ratioForStat = winnerGoldDamageInflicted / loserGoldDamageInflicted
- *
- * The final efficiency is the average of ratioForStat over all available indicators.
+ * Only the multiplayer cost is used:
+ * - winnerGoldDamageInflicted = loserMultiplayerCost (the winner kills the loser: 100% of its HP)
+ * - loserGoldDamageInflicted = (1 - winRatio) * winnerMultiplayerCost
  *
  * @param winnerUnit - Unit that wins the duel
  * @param loserUnit - Unit that loses the duel
- * @param winRatio - Ratio between 0 and 1 representing how decisively the winner wins
- * @returns Average gold efficiency ratio across the three gold indicators
+ * @param winRatio - Winner's remaining health, between 0 and 1 (clamped)
+ * @returns Gold damage inflicted by each side, or null if a multiplayer cost is missing
  */
-export function calculateGoldEfficiency(
+export function calculateGoldDamage(
   winnerUnit: UnitWithEntityNumber,
   loserUnit: UnitWithEntityNumber,
   winRatio: number
-): number {
+): GoldDamage | null {
   const winner = winnerUnit.selection.unit
   const loser = loserUnit.selection.unit
 
   if (!winner || !loser) {
-    return 0
+    return null
+  }
+
+  const winnerGoldValue = winner.multiplayer_cost
+  const loserGoldValue = loser.multiplayer_cost
+
+  if (
+    typeof winnerGoldValue !== 'number' ||
+    typeof loserGoldValue !== 'number'
+  ) {
+    return null
   }
 
   // Ensure winRatio stays within [0, 1]
   const clampedWinRatio = Math.min(1, Math.max(0, winRatio))
 
-  const ratios: number[] = []
-
-  for (const key of GOLD_COST_KEYS) {
-    const winnerGoldValue = winner[key]
-    const loserGoldValue = loser[key]
-
-    if (
-      typeof winnerGoldValue === 'number' &&
-      typeof loserGoldValue === 'number'
-    ) {
-      const winnerGoldDamageInflicted = loserGoldValue
-      const loserGoldDamageInflicted = (1 - clampedWinRatio) * winnerGoldValue
-
-      // Ratio = winner_gold_damage_inflicted / loser_gold_damage_inflicted
-      // Skip if loserGoldDamageInflicted is 0 to avoid division by zero
-      if (loserGoldDamageInflicted > 0) {
-        const ratioForStat = winnerGoldDamageInflicted / loserGoldDamageInflicted
-        ratios.push(ratioForStat)
-      }
-    }
+  return {
+    winner: loserGoldValue,
+    loser: (1 - clampedWinRatio) * winnerGoldValue
   }
-
-  if (ratios.length === 0) {
-    return 0
-  }
-
-  const sum = ratios.reduce((acc, value) => acc + value, 0)
-  return sum / ratios.length
 }
 
 /**
