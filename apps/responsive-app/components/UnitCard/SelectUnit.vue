@@ -28,7 +28,32 @@
                 <q-select v-model="selectedFaction" :options="factionOptions" :loading="factionsLoading"
                   :disable="!selectedVersion || factionsLoading" label="Faction" dense outlined
                   option-label="screen_name" option-value="key" />
-                <div v-if="factions && step === 'faction'" class="faction-icons-row">
+                <q-input v-model="searchText" label="Search by name" dense outlined clearable debounce="300"
+                  class="q-mt-sm" />
+
+                <div v-if="isGlobalSearch">
+                  <div v-if="searchLoading" class="q-mt-md text-center">
+                    <q-spinner color="primary" />
+                  </div>
+                  <div v-else-if="Object.keys(groupedSearchUnits).length === 0" class="q-mt-md text-center">
+                    No unit found
+                  </div>
+                  <div v-else>
+                    <div v-for="(unitsList, groupName) in groupedSearchUnits" :key="groupName"
+                      class="unit-group-block">
+                      <div class="group-label">{{ groupName }}</div>
+                      <div class="unit-icons-row">
+                        <div v-for="unit in unitsList" :key="unit.unit" class="unit-icon-container"
+                          @click="selectSearchResultAndFinish(unit)">
+                          <UnitPortrait :versionId="versionId" :unit="unit"
+                            :selected="selectedUnit && selectedUnit.unit === unit.unit" />
+                          <div class="unit-label">{{ getUnitDisplayName(unit) }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div v-else-if="factions && step === 'faction'" class="faction-icons-row">
                   <SquarePortrait v-for="faction in factions" :key="faction.key" 
                     :label="faction.subculture?.name || faction.key" 
                     :selected="(selectedFaction && selectedFaction.key === faction.key) || false"
@@ -42,8 +67,10 @@
 
             <q-carousel-slide name="unit" key="unit">
               <div class="q-mb-md">
-                <div v-if="units && Object.keys(groupedUnits).length > 0">
-                  <div v-for="(unitsList, groupName) in groupedUnits" :key="groupName" class="unit-group-block">
+                <q-input v-model="searchText" label="Search by name" dense outlined clearable debounce="300"
+                  class="q-mb-sm" />
+                <div v-if="units && Object.keys(filteredGroupedUnits).length > 0">
+                  <div v-for="(unitsList, groupName) in filteredGroupedUnits" :key="groupName" class="unit-group-block">
                     <div class="group-label">{{ groupName }}</div>
                     <div class="unit-icons-row">
                       <div v-for="unit in unitsList" :key="unit.unit" class="unit-icon-container"
@@ -55,6 +82,9 @@
                     </div>
 
                   </div>
+                </div>
+                <div v-else-if="units" class="text-center">
+                  No unit found
                 </div>
                 <div v-else>
                   <q-spinner color="primary" />
@@ -87,6 +117,7 @@ import type { Unit } from '@tww3-brawl/sdk/src/types';
 import { useVersions } from '~/composables/useVersions';
 import { useFactions } from '~/composables/useFactions';
 import { useFactionUnits } from '~/composables/useFactionUnits';
+import { useUnitSearch } from '~/composables/useUnitSearch';
 import { getFactionPortrait } from '@tww3-brawl/sdk/src/utils/getFactionPortrait';
 import { getUnitDisplayName, dedupeUnitEntries } from '@tww3-brawl/sdk/src/utils/getUnitDisplayName';
 import SquarePortrait from './SquarePortrait.vue';
@@ -185,11 +216,26 @@ const factionOptions = computed(() => {
 const factionKey = computed(() => selectedUnitSelection.value?.faction?.key ?? '');
 const { data: units, refetch: refetchUnits } = useFactionUnits(versionId, factionKey);
 
-// Add computed to group units by group
-const groupedUnits = computed(() => {
-  if (!units.value) return {};
-  const groups: Record<string, typeof units.value> = {};
-  for (const unit of units.value) {
+// Ordre fixe des groupes d'unités
+const groupOrder = [
+  'Lords',
+  'Heroes',
+  'Infantry',
+  'Missile Infantry',
+  'Cavalry & Chariots',
+  'Missile Cavalry & Chariots',
+  'Artillery & War Machines'
+];
+
+/**
+ * Groupe une liste d'unités par `unit.group`, triées par coût puis nom,
+ * dans l'ordre fixe des groupes.
+ * @param list Unités à grouper
+ * @param dedupe Si vrai, ne garde qu'une entrée par "famille" d'unité
+ */
+const groupUnits = (list: Unit[], dedupe: boolean): Record<string, Unit[]> => {
+  const groups: Record<string, Unit[]> = {};
+  for (const unit of list) {
     const group = unit.group || 'Autres';
     if (!groups[group]) groups[group] = [];
     groups[group].push(unit);
@@ -202,9 +248,9 @@ const groupedUnits = computed(() => {
   // correctly collapses mount variants) and falls back to unit-id-suffix
   // matching for raw-named entries — see @tww3-brawl/sdk getUnitDisplayName.ts
   // and specs/001-fix-duplicate-unit-cards/spec.md FR-007.
-  const filteredGroups: Record<string, typeof units.value> = {};
+  const filteredGroups: Record<string, Unit[]> = {};
   for (const [groupName, unitsList] of Object.entries(groups)) {
-    const filtered = dedupeUnitEntries(unitsList);
+    const filtered = dedupe ? dedupeUnitEntries(unitsList) : [...unitsList];
     // Sort units first by recruitment cost then alphabetically
     filtered.sort((a, b) => {
       const costA = a.recruitment_cost || 0;
@@ -223,19 +269,8 @@ const groupedUnits = computed(() => {
     filteredGroups[groupName] = filtered;
   }
 
-  // Define group order
-  const groupOrder = [
-    'Lords',
-    'Heroes',
-    'Infantry',
-    'Missile Infantry',
-    'Cavalry & Chariots',
-    'Missile Cavalry & Chariots',
-    'Artillery & War Machines'
-  ];
-
   // Create a new object with groups in the specified order
-  const orderedGroups: Record<string, typeof units.value> = {};
+  const orderedGroups: Record<string, Unit[]> = {};
 
   // First add groups in the specified order
   for (const groupName of groupOrder) {
@@ -252,7 +287,43 @@ const groupedUnits = computed(() => {
   }
 
   return orderedGroups;
+};
+
+const groupedUnits = computed(() => {
+  if (!units.value) return {};
+  return groupUnits(units.value, true);
 });
+
+// Recherche par nom (conservée entre les étapes faction et unit)
+const searchText = ref<string | null>('');
+const trimmedSearch = computed(() => (searchText.value ?? '').trim());
+const isGlobalSearch = computed(() => step.value === 'faction' && trimmedSearch.value.length >= 2);
+
+// Insensible à la casse et aux accents
+const normalizeText = (text: string) =>
+  text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+// Filtre côté client des unités de la faction
+const filteredGroupedUnits = computed(() => {
+  const needle = normalizeText(trimmedSearch.value);
+  if (!needle) return groupedUnits.value;
+  const result: Record<string, Unit[]> = {};
+  for (const [groupName, unitsList] of Object.entries(groupedUnits.value)) {
+    const matching = unitsList.filter(unit => normalizeText(getUnitDisplayName(unit)).includes(needle));
+    if (matching.length > 0) result[groupName] = matching;
+  }
+  return result;
+});
+
+// Recherche globale (toutes factions) ; la valeur est déjà "debounced" par le q-input
+// (uniquement à l'étape faction : à l'étape unit, le filtre est local)
+const searchQuery = computed(() => (step.value === 'faction' ? trimmedSearch.value : ''));
+const { data: searchResults, isFetching: searchLoading } = useUnitSearch(versionId, searchQuery);
+
+// Pas de dedupeUnitEntries ici : deux factions peuvent avoir des unités de même nom mais d'ids différents
+const groupedSearchUnits = computed(() =>
+  groupUnits((searchResults.value ?? []).map(result => result.unit), false)
+);
 
 // Watch dialog visibility to start at the right step
 watch(dialogVisible, async (isVisible) => {
@@ -323,6 +394,18 @@ const selectFactionAndNext = (faction: Faction) => {
 // Function to select a unit and finish
 const selectUnitAndFinish = (unit: Unit) => {
   selectedUnit.value = unit;
+  if (selectedUnitSelection.value) {
+    dialogVisible.value = false;
+    emit('update:unitSelection', selectedUnitSelection.value);
+  }
+};
+
+// Function to select a global search result (sets faction + unit) and finish
+const selectSearchResultAndFinish = (unit: Unit) => {
+  const result = searchResults.value?.find(r => r.unit.unit === unit.unit);
+  if (!result) return;
+  selectedFaction.value = result.faction;
+  selectedUnit.value = result.unit;
   if (selectedUnitSelection.value) {
     dialogVisible.value = false;
     emit('update:unitSelection', selectedUnitSelection.value);
