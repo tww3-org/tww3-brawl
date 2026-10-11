@@ -15,6 +15,7 @@
 
 <script setup lang="ts">
 import ModifierDisplay from './ModifierDisplay.vue';
+import { applyModifierStep } from './modifierStep';
 const props = withDefaults(defineProps<{
     baseValue?: number
     modifier?: number
@@ -42,11 +43,7 @@ function updateTotalValue(value: string | number | null) {
 }
 
 function onModify(value: number) {
-    if (value > 0) {
-        bonus.value += Math.round(Math.max(value, value * props.baseValue / 100))
-    } else {
-        bonus.value += Math.round(Math.min(value, value * props.baseValue / 100))
-    }
+    bonus.value = applyModifierStep(bonus.value, value, props.baseValue)
     emit('update:modelValue', bonus.value)
 }
 
