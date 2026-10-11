@@ -1,5 +1,6 @@
 import type { Unit } from '../types';
 import { IMG_BASE_URL } from './constants';
+import { normalizeImagePath } from './getImageUrl';
 
 /**
  * Returns the full Cloudinary URL for a unit flag image, given a version and a Unit object.
@@ -13,10 +14,9 @@ export function getUnitPortrait(
 ): string | undefined {
   let img_path = `${IMG_BASE_URL}/${version}`;
   if (unit.general_portrait && unit.general_portrait.length > 0) {
-    // Replace "portholes" with "units", then ".png" with ".webp", then concatenate to img_path
-    const portraitPath = unit.general_portrait
-      .replace('portholes', 'units')
-      .replace('.png', '.webp');
+    // Minuscules + ".webp", puis "portholes" -> "units", puis concaténation à img_path
+    const portraitPath = normalizeImagePath(unit.general_portrait)
+      .replace('portholes', 'units');
     img_path += `/${portraitPath}`;
   } else {
     // Concatenate to img_path the string "/ui/units/icons/", then unit.unit, then the extension ".webp"

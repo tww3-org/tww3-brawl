@@ -5,15 +5,15 @@
             <q-list>
                 <q-item v-for="mount in mount_options" :key="mount.mounted_unit" @click="selectMount(mount)" clickable v-close-popup>
                     <q-avatar>
-                        <img :src="getImageUrl(unit.version, mount.icon_name)">
+                        <img :src="getMountIcon(unit.version, mount)">
                     </q-avatar>
     
                     {{ getMountDisplayName(mount) }}
                 </q-item>
             </q-list>
         </q-btn-dropdown>
-        <q-avatar>
-            <img :src="getImageUrl(unit.version, selectedIcon || '')">
+        <q-avatar v-if="selectedMount">
+            <img :src="getMountIcon(unit.version, selectedMount)">
         </q-avatar>
 </div>
 </template>
@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import type { Unit } from '@tww3-brawl/sdk/src/types';
 import { CROSS_ICON_SUFFIX } from '@tww3-brawl/sdk/src/utils/constants';
-import { getImageUrl } from '@tww3-brawl/sdk/src/utils/getImageUrl';
+import { getMountIcon } from '@tww3-brawl/sdk/src/utils/getImageUrl';
 import { getMountDisplayName } from '@tww3-brawl/sdk/src/utils/getUnitDisplayName';
 import { useUnit } from '~/composables/useUnit';
 import { ref, computed, watch } from 'vue';
@@ -34,8 +34,8 @@ const emit = defineEmits<{
   'update:unit': [value: Unit]
 }>();
 
-const selectedIcon = computed(() => {
-    return mount_options.value.find(mount => mount.mounted_unit === props.unit.unit)?.icon_name;
+const selectedMount = computed(() => {
+    return mount_options.value.find(mount => mount.mounted_unit === props.unit.unit);
 });
 
 // État pour gérer la sélection de mount en cours
