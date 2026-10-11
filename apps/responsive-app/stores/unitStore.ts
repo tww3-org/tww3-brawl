@@ -20,8 +20,7 @@ export const useUnitStore = defineStore('unit', {
       selection: UnitWithEntityNumberAndBonus | null
     ) {
       if (selection) {
-        this[unit_side] = selection;
-        this[unit_side].bonus = defaultUnitBonus();
+        this[unit_side] = { ...selection, bonus: selection.bonus ?? defaultUnitBonus() };
       } else {
         this[unit_side] = null;
       }
