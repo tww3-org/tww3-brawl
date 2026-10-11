@@ -1,5 +1,5 @@
 <template>
-    <q-markup-table separator="none" flat bordered v-if="leftUnit?.selection?.unit && rightUnit?.selection?.unit">
+    <q-markup-table :class="{ mobile: isMobile }" separator="none" flat bordered v-if="leftUnit?.selection?.unit && rightUnit?.selection?.unit">
         <thead>
             <tr>
                 <th scope="col" class="text-right unit-column"><b>{{ leftUnitName }}</b>
@@ -9,10 +9,10 @@
                 </th>
             </tr>
             <tr>
-                <th scope="col" class="unit-column"><q-btn label="Reset" color="warning" icon="refresh" @click="onReset('left')" />
+                <th scope="col" class="unit-column"><q-btn :label="isMobile ? undefined : 'Reset'" :round="isMobile" :dense="isMobile" color="warning" icon="refresh" aria-label="Reset" title="Reset" @click="onReset('left')" />
                 </th>
                 <th scope="col" class="stat-column"></th>
-                <th scope="col" class="unit-column"><q-btn label="Reset" color="warning" icon="refresh" @click="onReset('right')" />
+                <th scope="col" class="unit-column"><q-btn :label="isMobile ? undefined : 'Reset'" :round="isMobile" :dense="isMobile" color="warning" icon="refresh" aria-label="Reset" title="Reset" @click="onReset('right')" />
                 </th>
             </tr>
         </thead>
@@ -23,7 +23,7 @@
                         :value="getTyped<Required<Unit>, Paths<Required<Unit>>>(leftUnit.selection.unit as Required<Unit>, (statistic.path) as Paths<Required<Unit>>) as (number | boolean)"
                         :bonus="leftUnit.bonus[statistic.path as UnitBonusPathes]"
                         :isUpdatable="UnitBonusPathes.includes(statistic.path as UnitBonusPathes)"
-                        @update="onUpdate('left', statistic.path as UnitBonusPathes, $event)" orientation="left" />
+                        @update="onUpdate('left', statistic.path as UnitBonusPathes, $event)" orientation="left" :unitName="leftUnitName" :statLabel="statistic.label" />
 
                 </td>
                 <td class="text-center stat-column">{{ statistic.label }}</td>
@@ -32,7 +32,7 @@
                         :value="getTyped<Required<Unit>, Paths<Required<Unit>>>(rightUnit.selection.unit as Required<Unit>, (statistic.path) as Paths<Required<Unit>>) as (number | boolean)"
                         :bonus="rightUnit.bonus[statistic.path as UnitBonusPathes]"
                         :isUpdatable="UnitBonusPathes.includes(statistic.path as UnitBonusPathes)"
-                        @update="onUpdate('right', statistic.path as UnitBonusPathes, $event)" orientation="right" />
+                        @update="onUpdate('right', statistic.path as UnitBonusPathes, $event)" orientation="right" :unitName="rightUnitName" :statLabel="statistic.label" />
                 </td>
 
             </tr>
@@ -47,7 +47,13 @@ import { type Paths, getTyped } from '~/shared/jsonpath';
 import type { UnitWithEntityNumberAndBonus } from '~/types/unit'
 import { UnitBonusPathes, defaultUnitBonus } from '~/types/unit'
 import { statistics } from '~/types/unit'
+import { useQuasar } from 'quasar'
 import ValueDisplay from './ValueDisplay.vue'
+
+const $q = useQuasar()
+const mounted = ref(false)
+onMounted(() => { mounted.value = true })
+const isMobile = computed(() => mounted.value && $q.screen.lt.md)
 
 const props = defineProps<{
     leftUnit: UnitWithEntityNumberAndBonus | null
@@ -129,5 +135,29 @@ tbody {
 .stat-column {
     padding: 0px;
     width: 100px;
+}
+
+/* Mobile : le tableau doit tenir sans scroll horizontal */
+.mobile {
+    th,
+    td {
+        padding: 4px;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    th {
+        font-size: var(--font-size-sm);
+    }
+
+    .unit-column {
+        width: 30%;
+        text-align: center;
+    }
+
+    .stat-column {
+        width: 40%;
+        padding: 4px;
+    }
 }
 </style>
