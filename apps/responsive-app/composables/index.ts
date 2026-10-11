@@ -3,3 +3,4 @@ export * from './useGraphQLClient';
 export * from './useVersions';
 export * from './useFactions';
 export * from './useFactionUnits';
+export * from './useUnitSearch';

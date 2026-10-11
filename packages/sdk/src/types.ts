@@ -25,6 +25,14 @@ export interface Faction {
 }
 
 /**
+ * Résultat de recherche d'unité : l'unité et sa faction
+ */
+export interface UnitSearchResult {
+  unit: Unit;
+  faction: Faction;
+}
+
+/**
  * Représente une unité du jeu
  */
 export interface Unit {

@@ -3,3 +3,4 @@ export * from './unit';
 export * from './versions';
 export * from './factions';
 export * from './factionUnits';
+export * from './searchUnits';
