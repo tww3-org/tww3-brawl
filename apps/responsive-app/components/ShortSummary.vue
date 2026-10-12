@@ -23,18 +23,27 @@
       </div>
 
       <!-- Gold damage display: one circle shared between left (positive) and right (negative) -->
-      <div v-if="goldDamage" class="gold-display">
-        <q-circular-progress show-value :value="goldDamage.leftShare" size="70px"
-          :thickness="0.22" color="positive" track-color="negative" class="q-ma-md">
-          {{ Math.round(goldDamage.leftShare) }}%
-        </q-circular-progress>
-        <div class="gold-info">
-          <span class="gold-label">Gold damage</span>
-          <span class="gold-amounts">
-            <span class="text-positive">{{ Math.round(goldDamage.left) }}</span>
-            /
-            <span class="text-negative">{{ Math.round(goldDamage.right) }}</span>
-          </span>
+      <div v-if="goldDamage" class="gold-section">
+        <p class="hits-info">
+          <template v-if="goldWinner">
+            <span class="loser-name text-emphasized" :class="goldWinnerClass">{{ goldWinnerName }}</span>
+            wins the gold trade, inflicting {{ goldWinner.won }} gold vs {{ goldWinner.lost }}
+          </template>
+          <template v-else>Even gold trade</template>
+        </p>
+        <div class="gold-display">
+          <q-circular-progress show-value :value="goldDamage.leftShare" size="70px"
+            :thickness="0.22" color="positive" track-color="negative" class="q-ma-md">
+            {{ Math.round(goldDamage.leftShare) }}%
+          </q-circular-progress>
+          <div class="gold-info">
+            <span class="gold-label">Gold damage</span>
+            <span class="gold-amounts">
+              <span class="text-positive">{{ Math.round(goldDamage.left) }}</span>
+              /
+              <span class="text-negative">{{ Math.round(goldDamage.right) }}</span>
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -58,26 +67,26 @@ const unitStore = useUnitStore();
 const combatResult = computed(() => unitStore.combatResult);
 
 // Computed properties for display
-const winnerName = computed(() => {
-  if (!combatResult.value) return '';
-
-  const winnerSelection = combatResult.value.winner === 'left'
+// Display name of the unit on the given side
+const getSideName = (side: 'left' | 'right'): string => {
+  const selection = side === 'left'
     ? unitStore.left?.selection
     : unitStore.right?.selection;
 
-  return winnerSelection?.displayName
-    || (winnerSelection?.unit ? getUnitDisplayName(winnerSelection.unit) : 'Unknown Unit');
+  return selection?.displayName
+    || (selection?.unit ? getUnitDisplayName(selection.unit) : 'Unknown Unit');
+};
+
+const winnerName = computed(() => {
+  if (!combatResult.value) return '';
+
+  return getSideName(combatResult.value.winner);
 });
 
 const loserName = computed(() => {
   if (!combatResult.value) return '';
 
-  const loserSelection = combatResult.value.winner === 'left'
-    ? unitStore.right?.selection
-    : unitStore.left?.selection;
-
-  return loserSelection?.displayName
-    || (loserSelection?.unit ? getUnitDisplayName(loserSelection.unit) : 'Unknown Unit');
+  return getSideName(combatResult.value.winner === 'left' ? 'right' : 'left');
 });
 
 const winnerClass = computed(() => {
@@ -132,6 +141,22 @@ const goldDamage = computed(() => {
     leftShare: total > 0 ? (left / total) * 100 : 50
   };
 });
+
+// Side winning the gold trade (null on a tie after rounding), with rounded amounts
+const goldWinner = computed(() => {
+  if (!goldDamage.value) return null;
+
+  const left = Math.round(goldDamage.value.left);
+  const right = Math.round(goldDamage.value.right);
+  if (left === right) return null;
+
+  const side: 'left' | 'right' = left > right ? 'left' : 'right';
+  return { side, won: Math.max(left, right), lost: Math.min(left, right) };
+});
+
+const goldWinnerName = computed(() => (goldWinner.value ? getSideName(goldWinner.value.side) : ''));
+
+const goldWinnerClass = computed(() => (goldWinner.value?.side === 'left' ? 'bg-positive' : 'bg-negative'));
 </script>
 
 <style scoped lang="scss">
@@ -199,6 +224,13 @@ const goldDamage = computed(() => {
 
 .loser-name.q-negative {
   background-color: rgba(193, 0, 21, 0.1);
+}
+
+.gold-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
 .gold-display {
