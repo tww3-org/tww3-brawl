@@ -1,7 +1,7 @@
 import { watch } from 'vue'
 import { useQueryClient } from '@tanstack/vue-query'
 import { useUnitStore } from '~/stores/unitStore'
-import { fetchUnit } from '@tww3-brawl/sdk'
+import { fetchUnit, fetchFactions, type Faction } from '@tww3-brawl/sdk'
 import { useGraphQLClient } from './useGraphQLClient'
 import type { UnitWithEntityNumberAndBonus, UnitBonus } from '~/types/unit'
 import { defaultUnitBonus, UnitBonusPathes } from '~/types/unit'
@@ -29,6 +29,12 @@ export function useUrlSync() {
     // Le nombre d'entités est toujours encodé (clé `n`, distincte des clés de bonus)
     const parts = [`${unit.selection.unit.unit}`, `${unit.selection.version.id}`, `n=${unit.entityNumber}`]
 
+    // La faction sélectionnée est encodée (clé `f`) pour restaurer l'étape du sélecteur
+    const factionKey = unit.selection.faction?.key
+    if (factionKey) {
+      parts.push(`f=${factionKey}`)
+    }
+
     // Encoder les bonus : seulement ceux qui ont une valeur non nulle
     for (const key of UnitBonusPathes) {
       const value = unit.bonus[key]
@@ -45,7 +51,7 @@ export function useUrlSync() {
    */
   function decodeUnitParams(
     param: string | undefined
-  ): { unit_id: string; version: string; bonus: UnitBonus; entityNumber?: number } | null {
+  ): { unit_id: string; version: string; bonus: UnitBonus; entityNumber?: number; factionKey?: string } | null {
     if (!param || typeof param !== 'string') {
       return null
     }
@@ -59,11 +65,18 @@ export function useUrlSync() {
       return null
     }
     
-    // Décoder le nombre d'entités (`n`) et les bonus
+    // Décoder le nombre d'entités (`n`), la faction (`f`) et les bonus
     const bonus = defaultUnitBonus()
     let entityNumber: number | undefined
+    let factionKey: string | undefined
     for (const bonusPart of bonusParts) {
       const [key, valueStr] = bonusPart.split('=')
+      if (key === 'f') {
+        if (valueStr) {
+          factionKey = valueStr
+        }
+        continue
+      }
       if (key === 'n' && valueStr !== undefined) {
         const n = Number.parseInt(valueStr, 10)
         if (Number.isFinite(n) && n > 0) {
@@ -79,7 +92,7 @@ export function useUrlSync() {
       }
     }
     
-    return { unit_id, version, bonus, entityNumber }
+    return { unit_id, version, bonus, entityNumber, factionKey }
   }
 
   /**
@@ -128,11 +141,32 @@ export function useUrlSync() {
     const queryKey = ['tww', 'versions', decoded.version, 'units', decoded.unit_id]
     
     try {
-      const unit = await queryClient.fetchQuery({
-        queryKey,
-        queryFn: () => fetchUnit(graphqlClient, decoded.version, decoded.unit_id),
-        staleTime: 30 * 60 * 1000, // Cache pour 30 minutes
-      })
+      // Résolution de la faction en parallèle ; un échec ou une faction introuvable
+      // ne doit pas empêcher le chargement de l'unité (faction undefined)
+      const factionKey = decoded.factionKey
+      const factionPromise: Promise<Faction | undefined> = factionKey
+        ? queryClient
+            .fetchQuery({
+              // Même queryKey que useFactions pour bénéficier du cache
+              queryKey: ['tww', 'versions', decoded.version, 'factions'],
+              queryFn: () => fetchFactions(graphqlClient, decoded.version),
+              staleTime: 60 * 60 * 1000, // Cache pour 1 heure
+            })
+            .then((factions) => factions.find((f) => f.key === factionKey))
+            .catch((error) => {
+              console.error('Error loading faction from URL:', error)
+              return undefined
+            })
+        : Promise.resolve(undefined)
+
+      const [unit, faction] = await Promise.all([
+        queryClient.fetchQuery({
+          queryKey,
+          queryFn: () => fetchUnit(graphqlClient, decoded.version, decoded.unit_id),
+          staleTime: 30 * 60 * 1000, // Cache pour 30 minutes
+        }),
+        factionPromise,
+      ])
 
       if (!unit) {
         return null
@@ -149,7 +183,7 @@ export function useUrlSync() {
         selection: {
           unit: unit,
           version: version,
-          faction: undefined, // La faction sera déterminée automatiquement lors de la sélection
+          faction, // Faction restaurée depuis `f` ; undefined si absente de l'URL ou introuvable
         },
         entityNumber: entityCount,
         bonus: decoded.bonus,
@@ -207,10 +241,12 @@ export function useUrlSync() {
       () => [
         unitStore.left?.selection?.unit?.unit,
         unitStore.left?.selection?.version?.id,
+        unitStore.left?.selection?.faction?.key,
         unitStore.left?.entityNumber,
         unitStore.left?.bonus,
         unitStore.right?.selection?.unit?.unit,
         unitStore.right?.selection?.version?.id,
+        unitStore.right?.selection?.faction?.key,
         unitStore.right?.entityNumber,
         unitStore.right?.bonus,
       ],
