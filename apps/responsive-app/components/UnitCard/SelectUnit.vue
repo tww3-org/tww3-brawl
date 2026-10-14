@@ -102,7 +102,7 @@
             color="primary" flat dense @click="goToNextStep" />
           <q-btn v-else :disable="!selectedUnit || !selectedVersion || !selectedFaction" label="Finish" color="primary"
             flat dense
-            @click="() => { dialogVisible = false; if (selectedUnitSelection) emit('update:unitSelection', selectedUnitSelection) }" />
+            @click="finish" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -134,7 +134,7 @@ const dialogVisible = ref(false);
 // Initialize memory store
 const memoryStore = useMemoryStore();
 
-defineProps<{
+const props = defineProps<{
   unitSelection: UnitSelection | null
   version: string | null
 }>();
@@ -145,7 +145,8 @@ const emit = defineEmits<{
 }>();
 
 
-// Version/faction/unit selection
+// Brouillon privé de la sélection : jamais partagé avec la prop ni le store
+// (réinitialisé à chaque ouverture du dialog, émis sous forme de copie)
 const selectedUnitSelection = ref<UnitSelection | null>(null);
 
 // Computed to safely access properties
@@ -327,13 +328,39 @@ const groupedSearchUnits = computed(() =>
 
 // Watch dialog visibility to start at the right step
 watch(dialogVisible, async (isVisible) => {
-  if (isVisible) {
-    // Si pas d'unité sélectionnée (ou une unité invalide) et qu'on a une version en mémoire, commencer à l'étape faction
-    if ((!selectedUnitSelection.value || !selectedUnitSelection.value.unit) && memoryStore.last_version) {
-      selectedVersion.value = memoryStore.last_version;
-      step.value = 'faction';
-      await refetchFactions();
-    }
+  if (!isVisible) return;
+
+  searchText.value = '';
+
+  // Brouillon = copie superficielle de la sélection courante (displayName est recalculé par le parent)
+  if (props.unitSelection) {
+    const draft: UnitSelection = { ...props.unitSelection };
+    delete draft.displayName;
+    selectedUnitSelection.value = draft;
+  } else {
+    selectedUnitSelection.value = null;
+  }
+
+  const draft = selectedUnitSelection.value;
+  const previousStep = step.value;
+  let targetStep: 'version' | 'faction' | 'unit';
+
+  if (draft?.unit && draft.version) {
+    // Unité venant de l'URL : pas de faction connue, on repart de l'étape faction
+    targetStep = draft.faction ? 'unit' : 'faction';
+  } else if (memoryStore.last_version) {
+    // Pas d'unité : commencer à l'étape faction avec la version en mémoire
+    selectedVersion.value = memoryStore.last_version;
+    targetStep = 'faction';
+  } else {
+    targetStep = 'version';
+  }
+
+  step.value = targetStep;
+  // Si l'étape ne change pas, le watcher de step ne se déclenche pas : refetch explicite
+  if (previousStep === targetStep) {
+    if (targetStep === 'faction') await refetchFactions();
+    else if (targetStep === 'unit') await refetchUnits();
   }
 });
 
@@ -391,13 +418,21 @@ const selectFactionAndNext = (faction: Faction) => {
   step.value = 'unit';
 };
 
+// Close the dialog and emit a fresh copy of the draft (the store must never share its reference)
+const finish = () => {
+  if (selectedUnitSelection.value) {
+    const result = { ...selectedUnitSelection.value };
+    dialogVisible.value = false;
+    emit('update:unitSelection', result);
+  } else {
+    dialogVisible.value = false;
+  }
+};
+
 // Function to select a unit and finish
 const selectUnitAndFinish = (unit: Unit) => {
   selectedUnit.value = unit;
-  if (selectedUnitSelection.value) {
-    dialogVisible.value = false;
-    emit('update:unitSelection', selectedUnitSelection.value);
-  }
+  finish();
 };
 
 // Function to select a global search result (sets faction + unit) and finish
@@ -406,10 +441,7 @@ const selectSearchResultAndFinish = (unit: Unit) => {
   if (!result) return;
   selectedFaction.value = result.faction;
   selectedUnit.value = result.unit;
-  if (selectedUnitSelection.value) {
-    dialogVisible.value = false;
-    emit('update:unitSelection', selectedUnitSelection.value);
-  }
+  finish();
 };
 </script>
 
