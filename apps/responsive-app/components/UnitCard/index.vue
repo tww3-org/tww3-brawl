@@ -88,7 +88,7 @@ function updateUnitSelection(value: UnitSelection) {
 }
 // Computed for unit title
 const unitTitle = computed(() => {
-  if (unitSelection.value?.displayName) {
+  if (unitSelection.value?.unit && unitSelection.value.displayName) {
     return unitSelection.value.displayName;
   }
   if (unitSelection.value?.unit) {
