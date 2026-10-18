@@ -184,6 +184,6 @@ export interface EffectDefinition {
   passive: boolean;
   polarity: 'positive' | 'negative';
   modifiers: BrawlModifiers;
-  /** Plusieurs phases pertinentes fusionnées : à vérifier manuellement */
-  multi_phase?: boolean;
+  /** Clé de la capacité de base dont cette entrée est une partie (ennemi, alliés, après-effet, variante) */
+  variant_of?: string;
 }

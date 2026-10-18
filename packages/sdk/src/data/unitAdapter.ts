@@ -97,11 +97,14 @@ export type RawUnit = FieldsSelection<main_unit, typeof unitSelection>;
  */
 function nativeEffectIds(unit: RawUnit): string[] {
   const weapon = unit.land_unit?.primary_melee_weapon;
+  const abilityKeys = (unit.land_unit?.abilities || []).map(ability => ability?.key);
   const candidates: (string | null | undefined)[] = [
     weapon?.is_magical ? 'magical_attack' : undefined,
     Number(weapon?.ignition_amount || 0) > 0 ? 'flaming_attack' : undefined,
     weapon?.contact_phase?.id,
-    ...(unit.land_unit?.abilities || []).map(ability => ability?.key),
+    ...abilityKeys,
+    // partie ennemie d'une capacité (ex. sword_dance__enemy) : native aussi
+    ...abilityKeys.map(key => (key ? `${key}__enemy` : undefined)),
     ...(unit.land_unit?.attributes || []).map(attribute => attribute?.key),
   ];
   return Array.from(
