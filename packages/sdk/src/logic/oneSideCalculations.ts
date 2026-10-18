@@ -6,6 +6,8 @@ const min_att_def_layer = 8
 const max_att_def_layer = 90
 
 const max_resist = 95
+const min_physical_resist = -100
+const max_physical_resist = 100
 const min_fire_resist = -100
 const max_fire_resist = 100
 const min_magic_resist = -100
@@ -64,10 +66,17 @@ export function calculateDamageOnHit(attacker: Unit, defender: Unit): number {
 /**
  * Calculates the resistance ratio that reduces incoming damage.
  * Considers ward save, physical resistance, magic resistance and fire resistance based on damage type.
- * 
+ *
+ * Rule: resistances are additive between themselves (a negative value is a weakness),
+ * and the resulting total is multiplicative with the rest of the damage
+ * (`damage × (1 − total/100)`).
+ * Example: 30% physical and −50% fire resistance give ×1.2 damage taken against a
+ * flaming attack (30 − 50 = −20), ×1.5 against a flaming + magical attack (−50),
+ * and ×0.7 against a plain attack (30).
+ *
  * @param attacker - The attacking unit (determines damage type)
  * @param defender - The defending unit (provides resistance stats)
- * @returns A ratio between 0 and 1 representing damage reduction
+ * @returns The total resistance ratio (at most 0.95, negative when the defender has a weakness)
  */
 export function calculateResistRatio(attacker: Unit, defender: Unit): number {
     const wardSave = defender.resistance?.ward_save || 0
@@ -83,7 +92,7 @@ export function calculateResistRatio(attacker: Unit, defender: Unit): number {
     // Magic resistance only applies to magical damage (clamped like fire resistance)
     // Fire resistance only applies to fire damage
     return Math.min(max_resist,(wardSave 
-        + (isMagical ? 0: Math.max(physicalResist, 0)) // Physical resist
+        + (isMagical ? 0 : Math.min(Math.max(physicalResist, min_physical_resist), max_physical_resist)) // Physical resist
         + (isMagical ? Math.min(Math.max(magicResist, min_magic_resist), max_magic_resist) : 0) // Magic resist
         + (isFire ? Math.min(Math.max(fireResist, min_fire_resist), max_fire_resist):  0) // Fire resist
     ))/100

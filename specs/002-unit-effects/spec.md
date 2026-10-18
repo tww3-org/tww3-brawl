@@ -76,6 +76,7 @@ Le catalogue `packages/sdk/src/data/effects/` associe chaque identifiant d'effet
    - Donc `applyEffects(unit, cardEffects, opponentCardEffects)` : l'unité reçoit les effets de sa propre carte (sauf effets de contact) et les effets de contact de la carte adverse.
 4. **Bouton +** : tout le catalogue, avec recherche et filtres, sans restriction par faction.
 5. **Multiplicateurs** : couche additive (voir Modèle de données).
+6. **Résistances** : additives entre elles (ward + physique si l'attaque n'est pas magique + magique si elle l'est + feu si elle est enflammée, chacune bornée à [−100, 100]), le total (plafonné à 95) multiplie les dégâts : `dégâts × (1 − total)`. Exemple : 30 % physique et −50 % feu ⇒ ×1,2 contre une attaque enflammée, ×1,5 si elle est aussi magique, ×0,7 contre une attaque simple.
 
 ## UI
 
