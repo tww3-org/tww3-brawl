@@ -60,7 +60,10 @@ function accumulate(acc: Acc, mod: StatModifier | undefined, dropReductions: boo
   if (mod.mult !== undefined && !(dropReductions && mod.mult < 1)) acc.multDelta += mod.mult - 1;
 }
 
-const apply = (base: number | undefined, acc: Acc): number => (base ?? 0) * Math.max(0, 1 + acc.multDelta) + acc.add;
+/** Arrondi à 2 décimales : évite le bruit flottant (ex. 7,6000000000000005) */
+const round2 = (n: number): number => Math.round(n * 100) / 100;
+const apply = (base: number | undefined, acc: Acc): number =>
+  round2((base ?? 0) * Math.max(0, 1 + acc.multDelta) + acc.add);
 const clamp0 = (n: number): number => Math.max(0, n);
 
 /**

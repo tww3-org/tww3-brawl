@@ -10,7 +10,7 @@
     <div v-else class="container" :class="{ 'reverse': orientation === 'right' }">
         <div class="left base" :class="{ 'right': orientation === 'right' }">
             <NumericInput ref="numericInputRef" v-if="typeof value === 'number' && isUpdatable" :modifier="bonus" :baseValue="value" @update:model-value="onUpdate" :direction="orientation" />
-            <template v-else>{{ value }}</template>
+            <template v-else>{{ typeof value === 'number' ? roundForDisplay(value) : value }}</template>
         </div>
     </div>
 </template>
@@ -20,6 +20,7 @@ import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import NumericInput from './NumericInput.vue';
 import ModifierDialog from './ModifierDialog.vue';
+import { roundForDisplay } from './formatNumber';
 
 const emit = defineEmits<{
     update: [value: number]
@@ -51,7 +52,7 @@ onMounted(() => { mounted.value = true })
 const isMobile = computed(() => mounted.value && $q.screen.lt.md)
 const dialogOpen = ref(false)
 const canEdit = computed(() => typeof props.value === 'number' && props.isUpdatable)
-const displayed = computed(() => typeof props.value === 'number' ? props.value + bonus.value : props.value)
+const displayed = computed(() => typeof props.value === 'number' ? roundForDisplay(props.value + bonus.value) : props.value)
 const dialogTitle = computed(() => [props.unitName, props.statLabel].filter(Boolean).join(' — '))
 const numericInputRef = ref<InstanceType<typeof NumericInput> | null>(null)
 function reset() {

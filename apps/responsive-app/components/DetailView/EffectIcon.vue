@@ -1,7 +1,7 @@
 <template>
     <span class="effect-icon-wrapper">
         <button type="button" class="effect-icon" :class="{ inactive: !active }" :aria-pressed="active"
-            :aria-label="effect.name" @click="emit('toggle')">
+            :aria-label="effect.name" @pointerdown="onPointerDown" @pointerup="onPointerUp" @click="onClick">
             <EffectImage :src="imageUrl" :name="effect.name" :size="28" />
             <span v-if="inflicted" class="inflicted-dot" aria-hidden="true" />
             <q-tooltip class="effect-tooltip" anchor="top middle" self="bottom middle">
@@ -37,6 +37,29 @@ const emit = defineEmits<{
     toggle: []
     remove: []
 }>()
+
+// Appui long tactile (tooltip) : le click qui suit le relâchement ne doit pas basculer l'effet
+const LONG_PRESS_MS = 450
+let pressStart = 0
+let swallowClick = false
+
+function onPointerDown(e: PointerEvent) {
+    swallowClick = false
+    pressStart = e.pointerType === 'touch' ? Date.now() : 0
+}
+
+function onPointerUp(e: PointerEvent) {
+    swallowClick = e.pointerType === 'touch' && pressStart > 0 && Date.now() - pressStart >= LONG_PRESS_MS
+    pressStart = 0
+}
+
+function onClick() {
+    if (swallowClick) {
+        swallowClick = false
+        return
+    }
+    emit('toggle')
+}
 
 const imageUrl = computed(() => getImageUrl(props.versionId, props.effect.icon))
 const lines = computed(() => describeModifiers(props.effect.modifiers))
