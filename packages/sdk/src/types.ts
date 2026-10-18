@@ -182,6 +182,8 @@ export interface EffectDefinition {
   target: EffectTarget;
   /** Toujours actif en jeu (passif natif / propriété d'arme / contact) */
   passive: boolean;
+  /** État par défaut sur la carte ; absent = actif si `passive` */
+  default_active?: boolean;
   polarity: 'positive' | 'negative';
   modifiers: BrawlModifiers;
   /** Clé de la capacité de base dont cette entrée est une partie (ennemi, alliés, après-effet, variante) */

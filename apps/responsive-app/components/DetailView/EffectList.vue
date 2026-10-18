@@ -1,7 +1,8 @@
 <template>
     <div class="effect-list" :class="`align-${orientation}`">
         <EffectIcon v-for="item in items" :key="item.id" :effect="item.effect" :version-id="versionId"
-            :active="item.active" :removable="!item.native" @toggle="unitStore.toggleEffect(side, item.id)"
+            :active="item.active" :removable="!item.native"
+            :cast-by="item.source === 'opponent' ? opponentName : undefined" @toggle="unitStore.toggleEffect(side, item.id)"
             @remove="unitStore.removeEffect(side, item.id)" />
         <q-btn v-if="withAdd" round dense flat size="sm" icon="add" :aria-label="`Add an effect`" title="Add an effect"
             @click="emit('add')" />
@@ -11,6 +12,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { getEffect } from '@tww3-brawl/sdk'
+import { getUnitDisplayName } from '@tww3-brawl/sdk/src/utils/getUnitDisplayName'
 import type { EffectDefinition, EffectPlacement } from '@tww3-brawl/sdk/src/types'
 import { useUnitStore } from '~/stores/unitStore'
 import { displayedEffects } from '~/types/unit'
@@ -30,6 +32,14 @@ const emit = defineEmits<{
 const unitStore = useUnitStore()
 const orientation = computed(() => props.side)
 const other = computed(() => unitStore[props.side === 'left' ? 'right' : 'left'])
+// Même nom que l'en-tête du tableau : nom figé à la sélection, sinon nom calculé
+const opponentName = computed(() => {
+    const selection = other.value?.selection
+    if (!selection?.unit) {
+        return undefined
+    }
+    return selection.displayName || getUnitDisplayName(selection.unit)
+})
 const versionId = computed(() => unitStore[props.side]?.selection?.version?.id ?? '')
 
 const items = computed(() => displayedEffects(unitStore[props.side], other.value)

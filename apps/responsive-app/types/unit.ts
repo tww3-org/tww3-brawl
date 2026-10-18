@@ -46,6 +46,8 @@ export interface DisplayedEffect {
   /** true : effet natif de l'unité (ou sort de l'adversaire) ; false : ajouté manuellement */
   native: boolean;
   active: boolean;
+  /** 'opponent' : effet natif placé ici parce que l'adversaire le porte */
+  source: 'own' | 'opponent';
 }
 
 type SideData = Readonly<UnitWithEntityNumberAndBonus> | null | undefined;
@@ -64,12 +66,13 @@ export function displayedEffects(side: SideData, other: SideData): DisplayedEffe
     id: e.id,
     native: true,
     active: overrides[e.id] ?? e.active,
+    source: e.source,
   }));
   const seen = new Set(result.map(e => e.id));
   for (const id of side.effects?.added ?? []) {
     if (!seen.has(id) && getEffect(id)) {
       seen.add(id);
-      result.push({ id, native: false, active: overrides[id] ?? true });
+      result.push({ id, native: false, active: overrides[id] ?? true, source: 'own' });
     }
   }
   return result;
