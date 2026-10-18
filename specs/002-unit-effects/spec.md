@@ -2,7 +2,7 @@
 
 **Feature Branch**: `ccr-6b4b44a9-wcfz23`
 **Created**: 2026-10-18
-**Status**: Draft — étape 1 (inventaire + modèle de données SDK). L'UI/UX reste à valider.
+**Status**: Étape 2 — décisions produit validées, UI en cours.
 **Input**: "Permettre la gestion des nombreux modificateurs que le jeu peut traiter (attaque magique activable/désactivable, effets de contact comme le poison, buffs/debuffs). Répertorier les effets depuis le GraphQL avec leurs noms et icônes, whitelister ceux pertinents pour le corps à corps, et associer à chaque identifiant d'effet un JSON de modificateurs dans l'espace tww3-brawl."
 
 ## Source des données
@@ -53,33 +53,40 @@ Le catalogue `packages/sdk/src/data/effects/` associe chaque identifiant d'effet
   "name": "Poison",
   "icon": "ui/battle ui/ability_icons/wh_main_unit_contact_poison.png",
   "placement": "attack",        // attack = icône dans la case « attaque » ; effects = ligne « Effets »
-  "target": "enemy",            // qui reçoit les modificateurs : le porteur (self) ou son adversaire (enemy)
+  "target": "enemy",            // effet de jeu visant l'ennemi (contact, hex) : sert à placer l'effet, voir Décisions §3
   "passive": true,              // actif par défaut dans le jeu
   "polarity": "negative",
   "modifiers": { "damage": { "normal": { "mult": 0.85 }, "piercing": { "mult": 0.85 } } }
 }
 ```
 
-`modifiers` reprend la forme de `Unit` : chaque stat numérique reçoit `{ add?, mult? }` et vaut `base × Πmult + Σadd`.
+`modifiers` reprend la forme de `Unit` : chaque stat numérique reçoit `{ add?, mult? }`. Les multiplicateurs forment une couche additive : chaque `mult` est un écart en pourcentage, et les écarts s'additionnent. `valeur = base × max(0, 1 + Σ(mult − 1)) + Σadd`. Exemple : −100 % et +50 % donnent 50 % de la base, pas 0.
 
 - `scripts/generate-effects-catalog.mjs` (`pnpm effects:generate [versionId]`) régénère `catalog.generated.ts` depuis le GraphQL ; les deux effets d'arme sont définis à la main dans `builtinEffects.ts`.
 - `Unit.effects` liste les identifiants d'effets natifs de l'unité (propriétés d'arme, effet de contact de l'arme, capacités, attributs).
-- `applyEffects(unit, ownEffects, enemyEffects)` renvoie une copie modifiée de l'unité. `getDefaultEffects(unit)` renvoie ses effets natifs passifs. Rien n'est encore branché dans l'UI : les résultats actuels ne changent pas.
+- `applyEffects(unit, cardEffects, opponentCardEffects)` renvoie une copie modifiée de l'unité. `getNativeCardEffects(unit, opponent)` donne les effets natifs affichés sur la carte et leur état par défaut.
 
-## Questions ouvertes (à trancher avant l'UI)
+## Décisions (2026-10-18)
 
-1. **Activation par défaut** : faut-il activer tous les passifs natifs au chargement d'une unité ? Plus fidèle au jeu (Frenzy +10 attaque…), mais certains passifs sont conditionnels (Hatred contre une race, Frenzy perdu sous 50 % de moral, bonus « si un Kroxigor est proche »…). Proposition : actifs par défaut, désactivables d'un clic.
-2. **Résistance magique** : `damage_mod_magic` est maintenant récupéré mais pas utilisé. Dans le jeu, elle s'applique contre les attaques magiques. Faut-il l'ajouter au calcul (cela changerait les résultats des duels contre une unité magique) ?
-3. **Effets avec cible « enemy »** (hexes, effets de contact) : affichés côté porteur (dans sa case attaque / sa ligne effets) et appliqués à l'adversaire. Faut-il aussi les montrer côté adversaire ?
-4. **Le bouton « + »** propose ~1200 capacités : il faut une recherche par nom et des filtres (buff/debuff, type). Faut-il limiter la liste aux capacités des unités de la faction ?
-5. **Ordre d'application** : modèle actuel `base × Πmult + Σadd`. Les bonus manuels existants (`UnitBonus`) s'ajoutent ensuite.
-6. **Taille du bundle** : le catalogue généré pèse quelques centaines de Ko ; on pourra le charger à la demande (import dynamique) quand l'UI arrivera.
+1. **Activation par défaut** : les passifs natifs sont actifs par défaut ; les capacités natives non passives sont affichées désactivées. Un clic active/désactive.
+2. **Résistance magique** : prise en compte contre les attaques magiques (bornée à [−100, 100] comme le feu, total plafonné à 95).
+3. **Où s'affiche un effet** :
+   - Effets de contact (poison…) et capacités qui les confèrent : uniquement sur la carte de celui qui les inflige ; le malus s'applique à l'adversaire.
+   - Sorts et capacités ciblant l'ennemi (hexes, ex. Soulblight) : directement sur la carte de l'unité qui les reçoit.
+   - Donc `applyEffects(unit, cardEffects, opponentCardEffects)` : l'unité reçoit les effets de sa propre carte (sauf effets de contact) et les effets de contact de la carte adverse.
+4. **Bouton +** : tout le catalogue, avec recherche et filtres, sans restriction par faction.
+5. **Multiplicateurs** : couche additive (voir Modèle de données).
 
-## UI/UX proposée (à valider)
+## UI
 
 - Case **Attaque** du tableau de détail : icônes des effets `placement: attack` (magique, enflammé, poison, armure brisée…).
-- Nouvelle ligne **Effets** : icônes des effets `placement: effects` (buffs/debuffs, attributs).
-- Clic sur une icône = activer/désactiver ; un effet désactivé est assombri (filtre `brightness(0.35) grayscale(1)`).
-- Bouton **+** : boîte de dialogue de recherche dans le catalogue pour ajouter un effet.
-- Info-bulle : nom, description, modificateurs traduits (« +10 Attaque », « Dégâts ×0,85 »).
-- État dans le store Pinia (`ownEffects` par côté) et synchronisé dans l'URL comme les bonus actuels.
+- Ligne **Effets** : icônes des effets `placement: effects` (buffs/debuffs, attributs) et bouton **+**.
+- Clic sur une icône = activer/désactiver ; un effet désactivé est assombri. Un repère signale les effets infligés à l'adversaire ; les effets ajoutés à la main ont un × pour les retirer.
+- Info-bulle : nom, description, modificateurs (« +10 », « +10 % », « −15 % »).
+- État par côté dans le store (`overrides` + `added`), synchronisé dans l'URL (`fx=id:0|1,…`, `fa=id,…`).
+
+## Reste à faire
+
+- Relire les 29 capacités multi-phases.
+- Charger le catalogue à la demande (≈ 620 Ko).
+- Icône de repli pour les 4 icônes absentes du CDN.
