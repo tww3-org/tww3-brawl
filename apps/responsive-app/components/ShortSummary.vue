@@ -59,7 +59,7 @@ import { useUnitStore } from '~/stores/unitStore';
 import { computed } from 'vue';
 import { calculateGoldDamage } from '@tww3-brawl/sdk/src/logic/twoSideCalculations';
 import { getUnitDisplayName } from '@tww3-brawl/sdk/src/utils/getUnitDisplayName';
-import { unitWithBonus } from '~/types/unit';
+import { effectiveUnits } from '~/types/unit';
 
 const unitStore = useUnitStore();
 
@@ -117,13 +117,17 @@ const goldDamage = computed(() => {
   }
 
   const winnerIsLeft = combatResult.value.winner === 'left';
-  const winnerUnit = winnerIsLeft ? unitStore.left : unitStore.right;
-  const loserUnit = winnerIsLeft ? unitStore.right : unitStore.left;
+  const effective = effectiveUnits(unitStore.left, unitStore.right);
+  const winnerUnit = winnerIsLeft ? effective.left : effective.right;
+  const loserUnit = winnerIsLeft ? effective.right : effective.left;
+  if (!winnerUnit || !loserUnit) {
+    return null;
+  }
 
   // Use remainingHealth as winRatio (how decisively the winner wins)
   const result = calculateGoldDamage(
-    unitWithBonus(winnerUnit),
-    unitWithBonus(loserUnit),
+    winnerUnit,
+    loserUnit,
     combatResult.value.remainingHealth
   );
 

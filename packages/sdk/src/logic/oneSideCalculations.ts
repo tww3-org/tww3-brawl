@@ -8,6 +8,8 @@ const max_att_def_layer = 90
 const max_resist = 95
 const min_fire_resist = -100
 const max_fire_resist = 100
+const min_magic_resist = -100
+const max_magic_resist = 100
 
 /**
  * Calculates the attack ratio between an attacker and defender unit.
@@ -61,7 +63,7 @@ export function calculateDamageOnHit(attacker: Unit, defender: Unit): number {
 
 /**
  * Calculates the resistance ratio that reduces incoming damage.
- * Considers ward save, physical resistance, and fire resistance based on damage type.
+ * Considers ward save, physical resistance, magic resistance and fire resistance based on damage type.
  * 
  * @param attacker - The attacking unit (determines damage type)
  * @param defender - The defending unit (provides resistance stats)
@@ -70,6 +72,7 @@ export function calculateDamageOnHit(attacker: Unit, defender: Unit): number {
 export function calculateResistRatio(attacker: Unit, defender: Unit): number {
     const wardSave = defender.resistance?.ward_save || 0
     const physicalResist = defender.resistance?.physical || 0
+    const magicResist = defender.resistance?.magic || 0
     const fireResist = defender.resistance?.fire || 0
     
     const isMagical = attacker.damage?.is_magical || false
@@ -77,9 +80,11 @@ export function calculateResistRatio(attacker: Unit, defender: Unit): number {
     
     // Ward save applies to all damage types
     // Physical resistance only applies to non-magical damage
+    // Magic resistance only applies to magical damage (clamped like fire resistance)
     // Fire resistance only applies to fire damage
     return Math.min(max_resist,(wardSave 
         + (isMagical ? 0: Math.max(physicalResist, 0)) // Physical resist
+        + (isMagical ? Math.min(Math.max(magicResist, min_magic_resist), max_magic_resist) : 0) // Magic resist
         + (isFire ? Math.min(Math.max(fireResist, min_fire_resist), max_fire_resist):  0) // Fire resist
     ))/100
 }
