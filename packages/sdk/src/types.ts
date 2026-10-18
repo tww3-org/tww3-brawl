@@ -78,9 +78,12 @@ export interface Unit {
   };
   resistance?: {
     physical: number;
+    magic: number;
     fire: number;
     ward_save: number;
   };
+  /** Ids des effets du catalogue portés nativement par l'unité */
+  effects?: string[];
   is_large?: boolean;
   general_portrait?: string;
   unit_card_url?: string;
@@ -116,4 +119,71 @@ export interface UnitHealthProps {
     } | null;
     bonus_hit_points?: number | null;
   } | null;
+}
+
+/**
+ * Modificateur d'une statistique : résultat = (base * mult) + add
+ */
+export interface StatModifier {
+  add?: number;
+  mult?: number;
+}
+
+/**
+ * Modificateurs d'un effet, exprimés dans l'espace de stats de tww3-brawl
+ */
+export interface BrawlModifiers {
+  attack?: StatModifier;
+  defense?: StatModifier;
+  armor?: StatModifier;
+  damage?: {
+    normal?: StatModifier;
+    piercing?: StatModifier;
+    bonus_v_large?: StatModifier;
+    bonus_v_infantry?: StatModifier;
+    is_magical?: boolean;
+    is_fire?: boolean;
+  };
+  resistance?: {
+    physical?: StatModifier;
+    magic?: StatModifier;
+    fire?: StatModifier;
+    ward_save?: StatModifier;
+  };
+  /** Id d'un effet de contact imbu par l'attaque de mêlée */
+  contact_effect?: string;
+  immunities?: EffectImmunity[];
+}
+
+export type EffectImmunity =
+  | 'enemy_contact_effects'
+  | 'attack_reduction'
+  | 'weapon_strength_reduction';
+
+export type EffectKind = 'weapon' | 'contact' | 'ability' | 'attribute';
+
+/** Icône dans la cellule d'attaque ou dans la ligne « effets » */
+export type EffectPlacement = 'attack' | 'effects';
+
+/** Qui reçoit les modificateurs quand le porteur a l'effet */
+export type EffectTarget = 'self' | 'enemy';
+
+/**
+ * Définition d'un effet du catalogue
+ */
+export interface EffectDefinition {
+  id: string;
+  kind: EffectKind;
+  name: string;
+  description?: string;
+  /** Chemin brut du jeu, à passer à getImageUrl(version, icon) */
+  icon: string;
+  placement: EffectPlacement;
+  target: EffectTarget;
+  /** Toujours actif en jeu (passif natif / propriété d'arme / contact) */
+  passive: boolean;
+  polarity: 'positive' | 'negative';
+  modifiers: BrawlModifiers;
+  /** Plusieurs phases pertinentes fusionnées : à vérifier manuellement */
+  multi_phase?: boolean;
 }

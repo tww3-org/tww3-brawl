@@ -9,6 +9,7 @@
     "app": "pnpm --filter @tww3-brawl/responsive-app",
     "sdk": "pnpm --filter @tww3-brawl/sdk",
     "gql": "pnpm --filter @tww3-brawl/gql",
+    "effects:generate": "node scripts/generate-effects-catalog.mjs",
     "lint": "eslint . --max-warnings=0",
     "lint:fix": "eslint . --fix",
     "typecheck": "pnpm -r --no-bail --if-present run typecheck"
