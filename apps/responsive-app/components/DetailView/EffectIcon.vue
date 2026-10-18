@@ -4,12 +4,14 @@
             :aria-label="effect.name" @pointerdown="onPointerDown" @pointerup="onPointerUp" @click="onClick">
             <EffectImage :src="imageUrl" :name="effect.name" :size="28" />
             <span v-if="inflicted" class="inflicted-dot" aria-hidden="true" />
+            <span v-if="castBy" class="opponent-dot" aria-hidden="true" />
             <q-tooltip class="effect-tooltip" anchor="top middle" self="bottom middle">
                 <div class="text-weight-bold">{{ effect.name }}</div>
                 <div v-if="effect.description" class="description">{{ effect.description }}</div>
                 <ul v-if="lines.length > 0" class="modifier-lines">
                     <li v-for="line in lines" :key="line">{{ line }}</li>
                 </ul>
+                <div v-if="castBy" class="text-indigo-2">Cast by {{ castBy }}</div>
                 <div v-if="inflicted" class="text-red-3">Inflicted on the opponent</div>
                 <div class="state">{{ active ? 'Active' : 'Inactive' }}</div>
             </q-tooltip>
@@ -31,6 +33,8 @@ const props = defineProps<{
     versionId: string
     active: boolean
     removable?: boolean
+    /** Nom de l'unité adverse quand l'effet vient de l'adversaire */
+    castBy?: string
 }>()
 
 const emit = defineEmits<{
@@ -100,6 +104,17 @@ const inflicted = computed(() => isInflictedOnOpponent(props.effect))
     height: 8px;
     border-radius: 50%;
     background: #e53935;
+    border: 1px solid #fff;
+}
+
+.opponent-dot {
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #5c6bc0;
     border: 1px solid #fff;
 }
 

@@ -42,6 +42,8 @@ const ATTRIBUTES = {
 // Corrections manuelles, fusionnées en profondeur en dernier
 const OVERRIDES = {
   wh2_pro08_unit_contact_dampen: { modifiers: { damage: { is_magical: false } } },
+  // « Wounds » (−20 % dégâts) : passif natif de toute entité unique, mais désactivé par défaut
+  wh3_main_unit_passive_single_entity: { default_active: false },
 };
 
 const PHASE_FIELDS = `id onscreen_name duration effect_type imbue_magical imbue_ignition damage_amount
@@ -249,7 +251,11 @@ function abilityEntries(ability) {
   const key = ability.key;
   const passive = Boolean(sa.passive);
   const result = [];
-  const main = list.filter((g) => g.role === '' || g.role === 'self');
+  // En jeu, sans phase `_self` et avec `affect_self`, la phase « alliés » couvre aussi le lanceur
+  // (aura autour de lui) : elle devient l'entrée principale au lieu de `${key}__allies`.
+  const alliesCoverSelf = Boolean(sa.affect_self) &&
+    list.some((g) => g.role === 'allies') && !list.some((g) => g.role === 'self');
+  const main = list.filter((g) => g.role === '' || g.role === 'self' || (alliesCoverSelf && g.role === 'allies'));
   const prefix = main.length > 1 ? commonTokenPrefix(main.map((g) => g.base)) : [];
   for (const g of main) {
     const variant = main.length > 1 ? g.base.split('_').slice(prefix.length).join('_') : '';
@@ -269,7 +275,7 @@ function abilityEntries(ability) {
   for (const g of list) {
     if (g.role === 'enemy' || g.role === 'enemies') {
       result.push(make({ id: `${key}__enemy`, name: `${baseName} (enemy)`, phase: g.phase, target: 'enemy', polarity: 'negative', passive, variantOf: key }));
-    } else if (g.role === 'allies') {
+    } else if (g.role === 'allies' && !alliesCoverSelf) {
       result.push(make({ id: `${key}__allies`, name: `${baseName} (allies)`, phase: g.phase, target: 'self', passive, variantOf: key }));
     } else if (g.role === 'debuff') {
       result.push(make({ id: `${key}__debuff`, name: `${baseName} (after effect)`, phase: g.phase, target: 'self', polarity: 'negative', passive: false, variantOf: key }));

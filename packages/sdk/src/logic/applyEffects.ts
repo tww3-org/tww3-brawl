@@ -10,6 +10,8 @@ const has = (catalog: Catalog, id: string): boolean =>
 export interface NativeCardEffect {
   id: string;
   active: boolean;
+  /** 'opponent' : effet placé sur la carte parce que l'adversaire le porte */
+  source: 'own' | 'opponent';
 }
 
 /** Sort d'une unité qui s'applique à l'ennemi (ex. hex) : affiché sur la carte de celui qui le reçoit */
@@ -18,7 +20,7 @@ const isEnemyAbility = (e: EffectDefinition): boolean => e.kind === 'ability' &&
 /**
  * Effets natifs affichés sur la carte d'une unité, avec leur état par défaut :
  * ses propres effets (hors sorts ciblant l'ennemi) + les sorts ciblant l'ennemi de l'adversaire.
- * Actif par défaut si l'effet est passif.
+ * Actif par défaut si `default_active`, sinon si l'effet est passif.
  */
 export function getNativeCardEffects(
   unit: Unit,
@@ -26,14 +28,17 @@ export function getNativeCardEffects(
   catalog: Catalog = EFFECTS_CATALOG
 ): NativeCardEffect[] {
   const result = new Map<string, NativeCardEffect>();
-  const add = (id: string): void => {
-    if (!result.has(id)) result.set(id, { id, active: catalog[id].passive === true });
+  const add = (id: string, source: NativeCardEffect['source']): void => {
+    if (!result.has(id)) {
+      const def = catalog[id];
+      result.set(id, { id, active: def.default_active ?? def.passive === true, source });
+    }
   };
   for (const id of unit.effects ?? []) {
-    if (has(catalog, id) && !isEnemyAbility(catalog[id])) add(id);
+    if (has(catalog, id) && !isEnemyAbility(catalog[id])) add(id, 'own');
   }
   for (const id of opponent?.effects ?? []) {
-    if (has(catalog, id) && isEnemyAbility(catalog[id])) add(id);
+    if (has(catalog, id) && isEnemyAbility(catalog[id])) add(id, 'opponent');
   }
   return [...result.values()];
 }
