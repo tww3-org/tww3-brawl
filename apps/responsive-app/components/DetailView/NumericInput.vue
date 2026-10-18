@@ -16,6 +16,7 @@
 <script setup lang="ts">
 import ModifierDisplay from './ModifierDisplay.vue';
 import { applyModifierStep } from './modifierStep';
+import { roundForDisplay } from './formatNumber';
 const props = withDefaults(defineProps<{
     baseValue?: number
     modifier?: number
@@ -26,7 +27,7 @@ const props = withDefaults(defineProps<{
     direction: 'left'
 })
 
-const totalValue = computed(() => props.baseValue + props.modifier)
+const totalValue = computed(() => roundForDisplay(props.baseValue + props.modifier))
 const bonus = ref(props.modifier)
 watch(() => props.modifier, (v) => { bonus.value = v })
 const emit = defineEmits<{

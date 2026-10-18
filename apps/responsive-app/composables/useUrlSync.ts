@@ -1,10 +1,10 @@
 import { watch } from 'vue'
 import { useQueryClient } from '@tanstack/vue-query'
 import { useUnitStore } from '~/stores/unitStore'
-import { fetchUnit, fetchFactions, type Faction } from '@tww3-brawl/sdk'
+import { fetchUnit, fetchFactions, getEffect, type Faction } from '@tww3-brawl/sdk'
 import { useGraphQLClient } from './useGraphQLClient'
-import type { UnitWithEntityNumberAndBonus, UnitBonus } from '~/types/unit'
-import { defaultUnitBonus, UnitBonusPathes } from '~/types/unit'
+import type { UnitWithEntityNumberAndBonus, UnitBonus, UnitEffectState } from '~/types/unit'
+import { defaultEffectState, defaultUnitBonus, UnitBonusPathes } from '~/types/unit'
 import { getMaxEntities } from '@tww3-brawl/sdk/src/utils/getMaxEntities'
 import { useVersions } from './useVersions'
 
@@ -43,6 +43,16 @@ export function useUrlSync() {
       }
     }
     
+    // Effets : overrides (`fx=id:0|1,...`) et effets ajoutés (`fa=id,...`), seulement si non vides
+    const overrides = Object.entries(unit.effects?.overrides ?? {})
+    if (overrides.length > 0) {
+      parts.push(`fx=${overrides.map(([id, active]) => `${id}:${active ? 1 : 0}`).join(',')}`)
+    }
+    const added = unit.effects?.added ?? []
+    if (added.length > 0) {
+      parts.push(`fa=${added.join(',')}`)
+    }
+
     return parts.join('|')
   }
 
@@ -51,7 +61,7 @@ export function useUrlSync() {
    */
   function decodeUnitParams(
     param: string | undefined
-  ): { unit_id: string; version: string; bonus: UnitBonus; entityNumber?: number; factionKey?: string } | null {
+  ): { unit_id: string; version: string; bonus: UnitBonus; entityNumber?: number; factionKey?: string; effects: UnitEffectState } | null {
     if (!param || typeof param !== 'string') {
       return null
     }
@@ -69,11 +79,30 @@ export function useUrlSync() {
     const bonus = defaultUnitBonus()
     let entityNumber: number | undefined
     let factionKey: string | undefined
+    const effects = defaultEffectState()
     for (const bonusPart of bonusParts) {
       const [key, valueStr] = bonusPart.split('=')
       if (key === 'f') {
         if (valueStr) {
           factionKey = valueStr
+        }
+        continue
+      }
+      if (key === 'fx' && valueStr) {
+        // Les ids inconnus du catalogue sont ignorés
+        for (const entry of valueStr.split(',')) {
+          const [id, flag] = entry.split(':')
+          if (id && getEffect(id) && (flag === '0' || flag === '1')) {
+            effects.overrides[id] = flag === '1'
+          }
+        }
+        continue
+      }
+      if (key === 'fa' && valueStr) {
+        for (const id of valueStr.split(',')) {
+          if (id && getEffect(id) && !effects.added.includes(id)) {
+            effects.added.push(id)
+          }
         }
         continue
       }
@@ -92,7 +121,7 @@ export function useUrlSync() {
       }
     }
     
-    return { unit_id, version, bonus, entityNumber, factionKey }
+    return { unit_id, version, bonus, entityNumber, factionKey, effects }
   }
 
   /**
@@ -187,6 +216,8 @@ export function useUrlSync() {
         },
         entityNumber: entityCount,
         bonus: decoded.bonus,
+        // Décodé depuis l'URL ; les overrides sont par id, donc valides même avant le chargement de l'autre unité
+        effects: decoded.effects,
       }
     } catch (error) {
       console.error('Error loading unit from URL:', error)
@@ -244,11 +275,13 @@ export function useUrlSync() {
         unitStore.left?.selection?.faction?.key,
         unitStore.left?.entityNumber,
         unitStore.left?.bonus,
+        unitStore.left?.effects,
         unitStore.right?.selection?.unit?.unit,
         unitStore.right?.selection?.version?.id,
         unitStore.right?.selection?.faction?.key,
         unitStore.right?.entityNumber,
         unitStore.right?.bonus,
+        unitStore.right?.effects,
       ],
       () => {
         updateUrl()

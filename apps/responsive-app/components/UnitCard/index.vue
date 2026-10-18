@@ -27,7 +27,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { getUnitDisplayName } from '@tww3-brawl/sdk/src/utils/getUnitDisplayName'
-import { type UnitSelection, type UnitWithEntityNumberAndBonus, defaultUnitBonus } from '~/types/unit'
+import { type UnitSelection, type UnitWithEntityNumberAndBonus, defaultEffectState, defaultUnitBonus } from '~/types/unit'
 import SelectUnit from './SelectUnit.vue'
 import MountPicker from './MountPicker.vue'
 import UnitPortrait from './UnitPortrait.vue'
@@ -65,7 +65,9 @@ function updateUnit(value: Unit) {
     emit('update:modelValue', {unitWithEntityNumberAndBonus: {
       selection: props.modelValue.selection,
       entityNumber: defaultEntityCount,
-      bonus: props.modelValue.bonus
+      bonus: props.modelValue.bonus,
+      // Les effets natifs dépendent de l'unité : réinitialisés au changement de monture
+      effects: defaultEffectState()
     }, mount_changed: true})
   }
 }
@@ -82,7 +84,8 @@ function updateUnitSelection(value: UnitSelection) {
   emit('update:modelValue', { unitWithEntityNumberAndBonus: {
     selection: value,
     entityNumber: defaultEntityCount,
-    bonus: defaultUnitBonus()
+    bonus: defaultUnitBonus(),
+    effects: defaultEffectState()
   }, mount_changed: false})
 
 }

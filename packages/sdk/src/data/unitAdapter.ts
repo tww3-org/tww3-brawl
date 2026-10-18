@@ -1,6 +1,7 @@
 import type { FieldsSelection, main_unit } from '@tww3-brawl/gql';
 import type { Unit } from '../types';
 import { unitHealth } from '../utils';
+import { getEffect } from './effects';
 
 /**
  * Sélection GraphQL partagée pour un champ `units` (main_unit).
@@ -48,10 +49,20 @@ export const unitSelection = {
       melee_attack_interval: true,
       is_magical: true,
       ignition_amount: true,
+      contact_phase: {
+        id: true,
+      },
     },
     melee_attack: true,
     melee_defence: true,
     damage_mod_physical: true,
+    damage_mod_magic: true,
+    attributes: {
+      key: true,
+    },
+    abilities: {
+      key: true,
+    },
     damage_mod_flame: true,
     damage_mod_all: true,
     variant: {
@@ -80,6 +91,30 @@ export const unitSelection = {
 
 /** Unité brute telle que retournée par la sélection partagée */
 export type RawUnit = FieldsSelection<main_unit, typeof unitSelection>;
+
+/**
+ * Ids (dédupliqués) des effets du catalogue portés nativement par l'unité.
+ */
+function nativeEffectIds(unit: RawUnit): string[] {
+  const weapon = unit.land_unit?.primary_melee_weapon;
+  const abilityKeys = (unit.land_unit?.abilities || []).map(ability => ability?.key);
+  const candidates: (string | null | undefined)[] = [
+    weapon?.is_magical ? 'magical_attack' : undefined,
+    Number(weapon?.ignition_amount || 0) > 0 ? 'flaming_attack' : undefined,
+    weapon?.contact_phase?.id,
+    ...abilityKeys,
+    // partie ennemie d'une capacité (ex. sword_dance__enemy) : native aussi
+    ...abilityKeys.map(key => (key ? `${key}__enemy` : undefined)),
+    ...(unit.land_unit?.attributes || []).map(attribute => attribute?.key),
+  ];
+  return Array.from(
+    new Set(
+      candidates.filter(
+        (id): id is string => typeof id === 'string' && getEffect(id) !== undefined
+      )
+    )
+  );
+}
 
 /**
  * Adapte une unité brute GraphQL en `Unit`.
@@ -157,9 +192,11 @@ export function adaptUnit(
     },
     resistance: {
       physical: Number(unit.land_unit?.damage_mod_physical || 0),
+      magic: Number(unit.land_unit?.damage_mod_magic || 0),
       fire: Number(unit.land_unit?.damage_mod_flame || 0),
       ward_save: Number(unit.land_unit?.damage_mod_all || 0),
     },
+    effects: nativeEffectIds(unit),
     is_large: unit.land_unit?.battle_entity?.size !== 'small',
     icon: unit.ui_unit_group?.icon || '',
     general_portrait:
