@@ -208,7 +208,9 @@ const capitalize = (w) => w.charAt(0).toUpperCase() + w.slice(1);
 /**
  * Entrées du catalogue pour une capacité. Les phases sont groupées par id sans étage : on ne garde
  * que l'étage le plus élevé (état final). Les groupes à rôle (ennemi, alliés, après-effet) et les
- * variantes aléatoires donnent des entrées supplémentaires `variant_of`.
+ * variantes aléatoires donnent des entrées supplémentaires `variant_of`. La cible d'une phase
+ * principale est `enemy` si elle touche des ennemis (aura passive, ou phase négative d'une capacité
+ * mixte), sinon `self`.
  */
 function abilityEntries(ability) {
   const phases = ability.phases ?? [];
@@ -221,7 +223,17 @@ function abilityEntries(ability) {
   }
   const list = [...groups.values()];
   const sa = ability.unit_special_ability ?? {};
-  const baseTarget = sa.target_enemies && !sa.affect_self ? 'enemy' : 'self';
+  // portée de la capacité : touche-t-elle des ennemis / aucun allié (auras passives comprises) ?
+  const reachesEnemies = sa.num_effected_enemy_units !== 0;
+  const reachesNoAlly = !sa.affect_self && !sa.target_friends && sa.num_effected_friendly_units === 0;
+  /** Cible d'une phase principale : `self` pour le rôle `_self`, sinon `enemy` si elle touche les ennemis */
+  const phaseTarget = (g) => {
+    if (g.role === 'self' || g.role === 'allies') return 'self';
+    if (sa.target_enemies && !sa.affect_self) return 'enemy';
+    if (reachesEnemies && reachesNoAlly) return 'enemy';
+    if (reachesEnemies && g.phase.effect_type === 'negative') return 'enemy';
+    return 'self';
+  };
   const rawName = strip(ability.name);
   // nom vide ou générique (ex. « Upgraded ») : repli sur la clé humanisée
   const baseName = rawName && !/^upgraded$/i.test(rawName) ? rawName : humanizeKey(ability.key);
@@ -257,16 +269,24 @@ function abilityEntries(ability) {
     list.some((g) => g.role === 'allies') && !list.some((g) => g.role === 'self');
   const main = list.filter((g) => g.role === '' || g.role === 'self' || (alliesCoverSelf && g.role === 'allies'));
   const prefix = main.length > 1 ? commonTokenPrefix(main.map((g) => g.base)) : [];
+  const variantOf = (g) => (main.length > 1 ? g.base.split('_').slice(prefix.length).join('_') : '');
+  const noVariantCount = main.filter((g) => !variantOf(g)).length;
+  const hasEnemyRole = list.some((g) => g.role === 'enemy' || g.role === 'enemies');
   for (const g of main) {
-    const variant = main.length > 1 ? g.base.split('_').slice(prefix.length).join('_') : '';
-    if (!variant) {
-      result.push(make({ id: key, name: baseName, phase: g.phase, target: baseTarget, passive }));
+    const variant = variantOf(g);
+    const target = phaseTarget(g);
+    if (!variant && target === 'enemy' && noVariantCount > 1) {
+      // collision d'id avec une phase `_self` : la phase ennemie devient `__enemy` (le groupe à rôle prime)
+      if (hasEnemyRole) continue;
+      result.push(make({ id: `${key}__enemy`, name: `${baseName} (enemy)`, phase: g.phase, target, polarity: 'negative', passive, variantOf: key }));
+    } else if (!variant) {
+      result.push(make({ id: key, name: baseName, phase: g.phase, target, passive }));
     } else {
       result.push(make({
         id: `${key}__${variant}`,
         name: `${baseName} (${variant.split('_').map(capitalize).join(' ')})`,
         phase: g.phase,
-        target: baseTarget,
+        target,
         passive,
         variantOf: key,
       }));
@@ -314,7 +334,7 @@ async function main() {
   const [abilitiesData, unitsData, attributesData] = await Promise.all([
     gql(`{ tww(tww_version:"${versionId}"){ abilities(offset:0,size:10000){
       key name icon_name is_hidden_in_ui tooltip type{key}
-      unit_special_ability{ passive affect_self target_enemies target_friends }
+      unit_special_ability{ passive affect_self target_enemies target_friends num_effected_friendly_units num_effected_enemy_units }
       phases{ ${PHASE_FIELDS} imbue_contact{ ${PHASE_FIELDS} } } } } }`),
     gql(`{ tww(tww_version:"${versionId}"){ units(offset:0,size:5000,includeSummoned:true){
       unit land_unit{ primary_melee_weapon{ contact_phase{ ${PHASE_FIELDS} } } } } } }`),
