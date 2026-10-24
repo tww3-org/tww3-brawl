@@ -13,6 +13,11 @@ const max_fire_resist = 100
 const min_magic_resist = -100
 const max_magic_resist = 100
 
+/** Une cible est large si `is_large` est renseigné, sinon d'après la taille du cavalier. */
+function isLargeTarget(defender: Unit): boolean {
+    return defender.is_large ?? (defender.land_unit?.battle_entity?.size !== 'small')
+}
+
 /**
  * Calculates the attack ratio between an attacker and defender unit.
  * This represents the probability of a successful hit based on attack vs defense stats.
@@ -24,7 +29,7 @@ const max_magic_resist = 100
 export function calculateAttackRatio(attacker: Unit, defender: Unit): number {
     const attackerAttack = attacker.attack || 0
     const defenderDefense = defender.defense || 0
-    const isLarge = defender.land_unit?.battle_entity?.size !== 'small'
+    const isLarge = isLargeTarget(defender)
 
     // Apply bonus damage based on target type (large vs infantry)
     const bonusDamage = isLarge 
@@ -46,7 +51,7 @@ export function calculateAttackRatio(attacker: Unit, defender: Unit): number {
  * @returns The total damage value after armor calculations
  */
 export function calculateDamageOnHit(attacker: Unit, defender: Unit): number {
-    const isLarge = defender.land_unit?.battle_entity?.size !== 'small'
+    const isLarge = isLargeTarget(defender)
 
     // Apply bonus damage based on target type (large vs infantry)
     const bonusDamage = isLarge 
