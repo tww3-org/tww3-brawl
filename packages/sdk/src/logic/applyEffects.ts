@@ -124,8 +124,8 @@ export function applyEffects(
   const fire = newAcc();
   const ward = newAcc();
 
-  let magical = false;
-  let flaming = false;
+  let magical = unit.damage?.is_magical === true;
+  let flaming = unit.damage?.is_fire === true;
   let removeMagical = false;
   let removeFire = false;
 
