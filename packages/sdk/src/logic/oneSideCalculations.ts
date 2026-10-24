@@ -50,7 +50,8 @@ export function calculateAttackRatio(attacker: Unit, defender: Unit): number {
  * 
  * @param attacker - The attacking unit
  * @param defender - The defending unit
- * @returns The total damage value after armor calculations
+ * @returns The total damage value after armor calculations, or 0 when the attacker
+ * has no normal and no piercing damage (never NaN)
  */
 export function calculateDamageOnHit(attacker: Unit, defender: Unit): number {
     const isLarge = isLargeTarget(defender)
@@ -62,6 +63,10 @@ export function calculateDamageOnHit(attacker: Unit, defender: Unit): number {
     
         const normalDamage = clampNonNegative(attacker.damage?.normal || 0)
         const piercingDamage = clampNonNegative(attacker.damage?.piercing || 0)
+
+    // Aucun dégât normal ni perforant : rien à répartir (évite 0/0 = NaN), le bonus n'a rien à amplifier
+    if (normalDamage + piercingDamage === 0) return 0
+
         const damageSplitRatio = normalDamage / (normalDamage + piercingDamage )
 
     const armor = clampNonNegative(defender.armor || 0)

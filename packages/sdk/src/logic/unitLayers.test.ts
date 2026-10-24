@@ -274,6 +274,31 @@ describe('stats négatives', () => {
     expect(calculateDamageOnHit(r, makeUnit({ armor: 0 }))).toBeCloseTo(10);
   });
 
+  it('dégâts normaux et perforants nuls : 0 (et non NaN), même avec un bonus', () => {
+    const noDamage = makeUnit({
+      damage: { normal: 0, piercing: 0, is_magical: false, is_fire: false, bonus_v_large: 20, bonus_v_infantry: 20 },
+    });
+    const foot = makeUnit({ armor: 0 });
+    const mounted = makeUnit({ is_large: true });
+    expect(calculateDamageOnHit(noDamage, foot)).toBe(0);
+    expect(calculateDamageOnHit(noDamage, mounted)).toBe(0);
+  });
+
+  it('dégâts normaux et perforants négatifs : bornés à 0 donc 0 (et non NaN)', () => {
+    const negDamage = makeUnit({
+      damage: { normal: -10, piercing: -5, is_magical: false, is_fire: false, bonus_v_large: 20, bonus_v_infantry: 20 },
+    });
+    expect(calculateDamageOnHit(negDamage, makeUnit())).toBe(0);
+  });
+
+  it('cas régulier inchangé : normal 30, perforant 10, bonus 20 contre armure 0', () => {
+    const withBonus = makeUnit({
+      damage: { normal: 30, piercing: 10, is_magical: false, is_fire: false, bonus_v_large: 0, bonus_v_infantry: 20 },
+    });
+    // (30 + 20×0,75) + 10 + 20×0,25 = 60
+    expect(calculateDamageOnHit(withBonus, makeUnit({ armor: 0 }))).toBeCloseTo(60);
+  });
+
   it('clampNonNegative', () => {
     expect(clampNonNegative(-3)).toBe(0);
     expect(clampNonNegative(4.5)).toBe(4.5);
