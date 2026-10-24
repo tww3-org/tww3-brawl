@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch --skipLibCheck",
-    "test": "jest",
+    "test": "vitest run",
     "lint": "eslint src --max-warnings=0",
     "typecheck": "tsc --noEmit"
   },
@@ -19,7 +19,8 @@
     "@tww3-brawl/gql": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^5.0.5"
   },
   "type": "commonjs"
 }

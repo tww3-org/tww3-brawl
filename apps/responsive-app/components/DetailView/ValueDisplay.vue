@@ -1,9 +1,10 @@
 <template>
-    <div v-if="isMobile" class="mobile-value">
+    <div v-if="isMobile" class="mobile-value" :class="{ 'outward-left': orientation === 'left' }">
         <span v-if="canEdit" class="editable" role="button" tabindex="0" @click="dialogOpen = true"
             @keydown.enter.prevent="dialogOpen = true" @keydown.space.prevent="dialogOpen = true">{{ displayed }}</span>
         <template v-else>{{ displayed }}</template>
         <q-badge v-if="bonus !== 0" class="bonus-badge" :color="bonus > 0 ? 'green' : 'red'">{{ bonus }}</q-badge>
+        <span v-if="effectiveDelta" class="effective" :class="effectiveClass" title="Valeur après effets">→ {{ effectiveText }}</span>
         <ModifierDialog v-if="canEdit" v-model="dialogOpen" :title="dialogTitle" :base-value="value as number"
             :bonus="bonus" @update="onUpdate" />
     </div>
@@ -12,6 +13,7 @@
             <NumericInput ref="numericInputRef" v-if="typeof value === 'number' && isUpdatable" :modifier="bonus" :baseValue="value" @update:model-value="onUpdate" :direction="orientation" />
             <template v-else>{{ typeof value === 'number' ? roundForDisplay(value) : value }}</template>
         </div>
+        <span v-if="effectiveDelta" class="effective" :class="effectiveClass" title="Valeur après effets">→ {{ effectiveText }}</span>
     </div>
 </template>
 
@@ -35,6 +37,8 @@ const props = withDefaults(defineProps<{
     value: number | boolean
     isUpdatable: boolean
     bonus?: number
+    /** Valeur après toutes les couches (effets compris), affichée à côté si elle diffère de `value + bonus` */
+    effective?: number
     unitName?: string
     statLabel?: string
     orientation: 'left' | 'right'
@@ -53,6 +57,13 @@ const isMobile = computed(() => mounted.value && $q.screen.lt.md)
 const dialogOpen = ref(false)
 const canEdit = computed(() => typeof props.value === 'number' && props.isUpdatable)
 const displayed = computed(() => typeof props.value === 'number' ? roundForDisplay(props.value + bonus.value) : props.value)
+// Écart entre la valeur effective et la valeur éditée (0 : rien à afficher)
+const effectiveDelta = computed(() => {
+    if (typeof props.value !== 'number' || props.effective === undefined) return 0
+    return roundForDisplay(props.effective) - roundForDisplay(props.value + bonus.value)
+})
+const effectiveClass = computed(() => effectiveDelta.value > 0 ? 'higher' : 'lower')
+const effectiveText = computed(() => props.effective === undefined ? '' : roundForDisplay(props.effective))
 const dialogTitle = computed(() => [props.unitName, props.statLabel].filter(Boolean).join(' — '))
 const numericInputRef = ref<InstanceType<typeof NumericInput> | null>(null)
 function reset() {
@@ -95,6 +106,10 @@ defineExpose({
     gap: 0.25rem;
 }
 
+.mobile-value.outward-left {
+    flex-direction: row-reverse;
+}
+
 .editable {
     cursor: pointer;
     text-decoration: underline dotted;
@@ -103,5 +118,20 @@ defineExpose({
 
 .base {
     width: 30ch;
+}
+
+/* Indicateur en lecture seule de la valeur après effets */
+.effective {
+    align-self: center;
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+}
+
+.effective.higher {
+    color: var(--q-positive, green);
+}
+
+.effective.lower {
+    color: var(--q-negative, red);
 }
 </style>

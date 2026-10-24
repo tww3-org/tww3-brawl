@@ -27,22 +27,24 @@
                 </td>
             </tr>
             <tr v-for="statistic in statistics" :key="statistic.path">
-                <td class="unit-column" v-if="effectiveLeft">
+                <td class="unit-column" v-if="baseLeft">
                     <div class="stat-cell">
                         <EffectList v-if="statistic.path === 'attack'" side="left" placement="attack" />
                         <ValueDisplay ref="leftUnitRef"
-                            :value="getTyped<Required<Unit>, Paths<Required<Unit>>>(effectiveLeft as Required<Unit>, (statistic.path) as Paths<Required<Unit>>) as (number | boolean)"
+                            :value="getTyped<Required<Unit>, Paths<Required<Unit>>>(baseLeft as Required<Unit>, (statistic.path) as Paths<Required<Unit>>) as (number | boolean)"
                             :bonus="leftUnit.bonus[statistic.path as UnitBonusPathes]"
+                            :effective="effectiveValue(effectiveLeft, statistic.path)"
                             :isUpdatable="UnitBonusPathes.includes(statistic.path as UnitBonusPathes)"
                             @update="onUpdate('left', statistic.path as UnitBonusPathes, $event)" orientation="left" :unitName="leftUnitName" :statLabel="statistic.label" />
                     </div>
                 </td>
                 <td class="text-center stat-column">{{ statistic.label }}</td>
-                <td class="unit-column" v-if="effectiveRight">
+                <td class="unit-column" v-if="baseRight">
                     <div class="stat-cell">
                         <ValueDisplay ref="rightUnitRef"
-                            :value="getTyped<Required<Unit>, Paths<Required<Unit>>>(effectiveRight as Required<Unit>, (statistic.path) as Paths<Required<Unit>>) as (number | boolean)"
+                            :value="getTyped<Required<Unit>, Paths<Required<Unit>>>(baseRight as Required<Unit>, (statistic.path) as Paths<Required<Unit>>) as (number | boolean)"
                             :bonus="rightUnit.bonus[statistic.path as UnitBonusPathes]"
+                            :effective="effectiveValue(effectiveRight, statistic.path)"
                             :isUpdatable="UnitBonusPathes.includes(statistic.path as UnitBonusPathes)"
                             @update="onUpdate('right', statistic.path as UnitBonusPathes, $event)" orientation="right" :unitName="rightUnitName" :statLabel="statistic.label" />
                         <EffectList v-if="statistic.path === 'attack'" side="right" placement="attack" />
@@ -67,7 +69,8 @@ import ValueDisplay from './ValueDisplay.vue'
 import EffectList from './EffectList.vue'
 import EffectPickerDialog from './EffectPickerDialog.vue'
 import { useUnitStore } from '~/stores/unitStore'
-import { unitWithEffects } from '~/types/unit'
+import { baseUnit, fullyEffectiveUnit } from '~/types/unit'
+import { clampNonNegative } from '@tww3-brawl/sdk/src/logic/clampStat'
 
 const $q = useQuasar()
 const mounted = ref(false)
@@ -90,9 +93,20 @@ const rightUnitName = computed(() => props.rightUnit?.selection?.displayName
 
 const unitStore = useUnitStore()
 
-// Valeurs affichées : unité après effets (le bonus manuel reste édité à part dans ValueDisplay)
-const effectiveLeft = computed(() => unitWithEffects(props.leftUnit, props.rightUnit))
-const effectiveRight = computed(() => unitWithEffects(props.rightUnit, props.leftUnit))
+// Le bonus manuel passe avant les effets : le champ édite donc la valeur de base (+ bonus),
+// et la valeur après toutes les couches est affichée en lecture seule à côté
+const baseLeft = computed(() => baseUnit(props.leftUnit))
+const baseRight = computed(() => baseUnit(props.rightUnit))
+const effectiveLeft = computed(() => fullyEffectiveUnit(props.leftUnit, props.rightUnit))
+const effectiveRight = computed(() => fullyEffectiveUnit(props.rightUnit, props.leftUnit))
+
+/** Valeur effective d'une stat, bornée à 0 sauf les résistances (même règle que les calculs de combat) */
+function effectiveValue(unit: Unit | undefined, path: Paths<Required<Unit>>): number | undefined {
+    if (!unit) return undefined
+    const value = getTyped<Required<Unit>, Paths<Required<Unit>>>(unit as Required<Unit>, path)
+    if (typeof value !== 'number') return undefined
+    return path.startsWith('resistance.') ? value : clampNonNegative(value)
+}
 
 // Sélecteur d'effets (bouton « + »)
 const pickerOpen = ref(false)

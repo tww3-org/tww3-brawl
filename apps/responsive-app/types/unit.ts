@@ -1,7 +1,15 @@
 import type { UnitWithEntityNumber } from '@tww3-brawl/sdk/src/logic/twoSideCalculations';
 import type { Unit, Version, Faction } from '@tww3-brawl/sdk/src/types'
-import { getTyped, setTyped, type Paths } from '~/shared/jsonpath';
-import { applyEffects, getNativeCardEffects } from '@tww3-brawl/sdk/src/logic/applyEffects';
+import type { Paths } from '~/shared/jsonpath';
+import { getNativeCardEffects } from '@tww3-brawl/sdk/src/logic/applyEffects';
+import {
+  EFFECTIVE_UNIT_LAYERS,
+  UNIT_BONUS_PATHS,
+  derivedValuesLayer,
+  runLayers,
+  type LayerContext,
+  type UnitBonusPath,
+} from '@tww3-brawl/sdk/src/logic/unitLayers';
 import { getEffect } from '@tww3-brawl/sdk';
 
 // Type for unit selection with version and faction
@@ -83,17 +91,9 @@ export function activeEffectIds(side: SideData, other: SideData): string[] {
   return displayedEffects(side, other).filter(e => e.active).map(e => e.id);
 }
 
-/** Unité d'un côté après application des effets (sans le bonus manuel) */
-export function unitWithEffects(side: SideData, other: SideData): Unit | undefined {
-  const unit = side?.selection?.unit;
-  if (!unit) {
-    return undefined;
-  }
-  return applyEffects(unit, activeEffectIds(side, other), activeEffectIds(other, side));
-}
-
 /**
- * Unités effectives d'un duel : effets des deux cartes appliqués, puis bonus manuel par-dessus.
+ * Unités effectives d'un duel : couches appliquées dans l'ordre obligatoire du SDK
+ * (valeurs dérivées, bonus manuel, effets positifs, effets négatifs).
  * Point d'entrée unique pour tous les calculs de combat.
  */
 export function effectiveUnits(
@@ -104,10 +104,36 @@ export function effectiveUnits(
     if (!side) {
       return null;
     }
-    const unit = unitWithEffects(side, other);
-    return unitWithBonus({ ...side, selection: { ...side.selection, unit } });
+    return {
+      selection: {
+        unit: fullyEffectiveUnit(side, other),
+        version: side.selection?.version,
+        faction: side.selection?.faction,
+      },
+      entityNumber: side.entityNumber,
+    };
   };
   return { left: build(left, right), right: build(right, left) };
+}
+
+/** Unité de base d'un côté (valeurs dérivées uniquement, sans bonus ni effets) */
+export function baseUnit(side: SideData): Unit | undefined {
+  const unit = side?.selection?.unit;
+  return unit && runLayers(unit, [derivedValuesLayer]);
+}
+
+/** Unité d'un côté après toutes les couches (valeurs dérivées, bonus manuel, effets) */
+export function fullyEffectiveUnit(side: SideData, other: SideData): Unit | undefined {
+  const unit = side?.selection?.unit;
+  return unit && runLayers(unit, EFFECTIVE_UNIT_LAYERS, layerContext(side, other));
+}
+
+function layerContext(side: NonNullable<SideData>, other: SideData): LayerContext {
+  return {
+    manual: side.bonus,
+    cardEffects: activeEffectIds(side, other),
+    opponentCardEffects: activeEffectIds(other, side),
+  };
 }
 
 export type UnitBonus = {[key in UnitBonusPathes]: number};
@@ -121,24 +147,10 @@ export function defaultUnitBonus(): UnitBonus {
 
 export type UnitPaths = Paths<Required<Unit>>;
 
-export const UnitBonusPathes: UnitPaths[] = [
-  'health.unit',
-  'armor',
-  'attack',
-  'defense',
-  'damage.normal',
-  'damage.piercing',
-  'damage.bonus_v_large',
-  'damage.bonus_v_infantry',
-  'resistance.physical',
-  'resistance.magic',
-  'resistance.fire',
-  'resistance.ward_save',
-  'recruitment_cost',
-  'upkeep_cost',
-] as const;
+/** Chemins modifiables manuellement : liste définie par le SDK (source unique, pour éviter toute dérive) */
+export const UnitBonusPathes = UNIT_BONUS_PATHS;
 
-export type UnitBonusPathes = typeof UnitBonusPathes[number];
+export type UnitBonusPathes = UnitBonusPath;
 
 export const statistics: { path: UnitPaths, color: string, label: string }[] = [
   { path: 'health.unit', color: 'green', label: 'Health' },
@@ -156,31 +168,3 @@ export const statistics: { path: UnitPaths, color: string, label: string }[] = [
   { path: 'recruitment_cost', color: '#B8860B', label: 'Recruitment Cost' },
   { path: 'upkeep_cost', color: '#B8860B', label: 'Upkeep Cost' },
 ] as const
-
-
-
-
-export function unitWithBonus(unit: Readonly<UnitWithEntityNumberAndBonus> ): UnitWithEntityNumber {   
-  if (!unit.selection.unit) {
-    return unit;
-  }
-  // Deep clone the unit
-  const finalUnit: Unit = JSON.parse(JSON.stringify(unit.selection.unit));
-  for (const path of Object.keys(unit.bonus) as UnitBonusPathes[]) {
-    if (typeof unit.bonus[path] === 'number') {
-      const value = getTyped(finalUnit, path as Paths<Unit>) as number;
-      setTyped(finalUnit, path as Paths<Unit>, (value + unit.bonus[path]) as unknown as Paths<Unit, Paths<Unit>>)
-    }
-  }
-  
-  return {
-    selection: {
-      unit: finalUnit,
-      version: unit.selection.version,
-      faction: unit.selection.faction
-    },
-    entityNumber: unit.entityNumber
-  }
-}
-
-
