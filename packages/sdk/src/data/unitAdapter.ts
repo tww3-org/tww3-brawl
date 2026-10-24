@@ -149,6 +149,8 @@ export function adaptUnit(
       num_mounts: unit.land_unit?.num_mounts || 0,
       onscreen_name: unit.land_unit?.onscreen_name || '',
       bonus_hit_points: Number(unit.land_unit?.bonus_hit_points || 0),
+      mount_size: unit.land_unit?.mount?.battle_entity?.size || undefined,
+      engine_size: unit.land_unit?.engine?.battle_entity?.size || undefined,
       battle_entity: {
         hit_points: Number(unit.land_unit?.battle_entity?.hit_points || 0),
         size: unit.land_unit?.battle_entity?.size || 'small',
@@ -199,12 +201,6 @@ export function adaptUnit(
       ward_save: Number(unit.land_unit?.damage_mod_all || 0),
     },
     effects: nativeEffectIds(unit),
-    // Un personnage monté ou une unité avec monture/engin est considéré comme large
-    is_large: [
-      unit.land_unit?.battle_entity?.size,
-      unit.land_unit?.mount?.battle_entity?.size,
-      unit.land_unit?.engine?.battle_entity?.size,
-    ].some(size => !!size && size !== 'small'),
     icon: unit.ui_unit_group?.icon || '',
     general_portrait:
       unit.custom_battle_permissions?.[0]?.general_portrait || '',

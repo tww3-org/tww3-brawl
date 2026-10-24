@@ -48,6 +48,10 @@ export interface Unit {
     num_mounts: number;
     onscreen_name: string;
     bonus_hit_points: number;
+    /** Taille de l'entité de la monture (absente si pas de monture, ou unité persistée avant l'ajout du champ) */
+    mount_size?: string;
+    /** Taille de l'entité de l'engin (absente si pas d'engin, ou unité persistée avant l'ajout du champ) */
+    engine_size?: string;
     battle_entity: {
       hit_points: number;
       size: string;

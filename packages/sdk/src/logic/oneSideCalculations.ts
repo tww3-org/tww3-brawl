@@ -1,4 +1,5 @@
 import type { Unit } from '../types'
+import { clampNonNegative } from './clampStat'
 
 // Constants for attack/defense calculations
 const base_attack = 40
@@ -27,14 +28,15 @@ function isLargeTarget(defender: Unit): boolean {
  * @returns A ratio between 0.08 and 0.90 representing hit probability
  */
 export function calculateAttackRatio(attacker: Unit, defender: Unit): number {
-    const attackerAttack = attacker.attack || 0
-    const defenderDefense = defender.defense || 0
+    // Les stats peuvent être négatives après les couches d'effets : bornées à 0 ici
+    const attackerAttack = clampNonNegative(attacker.attack || 0)
+    const defenderDefense = clampNonNegative(defender.defense || 0)
     const isLarge = isLargeTarget(defender)
 
     // Apply bonus damage based on target type (large vs infantry)
-    const bonusDamage = isLarge 
+    const bonusDamage = clampNonNegative(isLarge 
         ? (attacker.damage?.bonus_v_large || 0)
-        : (attacker.damage?.bonus_v_infantry || 0)
+        : (attacker.damage?.bonus_v_infantry || 0))
     
     // Calculate attack ratio with base attack and bonus damage, clamped between min/max values
     return Math.max(min_att_def_layer, Math.min(
@@ -48,21 +50,26 @@ export function calculateAttackRatio(attacker: Unit, defender: Unit): number {
  * 
  * @param attacker - The attacking unit
  * @param defender - The defending unit
- * @returns The total damage value after armor calculations
+ * @returns The total damage value after armor calculations, or 0 when the attacker
+ * has no normal and no piercing damage (never NaN)
  */
 export function calculateDamageOnHit(attacker: Unit, defender: Unit): number {
     const isLarge = isLargeTarget(defender)
 
     // Apply bonus damage based on target type (large vs infantry)
-    const bonusDamage = isLarge 
+    const bonusDamage = clampNonNegative(isLarge 
         ? (attacker.damage?.bonus_v_large || 0)
-        : (attacker.damage?.bonus_v_infantry || 0)
+        : (attacker.damage?.bonus_v_infantry || 0))
     
-        const normalDamage = attacker.damage?.normal || 0
-        const piercingDamage = attacker.damage?.piercing || 0
+        const normalDamage = clampNonNegative(attacker.damage?.normal || 0)
+        const piercingDamage = clampNonNegative(attacker.damage?.piercing || 0)
+
+    // Aucun dégât normal ni perforant : rien à répartir (évite 0/0 = NaN), le bonus n'a rien à amplifier
+    if (normalDamage + piercingDamage === 0) return 0
+
         const damageSplitRatio = normalDamage / (normalDamage + piercingDamage )
 
-    const armor = defender.armor || 0
+    const armor = clampNonNegative(defender.armor || 0)
     
     // Normal damage is reduced by armor, piercing damage ignores armor
     return ((normalDamage + bonusDamage * damageSplitRatio) * (1 - Math.min(armor * 0.75 * 0.01, 1)) + piercingDamage + bonusDamage * (1 - damageSplitRatio))
@@ -115,7 +122,7 @@ export function averageHealthLostPerEntityPerHit(attacker: Unit, defender: Unit)
     const att_ratio = calculateAttackRatio(attacker, defender)
     const resist_ratio = calculateResistRatio(attacker, defender)
     const damage_value = att_ratio * (1 - resist_ratio) * calculateDamageOnHit(attacker, defender)
-    return damage_value / (defender.health?.entity || 0) 
+    return damage_value / clampNonNegative(defender.health?.entity || 0)
 }
 
 /**
@@ -130,5 +137,5 @@ export function averageHealthLostPerUnitPerHit(attacker: Unit, defender: Unit) {
     const att_ratio = calculateAttackRatio(attacker, defender)
     const resist_ratio = calculateResistRatio(attacker, defender)
     const damage_value = att_ratio * (1 - resist_ratio) * calculateDamageOnHit(attacker, defender)
-    return damage_value / (defender.health?.unit || 0) 
+    return damage_value / clampNonNegative(defender.health?.unit || 0)
 }
