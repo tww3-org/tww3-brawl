@@ -1,6 +1,6 @@
 <template>
-    <q-input v-bind:model-value="totalValue" dense standout="custom-behavior" :placeholder="baseValue" type="number"
-        debounce="500" @update:model-value="updateTotalValue" @focus="onFocusSelectAll">
+    <q-input v-bind:model-value="shownValue" dense standout="custom-behavior" :placeholder="baseValue" type="number"
+        debounce="500" @update:model-value="updateTotalValue" @focus="onFocus" @blur="focused = false">
         <template #append>
             <q-badge floating v-if="modifier !== 0" :color="modifier > 0 ? 'green' : 'red'">{{ modifier }}</q-badge>
         </template>
@@ -20,6 +20,8 @@ import { roundForDisplay } from './formatNumber';
 const props = withDefaults(defineProps<{
     baseValue?: number
     modifier?: number
+    /** Valeur finale (effets compris) : affichée quand l'input n'a pas le focus */
+    effective?: number
     direction?: 'left' | 'right'
 }>(), {
     baseValue: 0,
@@ -28,6 +30,12 @@ const props = withDefaults(defineProps<{
 })
 
 const totalValue = computed(() => roundForDisplay(props.baseValue + props.modifier))
+const focused = ref(false)
+// Hors focus : valeur finale ; au focus : valeur éditable (avant effets) pour saisir le bonus manuel
+const shownValue = computed(() =>
+    !focused.value && props.effective !== undefined && Number.isFinite(props.effective)
+        ? roundForDisplay(props.effective)
+        : totalValue.value)
 const bonus = ref(props.modifier)
 watch(() => props.modifier, (v) => { bonus.value = v })
 const emit = defineEmits<{
@@ -54,7 +62,8 @@ function onReset() {
     emit('update:modelValue', bonus.value)
 }
 
-function onFocusSelectAll(e: Event) {
+function onFocus(e: Event) {
+    focused.value = true
     const target = e.target as HTMLInputElement | null
     // next frame ensures DOM is ready and focus applied before selecting
     requestAnimationFrame(() => target?.select())
