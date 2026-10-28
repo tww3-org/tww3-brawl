@@ -3,17 +3,21 @@
         <span v-if="canEdit" class="editable" role="button" tabindex="0" @click="dialogOpen = true"
             @keydown.enter.prevent="dialogOpen = true" @keydown.space.prevent="dialogOpen = true">{{ displayed }}</span>
         <template v-else>{{ displayed }}</template>
-        <q-badge v-if="bonus !== 0" class="bonus-badge" :color="bonus > 0 ? 'green' : 'red'">{{ bonus }}</q-badge>
-        <span v-if="effectiveDelta" class="effective" :class="effectiveClass" title="Valeur après effets">→ {{ effectiveText }}</span>
+        <q-badge v-if="bonus !== 0" class="bonus-badge" :color="bonus > 0 ? 'green' : 'red'">{{ signed(bonus) }}</q-badge>
+        <q-badge v-if="effectiveDelta" class="effect-badge" color="deep-purple" title="Modificateur des effets">
+            <q-icon name="auto_awesome" size="0.9em" class="effect-icon" />{{ signed(effectiveDelta) }}
+        </q-badge>
         <ModifierDialog v-if="canEdit" v-model="dialogOpen" :title="dialogTitle" :base-value="value as number"
             :bonus="bonus" @update="onUpdate" />
     </div>
     <div v-else class="container" :class="{ 'reverse': orientation === 'right' }">
         <div class="left base" :class="{ 'right': orientation === 'right' }">
-            <NumericInput ref="numericInputRef" v-if="typeof value === 'number' && isUpdatable" :modifier="bonus" :baseValue="value" @update:model-value="onUpdate" :direction="orientation" />
-            <template v-else>{{ typeof value === 'number' ? roundForDisplay(value) : value }}</template>
+            <NumericInput ref="numericInputRef" v-if="typeof value === 'number' && isUpdatable" :modifier="bonus" :baseValue="value" :effective="effective" @update:model-value="onUpdate" :direction="orientation" />
+            <template v-else>{{ displayed }}</template>
         </div>
-        <span v-if="effectiveDelta" class="effective" :class="effectiveClass" title="Valeur après effets">→ {{ effectiveText }}</span>
+        <q-badge v-if="effectiveDelta" class="effect-badge" color="deep-purple" title="Modificateur des effets">
+            <q-icon name="auto_awesome" size="0.9em" class="effect-icon" />{{ signed(effectiveDelta) }}
+        </q-badge>
     </div>
 </template>
 
@@ -37,7 +41,7 @@ const props = withDefaults(defineProps<{
     value: number | boolean
     isUpdatable: boolean
     bonus?: number
-    /** Valeur après toutes les couches (effets compris), affichée à côté si elle diffère de `value + bonus` */
+    /** Valeur après toutes les couches (effets compris), affichée comme valeur principale ; l'écart avec `value + bonus` est montré par une pastille */
     effective?: number
     unitName?: string
     statLabel?: string
@@ -56,14 +60,21 @@ onMounted(() => { mounted.value = true })
 const isMobile = computed(() => mounted.value && $q.screen.lt.md)
 const dialogOpen = ref(false)
 const canEdit = computed(() => typeof props.value === 'number' && props.isUpdatable)
-const displayed = computed(() => typeof props.value === 'number' ? roundForDisplay(props.value + bonus.value) : props.value)
+// Valeur finale affichée : effective si définie, sinon valeur de base + bonus manuel
+const displayed = computed(() => {
+    if (typeof props.value !== 'number') return props.value
+    return roundForDisplay(props.effective !== undefined && Number.isFinite(props.effective) ? props.effective : props.value + bonus.value)
+})
 // Écart entre la valeur effective et la valeur éditée (0 : rien à afficher)
 const effectiveDelta = computed(() => {
-    if (typeof props.value !== 'number' || props.effective === undefined) return 0
-    return roundForDisplay(props.effective) - roundForDisplay(props.value + bonus.value)
+    if (typeof props.value !== 'number' || props.effective === undefined || !Number.isFinite(props.effective)) return 0
+    return roundForDisplay(roundForDisplay(props.effective) - roundForDisplay(props.value + bonus.value))
 })
-const effectiveClass = computed(() => effectiveDelta.value > 0 ? 'higher' : 'lower')
-const effectiveText = computed(() => props.effective === undefined ? '' : roundForDisplay(props.effective))
+// Formate un écart avec son signe explicite (+15, -4)
+function signed(n: number): string {
+    const r = roundForDisplay(n)
+    return r > 0 ? `+${r}` : `${r}`
+}
 const dialogTitle = computed(() => [props.unitName, props.statLabel].filter(Boolean).join(' — '))
 const numericInputRef = ref<InstanceType<typeof NumericInput> | null>(null)
 function reset() {
@@ -120,18 +131,13 @@ defineExpose({
     width: 30ch;
 }
 
-/* Indicateur en lecture seule de la valeur après effets */
-.effective {
+/* Pastille du modificateur des effets, centrée verticalement hors de l'input */
+.effect-badge {
     align-self: center;
-    font-size: var(--font-size-sm);
     white-space: nowrap;
 }
 
-.effective.higher {
-    color: var(--q-positive, green);
-}
-
-.effective.lower {
-    color: var(--q-negative, red);
+.effect-icon {
+    margin-right: 0.2em;
 }
 </style>
