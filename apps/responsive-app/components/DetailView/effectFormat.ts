@@ -60,6 +60,11 @@ export function describeModifiers(mods: BrawlModifiers): string[] {
   if (mods.damage?.is_magical === false) lines.push('Removes magical attacks')
   if (mods.damage?.is_fire === true) lines.push('Flaming attacks')
   if (mods.damage?.is_fire === false) lines.push('Removes flaming attacks')
+  if (mods.regeneration) {
+    const { per_second, duration } = mods.regeneration
+    const pct = Math.round(per_second * 10000) / 100
+    lines.push(`Regeneration: ${pct}%/s${duration ? ` for ${duration}s` : ''}`)
+  }
   if (mods.contact_effect) {
     lines.push(`Contact effect: ${getEffect(mods.contact_effect)?.name ?? mods.contact_effect}`)
   }

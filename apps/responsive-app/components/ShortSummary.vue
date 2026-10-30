@@ -1,6 +1,13 @@
 <template>
   <div class="short-summary">
-    <div v-if="combatResult" class="combat-result">
+    <div v-if="combatResult?.stalemate" class="combat-result">
+      <p class="stalemate">
+        Stalemate: neither unit can defeat the other (regeneration outpaces damage)
+      </p>
+      <p v-if="regenerationText" class="hits-info">{{ regenerationText }}</p>
+    </div>
+
+    <div v-else-if="combatResult" class="combat-result">
       <!-- Winner information -->
       <div class="winner-section">
         <p>
@@ -10,6 +17,7 @@
           Takes {{ combatResult.hitsNeeded.toFixed(1) }} hits to defeat
           <span class="loser-name text-emphasized" :class="loserClass">{{ loserName }}</span>, with
         </p>
+        <p v-if="regenerationText" class="hits-info regeneration-info">{{ regenerationText }}</p>
       </div>
 
       <!-- Health display with circular progress -->
@@ -97,6 +105,17 @@ const loserClass = computed(() => {
   // Si le gagnant est 'left', alors le perdant est 'right' (couleur négative)
   // Si le gagnant est 'right', alors le perdant est 'left' (couleur positive)
   return combatResult.value?.winner === 'left' ? 'bg-negative' : 'bg-positive';
+});
+
+// Régénération par coup de chaque côté (pourcentage de la vie de l'unité), seulement les côtés > 0
+const regenerationText = computed(() => {
+  const regen = combatResult.value?.regenerationPerHit;
+  if (!regen) return '';
+
+  const parts = (['left', 'right'] as const)
+    .filter(side => regen[side] > 0)
+    .map(side => `${getSideName(side)} ${(regen[side] * 100).toFixed(2)}%`);
+  return parts.length > 0 ? `Regeneration per hit: ${parts.join(' / ')}` : '';
 });
 
 // Health color based on percentage with 5 tiers
@@ -191,6 +210,16 @@ const goldWinnerClass = computed(() => (goldWinner.value?.side === 'left' ? 'bg-
   font-size: 1rem;
   color: #666;
   margin: 0;
+}
+
+.stalemate {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.regeneration-info {
+  font-size: 0.9rem;
 }
 
 .health-display {

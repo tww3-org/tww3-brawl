@@ -3,7 +3,7 @@
         <q-card class="picker-card">
             <q-card-section class="q-pb-none">
                 <div class="text-h6">Add an effect</div>
-                <q-input v-model="search" dense outlined clearable autofocus placeholder="Search by name or id"
+                <q-input v-model="search" dense outlined clearable autofocus placeholder="Search by name, id or description"
                     class="q-mt-sm" />
                 <div class="row q-col-gutter-sm q-mt-xs">
                     <q-select v-model="kind" :options="kindOptions" label="Kind" dense outlined emit-value map-options
@@ -43,7 +43,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { listEffects } from '@tww3-brawl/sdk'
+import { BUILTIN_EFFECTS, listEffects } from '@tww3-brawl/sdk'
 import type { EffectDefinition } from '@tww3-brawl/sdk/src/types'
 import { getImageUrl } from '@tww3-brawl/sdk/src/utils/getImageUrl'
 import EffectImage from './EffectImage.vue'
@@ -88,12 +88,15 @@ const passiveOptions = [
     { label: 'Active', value: false },
 ]
 
-const catalog = listEffects().sort((a, b) => a.name.localeCompare(b.name))
+// Effets natifs (Flaming / Magical…) en tête, puis le reste par ordre alphabétique
+const builtinIds = new Set(Object.keys(BUILTIN_EFFECTS))
+const catalog = listEffects().sort((a, b) =>
+    Number(builtinIds.has(b.id)) - Number(builtinIds.has(a.id)) || a.name.localeCompare(b.name))
 
 const filtered = computed<EffectDefinition[]>(() => {
     const query = (search.value ?? '').trim().toLowerCase()
     return catalog.filter(e =>
-        (!query || e.name.toLowerCase().includes(query) || e.id.toLowerCase().includes(query))
+        (!query || [e.name, e.id, e.description ?? ''].some(text => text.toLowerCase().includes(query)))
         && (kind.value === null || e.kind === kind.value)
         && (placement.value === null || e.placement === placement.value)
         && (polarity.value === null || e.polarity === polarity.value)

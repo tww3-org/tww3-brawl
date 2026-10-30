@@ -139,3 +139,34 @@ export function averageHealthLostPerUnitPerHit(attacker: Unit, defender: Unit) {
     const damage_value = att_ratio * (1 - resist_ratio) * calculateDamageOnHit(attacker, defender)
     return damage_value / clampNonNegative(defender.health?.unit || 0)
 }
+
+/** Une attaque de mêlée a lieu toutes les 4 secondes en moyenne */
+export const SECONDS_PER_ATTACK = 4
+
+/** Une attaque enflammée réduit de moitié la régénération de la cible */
+export const FLAMING_REGENERATION_FACTOR = 0.5
+
+const fireRegenerationFactor = (attacker: Unit): number =>
+    attacker.damage?.is_fire ? FLAMING_REGENERATION_FACTOR : 1
+
+/**
+ * Fraction de la vie max du défenseur régénérée entre deux attaques de l'attaquant
+ * (régénération continue × SECONDS_PER_ATTACK, réduite de moitié si l'attaquant est enflammé).
+ *
+ * @returns Une fraction >= 0 (0 si le défenseur ne régénère pas)
+ */
+export function regenerationPerHit(attacker: Unit, defender: Unit): number {
+    const perSecond = Math.max(0, defender.regeneration?.per_second ?? 0)
+    return perSecond * SECONDS_PER_ATTACK * fireRegenerationFactor(attacker)
+}
+
+/**
+ * Fraction de la vie max du défenseur soignée au total par les régénérations à durée limitée
+ * (réduite de moitié si l'attaquant est enflammé).
+ *
+ * @returns Une fraction >= 0
+ */
+export function regenerationBurst(attacker: Unit, defender: Unit): number {
+    const burst = Math.max(0, defender.regeneration?.burst ?? 0)
+    return burst * fireRegenerationFactor(attacker)
+}
