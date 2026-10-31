@@ -88,6 +88,11 @@ export interface Unit {
   };
   /** Ids des effets du catalogue portés nativement par l'unité */
   effects?: string[];
+  /**
+   * Régénération cumulée par les effets (fractions de la vie max de l'unité) :
+   * `per_second` = soins continus par seconde, `burst` = total des soins à durée limitée (Σ per_second × durée).
+   */
+  regeneration?: { per_second: number; burst: number };
   is_large?: boolean;
   general_portrait?: string;
   unit_card_url?: string;
@@ -154,6 +159,11 @@ export interface BrawlModifiers {
     fire?: StatModifier;
     ward_save?: StatModifier;
   };
+  /**
+   * Régénération : `per_second` = fraction de la vie max de l'unité soignée par seconde (0,001 = 0,1 %/s) ;
+   * `duration` = durée du soin en secondes (absent = tout le combat).
+   */
+  regeneration?: { per_second: number; duration?: number };
   /** Id d'un effet de contact imbu par l'attaque de mêlée */
   contact_effect?: string;
   immunities?: EffectImmunity[];

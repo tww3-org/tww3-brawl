@@ -304,3 +304,55 @@ describe('stats négatives', () => {
     expect(clampNonNegative(4.5)).toBe(4.5);
   });
 });
+
+describe('régénération', () => {
+  const regenCatalog: Catalog = {
+    ...catalog,
+    ...Object.fromEntries([
+      fx('regen', 'ability', { regeneration: { per_second: 0.001 } }),
+      fx('regen2', 'ability', { regeneration: { per_second: 0.002 } }),
+      fx('heal_burst', 'ability', { regeneration: { per_second: 0.016, duration: 25 } }),
+    ].map(e => [e.id, e])),
+  };
+  const run = (unit: Unit, ctx: LayerContext) => runLayers(unit, EFFECTIVE_UNIT_LAYERS, { ...ctx, catalog: regenCatalog });
+
+  it('somme les soins continus et cumule les soins limités dans burst', () => {
+    const result = run(makeUnit(), { cardEffects: ['regen', 'regen2', 'heal_burst'] });
+    expect(result.regeneration?.per_second).toBeCloseTo(0.003, 6);
+    expect(result.regeneration?.burst).toBeCloseTo(0.4, 6);
+  });
+
+  it('ne définit pas de régénération sans effet de soin', () => {
+    expect(run(makeUnit(), { cardEffects: ['boon'] }).regeneration).toBeUndefined();
+  });
+});
+
+describe('arme native désactivée', () => {
+  const flaming = makeUnit({
+    damage: { ...makeUnit().damage!, is_magical: true, is_fire: true },
+    effects: ['flaming_attack', 'magical_attack'],
+  });
+  const run = (ctx: LayerContext) => runLayers(flaming, EFFECTIVE_UNIT_LAYERS, { ...ctx, catalog });
+
+  it('retire is_fire / is_magical quand l\'effet natif est décoché', () => {
+    const result = run({ cardEffects: [] });
+    expect(result.damage?.is_fire).toBe(false);
+    expect(result.damage?.is_magical).toBe(false);
+  });
+
+  it('les garde quand l\'effet natif est actif', () => {
+    const result = run({ cardEffects: ['flaming_attack', 'magical_attack'] });
+    expect(result.damage?.is_fire).toBe(true);
+    expect(result.damage?.is_magical).toBe(true);
+  });
+
+  it('les garde si les effets de carte ne sont pas définis', () => {
+    expect(run({}).damage?.is_fire).toBe(true);
+  });
+
+  it('un autre effet actif qui accorde le feu le remet à true', () => {
+    const result = run({ cardEffects: ['grant_fire'] });
+    expect(result.damage?.is_fire).toBe(true);
+    expect(result.damage?.is_magical).toBe(false);
+  });
+});

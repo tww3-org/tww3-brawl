@@ -47,6 +47,7 @@ const OVERRIDES = {
 };
 
 const PHASE_FIELDS = `id onscreen_name duration effect_type imbue_magical imbue_ignition damage_amount
+  hp_change_frequency heal_amount
   stat_effects{stat value how} attribute_effects{attribute attribute_type}`;
 
 async function gql(query) {
@@ -109,6 +110,11 @@ function phaseModifiers(phase) {
   if (phase.imbue_magical) (mods.damage ??= {}).is_magical = true;
   if (phase.imbue_ignition > 0) (mods.damage ??= {}).is_fire = true;
   if (phase.imbue_contact?.id) mods.contact_effect = phase.imbue_contact.id;
+  // Soin : heal_amount toutes les hp_change_frequency secondes, en fraction de la vie max
+  if (phase.heal_amount > 0 && phase.effect_type !== 'negative') {
+    const perSecond = round(phase.heal_amount / (phase.hp_change_frequency > 0 ? phase.hp_change_frequency : 1));
+    mods.regeneration = { per_second: perSecond, ...(phase.duration > 0 && { duration: round(phase.duration) }) };
+  }
   return mods;
 }
 
@@ -126,6 +132,8 @@ function contactEntry(phase) {
   const description = [extra, seconds && `Duration: ${seconds}`].filter(Boolean).join(' · ');
   const mods = phaseModifiers(phase);
   delete mods.contact_effect;
+  // Un effet de contact s'applique à l'adversaire : on ne modélise pas de soin ici
+  delete mods.regeneration;
   const entry = {
     id: phase.id,
     kind: 'contact',

@@ -1,5 +1,5 @@
 import type { Faction, Unit, Version } from '../types'
-import { averageHealthLostPerUnitPerHit } from './oneSideCalculations'
+import { averageHealthLostPerUnitPerHit, regenerationBurst, regenerationPerHit } from './oneSideCalculations'
 import { getMaxEntities } from '../utils/getMaxEntities'
 
 /**
@@ -21,6 +21,10 @@ export interface CombatResult {
     winner: 'left' | 'right'
     hitsNeeded: number
     remainingHealth: number
+    /** Aucune des deux unités ne peut tuer l'autre (la régénération compense les dégâts des deux côtés) */
+    stalemate: boolean
+    /** Fraction de vie max régénérée par chaque côté entre deux attaques adverses (après le facteur feu) */
+    regenerationPerHit: { left: number; right: number }
 }
 
 /**
@@ -76,42 +80,57 @@ export function calculateGoldDamage(
 
 /**
  * Calculates the winner between two units and provides detailed combat statistics.
- * 
+ *
+ * Les dégâts bruts par coup (fraction de la vie de l'unité × entités) sont réduits de la régénération
+ * du défenseur entre deux coups (`regenerationPerHit`, divisée par deux face à une attaque enflammée).
+ * La vie à épuiser vaut 1 + les soins à durée limitée (`regenerationBurst`). Le gagnant est le côté
+ * dont l'adversaire meurt en le moins de coups (égalité : gauche). Si aucun côté ne peut tuer l'autre,
+ * le résultat est une impasse (`stalemate`).
+ *
  * @param leftUnit - The left unit with entity number in the comparison
  * @param rightUnit - The right unit with entity number in the comparison
- * @returns Object containing winner, number of hits needed, and remaining health
+ * @returns Object containing winner, number of hits needed, remaining health, stalemate flag and regeneration per hit
  */
 export function calculateWinner(leftUnit: UnitWithEntityNumber, rightUnit: UnitWithEntityNumber): CombatResult {
-    // Calculate damage each unit deals to the other
+    const left = leftUnit.selection.unit!
+    const right = rightUnit.selection.unit!
 
-    const leftDamageToRight = averageHealthLostPerUnitPerHit(leftUnit.selection.unit!, rightUnit.selection.unit!) * (Math.min(getMaxEntities(leftUnit.selection.unit!), leftUnit.entityNumber))
-    const rightDamageToLeft = averageHealthLostPerUnitPerHit(rightUnit.selection.unit!, leftUnit.selection.unit!) * (Math.min(getMaxEntities(rightUnit.selection.unit!), rightUnit.entityNumber))
-    /**
-     * Internal function to calculate combat statistics for a winner
-     * @param winner - Which unit wins ('left' or 'right')
-     * @param damageDealt - Damage the winner deals per hit
-     * @param damageTaken - Damage the winner takes per hit
-     * @returns Object with hits needed and remaining health
-     */
-    function calculateCombatStats(winner: 'left' | 'right', damageDealt: number, damageTaken: number) {
-        const hitsNeeded = 1 / damageDealt
-        const totalDamageTaken = hitsNeeded * damageTaken
-        const remainingHealth = 1 - totalDamageTaken
+    // Dégâts bruts infligés par chaque côté à chaque coup
+    const leftGross = averageHealthLostPerUnitPerHit(left, right) * (Math.min(getMaxEntities(left), leftUnit.entityNumber))
+    const rightGross = averageHealthLostPerUnitPerHit(right, left) * (Math.min(getMaxEntities(right), rightUnit.entityNumber))
 
-        return {
-            winner,
-            hitsNeeded,
-            remainingHealth
-        }
+    // Régénération de chaque côté entre deux coups adverses
+    const leftRegen = regenerationPerHit(right, left)
+    const rightRegen = regenerationPerHit(left, right)
+
+    // Dégâts nets : ce que subit réellement chaque côté par coup
+    const leftNetTaken = Math.max(0, rightGross - leftRegen)
+    const rightNetTaken = Math.max(0, leftGross - rightRegen)
+
+    // Vie à épuiser pour tuer chaque côté
+    const leftHealth = 1 + regenerationBurst(right, left)
+    const rightHealth = 1 + regenerationBurst(left, right)
+
+    const leftHitsToKill = rightNetTaken > 0 ? rightHealth / rightNetTaken : Infinity
+    const rightHitsToKill = leftNetTaken > 0 ? leftHealth / leftNetTaken : Infinity
+
+    const regen = { left: leftRegen, right: rightRegen }
+
+    if (!isFinite(leftHitsToKill) && !isFinite(rightHitsToKill)) {
+        return { winner: 'left', hitsNeeded: Infinity, remainingHealth: 1, stalemate: true, regenerationPerHit: regen }
     }
-    
-    // Determine winner and calculate statistics
-    if (leftDamageToRight > rightDamageToLeft) {
-        return calculateCombatStats('left', leftDamageToRight, rightDamageToLeft)
-    } else if (rightDamageToLeft > leftDamageToRight) {
-        return calculateCombatStats('right', rightDamageToLeft, leftDamageToRight)
-    } else {
-        // Tie - both units deal equal damage, default to left
-        return calculateCombatStats('left', leftDamageToRight, rightDamageToLeft)
+
+    // Égalité : gauche
+    const winner: 'left' | 'right' = leftHitsToKill <= rightHitsToKill ? 'left' : 'right'
+    const hitsNeeded = winner === 'left' ? leftHitsToKill : rightHitsToKill
+    const winnerBurst = winner === 'left' ? leftHealth - 1 : rightHealth - 1
+    const winnerNetTaken = winner === 'left' ? leftNetTaken : rightNetTaken
+
+    return {
+        winner,
+        hitsNeeded,
+        remainingHealth: Math.min(1, 1 + winnerBurst - hitsNeeded * winnerNetTaken),
+        stalemate: false,
+        regenerationPerHit: regen
     }
 }

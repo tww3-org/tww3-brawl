@@ -168,6 +168,9 @@ function collectReceived(ctx: LayerContext): { received: BrawlModifiers[]; immun
   return { received, immunities };
 }
 
+/** Arrondi à 6 décimales : la régénération est une fraction de vie max, donc minuscule (0,001) */
+const round6 = (n: number): number => Math.round(n * 1e6) / 1e6;
+
 const EMPTY_DAMAGE: NonNullable<Unit['damage']> = {
   normal: 0, piercing: 0, bonus_v_large: 0, bonus_v_infantry: 0, is_magical: false, is_fire: false,
 };
@@ -177,6 +180,11 @@ const EMPTY_RESISTANCE: NonNullable<Unit['resistance']> = { physical: 0, magic: 
  * Fabrique la couche d'effets d'une polarité. Aucune borne : une stat peut devenir négative.
  * - stats : la part positive (resp. négative) de chaque modificateur reçu ;
  * - booléens (`is_magical`, `is_fire`) : `true` accorde (couche positive), `false` retire (couche négative) ;
+ * - arme native (couche positive) : si l'unité porte nativement `flaming_attack` (resp. `magical_attack`) et que
+ *   `ctx.cardEffects` est défini sans cet id (l'utilisateur l'a désactivé), `is_fire` (resp. `is_magical`) repart de
+ *   false ; un autre effet actif qui l'accorde le remet à true ;
+ * - régénération (couche positive) : somme des `regeneration` reçus ; les soins continus (sans durée) vont dans
+ *   `per_second`, les soins limités ajoutent `per_second × durée` à `burst` ;
  * - immunités (couche négative uniquement) : `attack_reduction` ignore les malus d'attaque,
  *   `weapon_strength_reduction` ceux de dégâts normaux / perforants.
  */
@@ -201,9 +209,30 @@ function effectsLayer(polarity: Polarity): UnitLayer {
 
     // Unité sans damage / resistance (champs optionnels) : on part de zéro, sinon de la valeur reçue
     const damage = { ...EMPTY_DAMAGE, ...unit.damage };
+    // Arme native désactivée par l'utilisateur : on repart de false avant d'appliquer les effets actifs
+    const nativeOff = (id: string): boolean =>
+      !negative && !!unit.effects?.includes(id) && !!ctx.cardEffects && !ctx.cardEffects.includes(id);
+    if (nativeOff('flaming_attack')) damage.is_fire = false;
+    if (nativeOff('magical_attack')) damage.is_magical = false;
     const resistance = { ...EMPTY_RESISTANCE, ...unit.resistance };
+    // Régénération : positive uniquement, aucun malus de régénération
+    let regeneration = unit.regeneration;
+    if (!negative) {
+      const total = { per_second: unit.regeneration?.per_second ?? 0, burst: unit.regeneration?.burst ?? 0 };
+      let found = false;
+      for (const m of received) {
+        if (!m.regeneration) continue;
+        found = true;
+        const { per_second, duration } = m.regeneration;
+        if (duration !== undefined && duration > 0) total.burst += per_second * duration;
+        else total.per_second += per_second;
+      }
+      if (found) regeneration = { per_second: round6(total.per_second), burst: round6(total.burst) };
+    }
+
     return {
       ...unit,
+      ...(regeneration && { regeneration }),
       attack: stat(unit.attack, m => m.attack, dropAttack),
       defense: stat(unit.defense, m => m.defense),
       armor: stat(unit.armor, m => m.armor),
