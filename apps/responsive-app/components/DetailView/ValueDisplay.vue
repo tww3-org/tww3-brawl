@@ -5,19 +5,24 @@
         <template v-else>{{ displayed }}</template>
         <q-badge v-if="bonus !== 0" class="bonus-badge" :color="bonus > 0 ? 'green' : 'red'">{{ signed(bonus) }}</q-badge>
         <q-badge v-if="effectiveDelta" class="effect-badge" color="deep-purple" title="Modificateur des effets">
-            <q-icon name="auto_awesome" size="0.9em" class="effect-icon" />{{ signed(effectiveDelta) }}
+            <q-icon name="auto_awesome" size="0.9em" class="effect-badge-icon" />{{ signed(effectiveDelta) }}
         </q-badge>
         <ModifierDialog v-if="canEdit" v-model="dialogOpen" :title="dialogTitle" :base-value="value as number"
             :bonus="bonus" @update="onUpdate" />
     </div>
     <div v-else class="container" :class="{ 'reverse': orientation === 'right' }">
         <div class="left base" :class="{ 'right': orientation === 'right' }">
-            <NumericInput ref="numericInputRef" v-if="typeof value === 'number' && isUpdatable" :modifier="bonus" :baseValue="value" :effective="effective" @update:model-value="onUpdate" :direction="orientation" />
-            <template v-else>{{ displayed }}</template>
+            <NumericInput ref="numericInputRef" v-if="typeof value === 'number' && isUpdatable" :modifier="bonus" :baseValue="value" :effective="effective" @update:model-value="onUpdate" :direction="orientation">
+                <template v-if="$slots.effects" #effects><slot name="effects" /></template>
+            </NumericInput>
+            <div v-else class="plain-value" :class="{ 'reverse': orientation === 'right' }">
+                <span v-if="$slots.effects" class="plain-effects"><slot name="effects" /></span>
+                <span>{{ displayed }}</span>
+            </div>
+            <q-badge v-if="effectiveDelta" class="effect-badge" :class="`effect-badge-${orientation}`" color="deep-purple" title="Modificateur des effets">
+                <q-icon name="auto_awesome" size="0.9em" class="effect-badge-icon" />{{ signed(effectiveDelta) }}
+            </q-badge>
         </div>
-        <q-badge v-if="effectiveDelta" class="effect-badge" color="deep-purple" title="Modificateur des effets">
-            <q-icon name="auto_awesome" size="0.9em" class="effect-icon" />{{ signed(effectiveDelta) }}
-        </q-badge>
     </div>
 </template>
 
@@ -87,10 +92,12 @@ defineExpose({
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .container {
     display: flex;
     flex-direction: row-reverse;
+    flex: 0 1 auto;
+    min-width: 0;
     gap: 0.5rem;
 }
 
@@ -128,16 +135,56 @@ defineExpose({
 }
 
 .base {
-    width: 30ch;
+    position: relative;
+    flex: 0 1 30ch;
+    min-width: 0;
 }
 
-/* Pastille du modificateur des effets, centrée verticalement hors de l'input */
-.effect-badge {
-    align-self: center;
+/* Le champ reste lisible (ex. 108.5) même quand la colonne est étroite */
+.base :deep(.q-field__inner) {
+    min-width: 6ch;
+}
+
+.plain-value {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+/* Colonne de droite : valeur collée au centre, icônes à sa droite */
+.plain-value.reverse {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+.plain-effects {
+    display: flex;
+    flex: none;
+
+    :deep(.effect-list) {
+        flex-wrap: nowrap;
+        flex: none;
+    }
+}
+
+/* Pastille du modificateur des effets : superposée au coin inférieur du champ, côté colonne centrale */
+.base .effect-badge {
+    position: absolute;
+    bottom: -0.5em;
     white-space: nowrap;
+    z-index: 2;
 }
 
-.effect-icon {
+.base .effect-badge-left {
+    right: 0;
+}
+
+.base .effect-badge-right {
+    left: 0;
+}
+
+.effect-badge-icon {
     margin-right: 0.2em;
 }
 </style>

@@ -29,13 +29,17 @@
             <tr v-for="statistic in statistics" :key="statistic.path">
                 <td class="unit-column" v-if="baseLeft">
                     <div class="stat-cell">
-                        <EffectList v-if="statistic.path === 'attack'" side="left" placement="attack" />
+                        <EffectList v-if="isMobile && statistic.path === 'attack'" side="left" placement="attack" />
                         <ValueDisplay ref="leftUnitRef"
                             :value="getTyped<Required<Unit>, Paths<Required<Unit>>>(baseLeft as Required<Unit>, (statistic.path) as Paths<Required<Unit>>) as (number | boolean)"
                             :bonus="leftUnit.bonus[statistic.path as UnitBonusPathes]"
                             :effective="effectiveValue(effectiveLeft, statistic.path)"
                             :isUpdatable="UnitBonusPathes.includes(statistic.path as UnitBonusPathes)"
-                            @update="onUpdate('left', statistic.path as UnitBonusPathes, $event)" orientation="left" :unitName="leftUnitName" :statLabel="statistic.label" />
+                            @update="onUpdate('left', statistic.path as UnitBonusPathes, $event)" orientation="left" :unitName="leftUnitName" :statLabel="statistic.label">
+                            <template v-if="!isMobile && statistic.path === 'attack'" #effects>
+                                <EffectList side="left" placement="attack" />
+                            </template>
+                        </ValueDisplay>
                     </div>
                 </td>
                 <td class="text-center stat-column">{{ statistic.label }}</td>
@@ -46,8 +50,12 @@
                             :bonus="rightUnit.bonus[statistic.path as UnitBonusPathes]"
                             :effective="effectiveValue(effectiveRight, statistic.path)"
                             :isUpdatable="UnitBonusPathes.includes(statistic.path as UnitBonusPathes)"
-                            @update="onUpdate('right', statistic.path as UnitBonusPathes, $event)" orientation="right" :unitName="rightUnitName" :statLabel="statistic.label" />
-                        <EffectList v-if="statistic.path === 'attack'" side="right" placement="attack" />
+                            @update="onUpdate('right', statistic.path as UnitBonusPathes, $event)" orientation="right" :unitName="rightUnitName" :statLabel="statistic.label">
+                            <template v-if="!isMobile && statistic.path === 'attack'" #effects>
+                                <EffectList side="right" placement="attack" />
+                            </template>
+                        </ValueDisplay>
+                        <EffectList v-if="isMobile && statistic.path === 'attack'" side="right" placement="attack" />
                     </div>
                 </td>
 
@@ -179,22 +187,30 @@ tbody {
 }
 
 /* Contrôle de la largeur des colonnes */
-.unit-column {
-    width: 50%;
+/* Desktop : colonnes fixes (pas de scroll horizontal quels que soient les effets),
+   les deux colonnes d'unités se partagent l'espace restant à parts égales */
+:not(.mobile):deep(table) {
+    table-layout: fixed;
 }
 
-
-.stat-column {
-    padding: 0px;
-    width: 100px;
+td.stat-column,
+th.stat-column {
+    padding: 0 4px;
+    width: 140px;
+    white-space: normal;
 }
 
 .stat-cell {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    min-width: 0;
     align-items: center;
     justify-content: flex-end;
     gap: 0.5rem;
+}
+
+.stat-cell > * {
+    min-width: 0;
 }
 
 /* Colonne de droite : valeur collée au centre, icônes à sa droite */
