@@ -1,9 +1,20 @@
 <template>
-    <div class="effect-list" :class="`align-${orientation}`">
-        <EffectIcon v-for="item in items" :key="item.id" :effect="item.effect" :version-id="versionId"
+    <div class="effect-list" :class="[`align-${orientation}`, { 'no-wrap': max !== undefined }]">
+        <EffectIcon v-for="item in visibleItems" :key="item.id" :effect="item.effect" :version-id="versionId"
             :active="item.active" :removable="!item.native"
             :cast-by="item.source === 'opponent' ? opponentName : undefined" @toggle="unitStore.toggleEffect(side, item.id)"
             @remove="unitStore.removeEffect(side, item.id)" />
+        <q-btn v-if="hiddenCount > 0" class="more-btn" unelevated dense no-caps :label="`+${hiddenCount}`"
+            :aria-label="`Show ${hiddenCount} more effects`" :title="`Show ${hiddenCount} more effects`">
+            <q-menu no-route-dismiss>
+                <div class="more-grid">
+                    <EffectIcon v-for="item in items" :key="item.id" :effect="item.effect" :version-id="versionId"
+                        :active="item.active" :removable="!item.native"
+                        :cast-by="item.source === 'opponent' ? opponentName : undefined" @toggle="unitStore.toggleEffect(side, item.id)"
+                        @remove="unitStore.removeEffect(side, item.id)" />
+                </div>
+            </q-menu>
+        </q-btn>
         <q-btn v-if="withAdd" round dense flat size="sm" icon="add" :aria-label="`Add an effect`" title="Add an effect"
             @click="emit('add')" />
     </div>
@@ -23,6 +34,8 @@ const props = defineProps<{
     placement: EffectPlacement
     /** Affiche le bouton « + » (ligne Effects) */
     withAdd?: boolean
+    /** Nombre maximal d'éléments affichés sur la ligne ; au-delà, les premiers `max - 1` puis une pastille « +N » ouvrant la liste complète */
+    max?: number
 }>()
 
 const emit = defineEmits<{
@@ -47,6 +60,12 @@ const items = computed(() => displayedEffects(unitStore[props.side], other.value
         const effect = getEffect(e.id)
         return effect && effect.placement === props.placement ? [{ ...e, effect: effect as EffectDefinition }] : []
     }))
+
+const hiddenCount = computed(() => {
+    if (props.max === undefined || items.value.length <= props.max) return 0
+    return items.value.length - (props.max - 1)
+})
+const visibleItems = computed(() => hiddenCount.value > 0 ? items.value.slice(0, (props.max ?? 1) - 1) : items.value)
 </script>
 
 <style scoped>
@@ -55,6 +74,31 @@ const items = computed(() => displayedEffects(unitStore[props.side], other.value
     flex-wrap: wrap;
     align-items: center;
     gap: 6px;
+}
+
+/* Ligne à largeur bornée : jamais de retour à la ligne (le surplus passe dans « +N ») */
+.effect-list.no-wrap {
+    flex-wrap: nowrap;
+}
+
+/* Pastille « +N » : même poids visuel qu'une icône */
+.more-btn {
+    flex: none;
+    min-width: 28px;
+    height: 28px;
+    min-height: 28px;
+    padding: 0 6px;
+    border-radius: 14px;
+    font-size: var(--font-size-sm, 0.85rem);
+    background: rgba(128, 128, 128, 0.25);
+}
+
+.more-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-width: 220px;
+    padding: 8px;
 }
 
 /* Colonne de gauche : icônes collées vers le centre du tableau */
