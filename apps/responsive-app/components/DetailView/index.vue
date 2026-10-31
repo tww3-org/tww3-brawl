@@ -4,14 +4,18 @@
             <tr>
                 <th scope="col" class="text-right unit-column"><b>{{ leftUnitName }}</b>
                 </th>
+                <th v-if="!isMobile" scope="col" class="annex-column"></th>
                 <th scope="col" class="text-center stat-column"><b>Statistic</b></th>
+                <th v-if="!isMobile" scope="col" class="annex-column"></th>
                 <th scope="col" class="text-left unit-column"><b>{{ rightUnitName }}</b>
                 </th>
             </tr>
             <tr>
                 <th scope="col" class="unit-column"><q-btn :label="isMobile ? undefined : 'Reset'" :round="isMobile" :dense="isMobile" color="warning" icon="refresh" aria-label="Reset" title="Reset" @click="onReset('left')" />
                 </th>
+                <th v-if="!isMobile" scope="col" class="annex-column"></th>
                 <th scope="col" class="stat-column"></th>
+                <th v-if="!isMobile" scope="col" class="annex-column"></th>
                 <th scope="col" class="unit-column"><q-btn :label="isMobile ? undefined : 'Reset'" :round="isMobile" :dense="isMobile" color="warning" icon="refresh" aria-label="Reset" title="Reset" @click="onReset('right')" />
                 </th>
             </tr>
@@ -19,11 +23,13 @@
         <tbody>
             <tr>
                 <td class="unit-column">
-                    <EffectList side="left" placement="effects" with-add @add="openPicker('left')" />
+                    <EffectList side="left" placement="effects" :max="isMobile ? undefined : 5" with-add @add="openPicker('left')" />
                 </td>
+                <td v-if="!isMobile" class="annex-column"></td>
                 <td class="text-center stat-column">Effects</td>
+                <td v-if="!isMobile" class="annex-column"></td>
                 <td class="unit-column">
-                    <EffectList side="right" placement="effects" with-add @add="openPicker('right')" />
+                    <EffectList side="right" placement="effects" :max="isMobile ? undefined : 5" with-add @add="openPicker('right')" />
                 </td>
             </tr>
             <tr v-for="statistic in statistics" :key="statistic.path">
@@ -35,14 +41,24 @@
                             :bonus="leftUnit.bonus[statistic.path as UnitBonusPathes]"
                             :effective="effectiveValue(effectiveLeft, statistic.path)"
                             :isUpdatable="UnitBonusPathes.includes(statistic.path as UnitBonusPathes)"
-                            @update="onUpdate('left', statistic.path as UnitBonusPathes, $event)" orientation="left" :unitName="leftUnitName" :statLabel="statistic.label">
-                            <template v-if="!isMobile && statistic.path === 'attack'" #effects>
-                                <EffectList side="left" placement="attack" />
-                            </template>
-                        </ValueDisplay>
+                            @update="onUpdate('left', statistic.path as UnitBonusPathes, $event)" orientation="left" :unitName="leftUnitName" :statLabel="statistic.label" />
+                    </div>
+                </td>
+                <td v-if="!isMobile" class="annex-column annex-left">
+                    <div v-if="baseLeft" class="annex-cell">
+                        <EffectList v-if="statistic.path === 'attack'" side="left" placement="attack" :max="2" />
+                        <EffectDeltaBadge :value="getTyped<Required<Unit>, Paths<Required<Unit>>>(baseLeft as Required<Unit>, (statistic.path) as Paths<Required<Unit>>) as (number | boolean)"
+                            :bonus="leftUnit.bonus[statistic.path as UnitBonusPathes]" :effective="effectiveValue(effectiveLeft, statistic.path)" />
                     </div>
                 </td>
                 <td class="text-center stat-column">{{ statistic.label }}</td>
+                <td v-if="!isMobile" class="annex-column annex-right">
+                    <div v-if="baseRight" class="annex-cell">
+                        <EffectList v-if="statistic.path === 'attack'" side="right" placement="attack" :max="2" />
+                        <EffectDeltaBadge :value="getTyped<Required<Unit>, Paths<Required<Unit>>>(baseRight as Required<Unit>, (statistic.path) as Paths<Required<Unit>>) as (number | boolean)"
+                            :bonus="rightUnit.bonus[statistic.path as UnitBonusPathes]" :effective="effectiveValue(effectiveRight, statistic.path)" />
+                    </div>
+                </td>
                 <td class="unit-column" v-if="baseRight">
                     <div class="stat-cell">
                         <ValueDisplay ref="rightUnitRef"
@@ -50,11 +66,7 @@
                             :bonus="rightUnit.bonus[statistic.path as UnitBonusPathes]"
                             :effective="effectiveValue(effectiveRight, statistic.path)"
                             :isUpdatable="UnitBonusPathes.includes(statistic.path as UnitBonusPathes)"
-                            @update="onUpdate('right', statistic.path as UnitBonusPathes, $event)" orientation="right" :unitName="rightUnitName" :statLabel="statistic.label">
-                            <template v-if="!isMobile && statistic.path === 'attack'" #effects>
-                                <EffectList side="right" placement="attack" />
-                            </template>
-                        </ValueDisplay>
+                            @update="onUpdate('right', statistic.path as UnitBonusPathes, $event)" orientation="right" :unitName="rightUnitName" :statLabel="statistic.label" />
                         <EffectList v-if="isMobile && statistic.path === 'attack'" side="right" placement="attack" />
                     </div>
                 </td>
@@ -75,6 +87,7 @@ import { statistics } from '~/types/unit'
 import { useQuasar } from 'quasar'
 import ValueDisplay from './ValueDisplay.vue'
 import EffectList from './EffectList.vue'
+import EffectDeltaBadge from './EffectDeltaBadge.vue'
 import EffectPickerDialog from './EffectPickerDialog.vue'
 import { useUnitStore } from '~/stores/unitStore'
 import { baseUnit, fullyEffectiveUnit } from '~/types/unit'
@@ -211,6 +224,36 @@ th.stat-column {
 
 .stat-cell > * {
     min-width: 0;
+}
+
+/* Colonnes annexes (côté centre) : icônes d'effets d'attaque et pastille du delta des effets */
+td.annex-column,
+th.annex-column {
+    width: 72px;
+    padding: 0 2px;
+}
+
+.annex-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.annex-left .annex-cell {
+    align-items: flex-start;
+}
+
+.annex-right .annex-cell {
+    align-items: flex-end;
+}
+
+/* Contenu collé à la valeur qu'il modifie (colonne de gauche : à gauche, colonne de droite : à droite) */
+.annex-left .annex-cell :deep(.effect-list) {
+    justify-content: flex-start;
+}
+
+.annex-right .annex-cell :deep(.effect-list) {
+    justify-content: flex-end;
 }
 
 /* Colonne de droite : valeur collée au centre, icônes à sa droite */
