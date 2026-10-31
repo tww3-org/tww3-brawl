@@ -35,7 +35,7 @@
             <tr v-for="statistic in statistics" :key="statistic.path">
                 <td class="unit-column" v-if="baseLeft">
                     <div class="stat-cell">
-                        <EffectList v-if="isMobile && statistic.path === 'attack'" side="left" placement="attack" />
+                        <EffectList v-if="isMobile && statistic.path === 'attack'" class="stat-cell-effects" side="left" placement="attack" />
                         <ValueDisplay ref="leftUnitRef"
                             :value="getTyped<Required<Unit>, Paths<Required<Unit>>>(baseLeft as Required<Unit>, (statistic.path) as Paths<Required<Unit>>) as (number | boolean)"
                             :bonus="leftUnit.bonus[statistic.path as UnitBonusPathes]"
@@ -61,13 +61,13 @@
                 </td>
                 <td class="unit-column" v-if="baseRight">
                     <div class="stat-cell">
+                        <EffectList v-if="isMobile && statistic.path === 'attack'" class="stat-cell-effects" side="right" placement="attack" />
                         <ValueDisplay ref="rightUnitRef"
                             :value="getTyped<Required<Unit>, Paths<Required<Unit>>>(baseRight as Required<Unit>, (statistic.path) as Paths<Required<Unit>>) as (number | boolean)"
                             :bonus="rightUnit.bonus[statistic.path as UnitBonusPathes]"
                             :effective="effectiveValue(effectiveRight, statistic.path)"
                             :isUpdatable="UnitBonusPathes.includes(statistic.path as UnitBonusPathes)"
                             @update="onUpdate('right', statistic.path as UnitBonusPathes, $event)" orientation="right" :unitName="rightUnitName" :statLabel="statistic.label" />
-                        <EffectList v-if="isMobile && statistic.path === 'attack'" side="right" placement="attack" />
                     </div>
                 </td>
 
@@ -285,6 +285,12 @@ th.annex-column {
     }
 
     .unit-column:last-child .stat-cell {
+        justify-content: center;
+    }
+
+    /* Icônes d'effets d'attaque : toujours sur leur propre ligne, au-dessus de la valeur */
+    .stat-cell-effects {
+        flex-basis: 100%;
         justify-content: center;
     }
 
