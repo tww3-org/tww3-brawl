@@ -82,6 +82,7 @@ defineExpose({
 .q-field {
     font-size: var(--font-size-sm);
 }
+
 </style>
 
 <style lang="scss">

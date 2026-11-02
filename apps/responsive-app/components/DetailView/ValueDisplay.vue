@@ -4,9 +4,7 @@
             @keydown.enter.prevent="dialogOpen = true" @keydown.space.prevent="dialogOpen = true">{{ displayed }}</span>
         <template v-else>{{ displayed }}</template>
         <q-badge v-if="bonus !== 0" class="bonus-badge" :color="bonus > 0 ? 'green' : 'red'">{{ signed(bonus) }}</q-badge>
-        <q-badge v-if="effectiveDelta" class="effect-badge" color="deep-purple" title="Modificateur des effets">
-            <q-icon name="auto_awesome" size="0.9em" class="effect-icon" />{{ signed(effectiveDelta) }}
-        </q-badge>
+        <EffectDeltaBadge :value="value" :bonus="bonus" :effective="effective" />
         <ModifierDialog v-if="canEdit" v-model="dialogOpen" :title="dialogTitle" :base-value="value as number"
             :bonus="bonus" @update="onUpdate" />
     </div>
@@ -15,9 +13,6 @@
             <NumericInput ref="numericInputRef" v-if="typeof value === 'number' && isUpdatable" :modifier="bonus" :baseValue="value" :effective="effective" @update:model-value="onUpdate" :direction="orientation" />
             <template v-else>{{ displayed }}</template>
         </div>
-        <q-badge v-if="effectiveDelta" class="effect-badge" color="deep-purple" title="Modificateur des effets">
-            <q-icon name="auto_awesome" size="0.9em" class="effect-icon" />{{ signed(effectiveDelta) }}
-        </q-badge>
     </div>
 </template>
 
@@ -26,6 +21,7 @@ import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import NumericInput from './NumericInput.vue';
 import ModifierDialog from './ModifierDialog.vue';
+import EffectDeltaBadge from './EffectDeltaBadge.vue';
 import { roundForDisplay } from './formatNumber';
 
 const emit = defineEmits<{
@@ -65,11 +61,6 @@ const displayed = computed(() => {
     if (typeof props.value !== 'number') return props.value
     return roundForDisplay(props.effective !== undefined && Number.isFinite(props.effective) ? props.effective : props.value + bonus.value)
 })
-// Écart entre la valeur effective et la valeur éditée (0 : rien à afficher)
-const effectiveDelta = computed(() => {
-    if (typeof props.value !== 'number' || props.effective === undefined || !Number.isFinite(props.effective)) return 0
-    return roundForDisplay(roundForDisplay(props.effective) - roundForDisplay(props.value + bonus.value))
-})
 // Formate un écart avec son signe explicite (+15, -4)
 function signed(n: number): string {
     const r = roundForDisplay(n)
@@ -87,10 +78,12 @@ defineExpose({
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .container {
     display: flex;
     flex-direction: row-reverse;
+    flex: 0 1 auto;
+    min-width: 0;
     gap: 0.5rem;
 }
 
@@ -128,16 +121,12 @@ defineExpose({
 }
 
 .base {
-    width: 30ch;
+    flex: 0 1 30ch;
+    min-width: 0;
 }
 
-/* Pastille du modificateur des effets, centrée verticalement hors de l'input */
-.effect-badge {
-    align-self: center;
-    white-space: nowrap;
-}
-
-.effect-icon {
-    margin-right: 0.2em;
+/* Le champ reste lisible (ex. 108.5) même quand la colonne est étroite */
+.base :deep(.q-field__inner) {
+    min-width: 6ch;
 }
 </style>
