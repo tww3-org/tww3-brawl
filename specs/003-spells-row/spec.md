@@ -126,7 +126,7 @@ Le résumé du duel indique, pour chaque sort lancé, le nombre de coups couvert
            vie −= dᵢ × L
            coups += L
    ```
-   Si la dernière phase a `d ≤ 0` et que la vie n'est pas épuisée, c'est un stalemate. Le nombre de coups final est arrondi à l'entier supérieur. Le côté qui a besoin de moins de coups gagne, comme aujourd'hui.
+   Si la dernière phase a `d ≤ 0` et que la vie n'est pas épuisée, c'est un stalemate. Le nombre de coups suit la même convention qu'aujourd'hui (valeur en espérance, non arrondie dans le calcul). Le côté qui a besoin de moins de coups gagne, comme aujourd'hui.
 6. **Sans sort**, il n'y a qu'une seule phase `[0, ∞)` et le résultat doit être strictement identique au calcul actuel.
 
 ## Requirements *(mandatory)*
