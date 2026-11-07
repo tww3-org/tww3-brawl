@@ -15,12 +15,18 @@ Tout vient de `broker.twwstats.com/graphql` (client `@tww3-brawl/gql`) :
 
 | Besoin | Champ |
 |---|---|
-| Liste des capacités d'une unité | `ability` (via l'unité / ses groupes de capacités) |
+| Liste des sorts | `abilities` (catalogue global de la version) |
 | Est-ce un sort ? | `ability.unit_special_ability.mana_cost > 0` |
 | Version overcast | `ability.overpower_option` (un `ability` complet, avec ses propres phases et sa propre durée) |
 | Durée | `phase.duration` (repli : `special_ability.active_time`) |
 | Effets sur les stats | `phase.stat_effects`, `imbue_*` — même traduction que la whitelist de la feature 002 |
 | Cible | `special_ability.affect_self`, `target_friends`, `target_enemies` |
+
+Constats sur Patch 9.0.0 :
+- Il y a 417 capacités avec coût en mana. 193 d'entre elles pointent vers un overcast (176 overcasts distincts, en général `*_upgraded`, jamais cachés dans l'UI).
+- 94 sorts simples ont des modificateurs de stats ; 11 ont plusieurs phases.
+- 190 sorts n'ont aucune phase avec durée (vortex, bombardements, projectiles) : ils sont hors périmètre.
+- Seules 11 unités sur 2658 listent leurs sorts dans `land_unit.abilities`. Les sorts d'un lanceur viennent de ses compétences de personnage, que le duel ne modélise pas. Le sélecteur de sorts propose donc **tout le catalogue de sorts**, comme le sélecteur d'effets de la feature 002, et non les seuls sorts de l'unité.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -95,6 +101,8 @@ Le résumé du duel indique, pour chaque sort lancé, le nombre de coups couvert
 - Le combat se termine dans une phase avec sort : les phases suivantes sont ignorées.
 - La dernière phase (sans sort) n'inflige aucun dégât net (régénération ≥ dégâts) : c'est un stalemate, comme aujourd'hui.
 - Un même sort apparaît chez les deux unités : chaque côté a son propre compteur, ce sont deux effets distincts.
+- Plusieurs entrées de sort ont le même nom et les mêmes phases (ex. « The Fate of Bjuna » existe en sort de lore, en sort lié, en variante de personnage). Le sélecteur les dédoublonne par nom + phases identiques et garde l'entrée de lore (`*_spell_<lore>_*`).
+- Sort sans overcast : pas de puce.
 - Les capacités qui n'ont pas de coût en mana (ex. Remouldered, Frenzy actif) restent dans la ligne « Effets » (on/off, tout le combat), sans changement.
 - Un sort qui est déjà aujourd'hui dans la ligne « Effets » doit migrer vers la ligne « Sorts » et ne plus apparaître dans le sélecteur d'effets, sinon il serait compté deux fois.
 
@@ -125,7 +133,7 @@ Le résumé du duel indique, pour chaque sort lancé, le nombre de coups couvert
 
 ### Functional Requirements
 
-- **FR-001**: Le système DOIT récupérer depuis le GraphQL les sorts de chaque unité (capacités avec coût en mana > 0), avec leur durée, leurs modificateurs de stats et leur version overcast éventuelle.
+- **FR-001**: Le système DOIT constituer, depuis le GraphQL, un catalogue des sorts (capacités avec coût en mana > 0), avec leur durée, leurs modificateurs de stats et leur version overcast éventuelle. Les overcasts (cibles d'un `overpower_option`) n'apparaissent pas comme sorts sélectionnables à part entière.
 - **FR-002**: Le système DOIT traduire les modificateurs de stats des sorts avec la même table de correspondance que les effets (feature 002), et en déterminer la cible (lanceur ou ennemi).
 - **FR-003**: La carte d'unité DOIT afficher une ligne « Sorts » distincte de la ligne « Effets ».
 - **FR-004**: Le sélecteur de sorts DOIT lister uniquement les versions simples.
@@ -156,6 +164,7 @@ Le résumé du duel indique, pour chaque sort lancé, le nombre de coups couvert
 ## Assumptions
 
 - Un coup toutes les 4 s, valeur déjà utilisée par le duel.
+- La ligne « Sorts » d'une unité contient les sorts lancés de son côté (par elle ou par un lanceur allié) : un buff vise cette unité, un debuff vise l'adversaire.
 - « Sort » = capacité avec coût en mana. Les capacités actives sans mana restent des effets on/off (périmètre élargissable plus tard).
 - La durée d'un sort est celle de sa phase. Pour un sort à plusieurs phases, on prend la plus longue phase qui porte des modificateurs pertinents, et ce cas est signalé en commentaire dans le code (principe II de la constitution).
 - Les sorts n'ont pas de limite de lancers (mana, recharge) : c'est l'utilisateur qui fixe le nombre.

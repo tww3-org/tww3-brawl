@@ -8,7 +8,7 @@
 
 ## Contexte
 
-Certains sorts infligent des dégâts répétés pendant leur durée : par tick, chaque entité touchée a une probabilité de subir un montant fixe de dégâts. Exemple de référence, le Rire de Bjuna (Bjuna's Laugh) :
+Certains sorts infligent des dégâts répétés pendant leur durée : à chaque tick, jusqu'à N entités de la cible subissent un montant de dégâts. Exemple de référence, le Rire de Bjuna, « The Fate of Bjuna » dans les données (`wh_main_spell_death_the_fate_of_bjuna`) : 10 dégâts par tick, N = 25 entités, 1 tick/s pendant 18 s, soit 180 dégâts par entité touchée et par lancer :
 - contre la cavalerie et l'infanterie monstrueuse, il est efficace ;
 - contre l'infanterie, chaque instance dépasse les PV d'une entité (« overkill ») ;
 - contre une entité unique, la plupart des instances sont perdues faute de cibles.
@@ -25,7 +25,13 @@ Champs de `phase` (GraphQL `broker.twwstats.com`) sur les phases des sorts (simp
 | Intervalle entre ticks (s) | `hp_change_frequency` |
 | Durée | `duration` |
 
-La sémantique exacte de ces champs dans le jeu n'est pas documentée. Elle doit être vérifiée sur le Rire de Bjuna et commentée dans le code, conformément au principe II de la constitution.
+La sémantique exacte de ces champs dans le jeu n'est pas documentée. Elle doit être commentée dans le code, conformément au principe II de la constitution.
+
+Constats sur Patch 9.0.0 :
+- 45 sorts ont une phase avec `damage_amount > 0` ; `damage_chance` y est toujours vide.
+- Les valeurs de N vont de 1 (sorts « mono-cible » à gros dégâts, ex. Death Frost : 67/tick) à 25 ou 75.
+- `hp_change_frequency` vaut 1 ou 2 s.
+- Certains overcasts ont plusieurs phases de DoT (ex. Heart of Winter Upgraded, 4 phases de 8 s).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -39,7 +45,7 @@ L'utilisateur lance un sort de DoT (par exemple le Rire de Bjuna) sur l'ennemi d
 
 **Acceptance Scenarios**:
 
-1. **Given** une cible de cavalerie (E ≥ N, PV par entité ≥ dégâts moyens d'une instance), **When** le sort est lancé 1 fois, **Then** sur chaque coup couvert la cible perd `ticks par coup × N × moyenne × (1 − rés)` PV en plus de la mêlée.
+1. **Given** une cible de cavalerie (E ≥ N, PV par entité ≥ dégâts cumulés d'une instance), **When** le sort est lancé 1 fois, **Then** la cible perd au total `N × dégâts d'une instance × (1 − rés)` PV, répartis uniformément sur les coups couverts, en plus de la mêlée.
 2. **Given** le même sort, **When** l'utilisateur passe à 2 lancers, **Then** le DoT s'applique sur deux fois plus de coups.
 3. **Given** une cible ayant 40 % de résistance magique et 30 % de ward save, **When** le DoT s'applique, **Then** la réduction est de 70 %. Avec 60 % + 50 %, elle est plafonnée à 90 %.
 4. **Given** une cible très armurée, **When** le DoT s'applique, **Then** l'armure ne réduit pas les dégâts du DoT.
@@ -56,8 +62,8 @@ Les dégâts d'une instance sont plafonnés aux PV max d'une entité de la cible
 
 **Acceptance Scenarios**:
 
-1. **Given** une infanterie dont les PV par entité sont inférieurs aux dégâts moyens d'une instance, **When** le DoT s'applique, **Then** chaque instance inflige au plus les PV d'une entité (overkill).
-2. **Given** une entité unique (E = 1) et un DoT avec N = 8, **When** le DoT s'applique, **Then** seule 1 instance sur 8 porte.
+1. **Given** une infanterie dont les PV par entité (ex. 80) sont inférieurs aux dégâts cumulés d'une instance sur un lancer (180 pour Bjuna), **When** le DoT s'applique, **Then** chaque instance inflige au plus les PV d'une entité : 100/180 ≈ 56 % sont perdus (overkill).
+2. **Given** une entité unique (E = 1) et le Rire de Bjuna (N = 25), **When** le DoT s'applique, **Then** seule 1 instance sur 25 porte.
 3. **Given** une cavalerie avec E ≥ N et des PV par entité supérieurs aux dégâts moyens, **When** le DoT s'applique, **Then** aucune perte.
 
 ---
@@ -83,7 +89,7 @@ Le résumé indique les dégâts du DoT par coup et le pourcentage perdu, avec l
 
 **Why this priority**: c'est de la lisibilité, utile pour choisir sa cible.
 
-**Independent Test**: le Rire de Bjuna contre une entité unique ; le résumé affiche environ 87 % perdus (manque d'entités) pour N = 8.
+**Independent Test**: le Rire de Bjuna (N = 25) contre une entité unique ; le résumé affiche 96 % perdus (manque d'entités).
 
 **Acceptance Scenarios**:
 
@@ -96,8 +102,8 @@ Le résumé indique les dégâts du DoT par coup et le pourcentage perdu, avec l
 
 - Sort de DoT sans aucun modificateur de stats : il doit quand même apparaître dans la ligne « Sorts » (élargit le filtre de 003).
 - Sort avec DoT **et** modificateurs de stats : les deux s'appliquent dans les mêmes phases.
-- `damage_chance` absent ou nul : on considère que l'instance porte toujours (`= 1`). Ce cas est à vérifier sur les données.
-- `hp_change_frequency` absent ou ≤ 0 : un seul tick par seconde. C'est la même convention que pour la régénération existante.
+- `damage_chance` absent : il vaut 1. C'est le cas de tous les sorts de Patch 9.0.0.
+- `hp_change_frequency` absent ou ≤ 0 : un tick par seconde. C'est la même convention que pour la régénération existante.
 - `max_damaged_entities` absent ou ≤ 0 : le DoT touche toutes les entités de la cible (N = E).
 - La cible est une unité montée ou un engin : on prend les PV de l'entité de la cible telle qu'utilisée par le calcul de vie existant.
 - Le DoT vise le lanceur ou des alliés (`target_friends`) : il est ignoré dans le duel.
@@ -105,17 +111,18 @@ Le résumé indique les dégâts du DoT par coup et le pourcentage perdu, avec l
 
 ## Règles de calcul
 
-Pour une phase où le sort de DoT est actif, et pour la cible :
+Une **instance** de DoT est l'ensemble des dégâts qu'une entité touchée subit pendant **un lancer** du sort. Pour un effet de sort de DoT (version simple ou overcast) et pour la cible :
 
-- `moyenne = damage_amount × damage_chance`
-- `instance = min(moyenne, PV_max_entité_cible)` (plafond overkill)
-- `instances_portées = N × min(1, E / N) = min(N, E)`, avec E = nombre d'entités **de départ** de la cible (pas de suivi des entités restantes)
-- `ticks_par_coup = T / hp_change_frequency`, avec T = 4 s
-- `rés = min(résistance_magique + ward_save, 90 %)` ; l'armure et la résistance physique ne s'appliquent pas
-- `DoT_par_coup = ticks_par_coup × instance × instances_portées × (1 − rés)`, exprimé dans la même unité de vie que les dégâts de mêlée par coup du duel
-- Les dégâts nets de la phase pour la cible valent `mêlée + Σ DoT_par_coup − régénération`.
-
-Le DoT ne s'applique que dans les phases où son sort est actif, selon le nombre d'instances couvertes et l'empilement au début (feature 003). La durée totale du DoT est donc bornée par celle du sort.
+- `moyenne_tick = damage_amount × damage_chance`, avec `damage_chance` vide = 1. Les dégâts aléatoires sont ramenés à leur moyenne.
+- `ticks_par_lancer = durée / hp_change_frequency`
+- `instance = min(moyenne_tick × ticks_par_lancer, PV_max_entité_cible)`. Le plafond overkill porte sur le **cumul d'un lancer** : une entité ne peut pas perdre plus que ses PV.
+- `instances_portées = min(N, E)`, où E est le nombre d'entités **de départ** de la cible. On ne suit pas les entités restantes. Cela revient à appliquer `N × min(1, E/N)`.
+- `rés = min(résistance_magique + ward_save, 90 %)`. L'armure et la résistance physique ne s'appliquent pas.
+- `DoT_par_lancer = instance × instances_portées × (1 − rés)`, exprimé dans la même unité de vie que les dégâts de mêlée du duel (fraction de la vie de l'unité).
+- **Répartition.** Un lancer couvre `durée / T` coups (T = 4 s, feature 003). Chaque coup couvert reçoit `DoT_par_coup = DoT_par_lancer / (durée / T)`. Avec k lancers empilés au début, le sort couvre `k × durée / T` coups, avec le même `DoT_par_coup`.
+- Les dégâts nets d'une phase pour la cible valent `mêlée + Σ DoT_par_coup (DoT actifs) − régénération`.
+- **Sort à plusieurs phases de DoT** (ex. Heart of Winter Upgraded) : on somme les `DoT_par_lancer` de ses phases, et la durée du sort est celle de sa plus longue phase.
+- Une phase de DoT dont `effect_type` est `positive` est ignorée : ce n'est pas un dégât sur l'ennemi. Exemple à vérifier : Omen of Spirits.
 
 ## Requirements *(mandatory)*
 
@@ -124,7 +131,7 @@ Le DoT ne s'applique que dans les phases où son sort est actif, selon le nombre
 - **FR-001**: Le système DOIT extraire, pour chaque sort et sa version overcast, les paramètres de DoT de ses phases : dégâts, probabilité, entités affectées, fréquence, durée.
 - **FR-002**: La ligne « Sorts » DOIT proposer les sorts de DoT visant l'ennemi, même sans modificateur de stats.
 - **FR-003**: Le calcul DOIT appliquer le DoT dans chaque phase active selon les règles de calcul ci-dessus.
-- **FR-004**: Les dégâts d'une instance DOIVENT être la moyenne, plafonnée aux PV max d'une entité de la cible.
+- **FR-004**: Les dégâts d'une instance (cumul sur une entité pendant un lancer) DOIVENT être la moyenne, plafonnée aux PV max d'une entité de la cible.
 - **FR-005**: Le nombre d'instances qui portent DOIT être `min(N, E)`.
 - **FR-006**: La réduction DOIT être `min(résistance magique + ward save, 90 %)`. L'armure et la résistance physique NE DOIVENT PAS s'appliquer.
 - **FR-007**: Le DoT DOIT s'appliquer en parallèle de la régénération de la cible.
@@ -147,7 +154,8 @@ Le DoT ne s'applique que dans les phases où son sort est actif, selon le nombre
 
 ## Assumptions
 
-- La sémantique supposée des champs est : `damage_amount` = dégâts par entité et par tick ; `damage_chance` = probabilité par instance ; `max_damaged_entities` = N. Elle sera vérifiée à la phase de plan sur le Rire de Bjuna.
+- La sémantique supposée des champs est : `damage_amount` = dégâts par entité et par tick ; `damage_chance` = probabilité par tick, vide = 1 ; `max_damaged_entities` = N. Ces valeurs sont cohérentes avec l'exemple utilisateur du Rire de Bjuna (180 dégâts/entité : overkill sur l'infanterie, efficace sur la cavalerie et l'infanterie monstrueuse).
+- On suppose que le jeu frappe les mêmes N entités pendant tout le lancer. Le plafond s'applique donc par entité et par lancer.
 - Le nombre d'entités E est celui de départ ; on ne suit pas les pertes en cours de combat (modèle non simulationniste).
 - Les dégâts des vortex, bombardements, projectiles et explosions sont hors périmètre.
 - Les DoT qui ne viennent pas d'un sort (effets de contact, capacités on/off) sont hors périmètre.
