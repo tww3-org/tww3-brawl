@@ -67,7 +67,9 @@ function updateUnit(value: Unit) {
       entityNumber: defaultEntityCount,
       bonus: props.modelValue.bonus,
       // Les effets natifs dépendent de l'unité : réinitialisés au changement de monture
-      effects: defaultEffectState()
+      effects: defaultEffectState(),
+      // Les lancers de sorts ne dépendent pas de la monture : conservés
+      spells: props.modelValue.spells
     }, mount_changed: true})
   }
 }

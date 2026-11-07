@@ -56,7 +56,11 @@
       </div>
     </div>
 
-    <div v-else class="no-combat">
+    <div v-if="combatResult && spellLines.length > 0" class="spell-summary">
+      <p v-for="line in spellLines" :key="line.key" class="hits-info">{{ line.text }}</p>
+    </div>
+
+    <div v-if="!combatResult" class="no-combat">
       <p>Select two units to see combat results</p>
     </div>
   </div>
@@ -67,7 +71,7 @@ import { useUnitStore } from '~/stores/unitStore';
 import { computed } from 'vue';
 import { calculateGoldDamage } from '@tww3-brawl/sdk/src/logic/twoSideCalculations';
 import { getUnitDisplayName } from '@tww3-brawl/sdk/src/utils/getUnitDisplayName';
-import { effectiveUnits } from '~/types/unit';
+import { castSpells, effectiveUnits } from '~/types/unit';
 
 const unitStore = useUnitStore();
 
@@ -117,6 +121,14 @@ const regenerationText = computed(() => {
     .map(side => `${getSideName(side)} ${(regen[side] * 100).toFixed(2)}%`);
   return parts.length > 0 ? `Regeneration per hit: ${parts.join(' / ')}` : '';
 });
+
+// Une ligne par sort lancé, pour chaque côté : « Nom (×k, overcast ×j) : couvre N coups »
+const spellLines = computed(() => (['left', 'right'] as const).flatMap(side =>
+  castSpells(unitStore[side]).map(({ spell, casts, hits }) => ({
+    key: `${side}-${spell.id}`,
+    text: `${getSideName(side)} - ${spell.name} (×${casts.normal}${casts.overcast > 0 ? `, overcast ×${casts.overcast}` : ''}): covers ${hits.toFixed(1)} hits`,
+  }))
+));
 
 // Health color based on percentage with 5 tiers
 const healthColor = computed(() => {
@@ -236,6 +248,10 @@ const goldWinnerClass = computed(() => (goldWinner.value?.side === 'left' ? 'bg-
 .health-label {
   font-size: 0.9rem;
   color: #666;
+}
+
+.spell-summary {
+  margin-top: 12px;
 }
 
 .no-combat {

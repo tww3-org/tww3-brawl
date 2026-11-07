@@ -90,7 +90,8 @@ const passiveOptions = [
 
 // Effets natifs (Flaming / Magical…) en tête, puis le reste par ordre alphabétique
 const builtinIds = new Set(Object.keys(BUILTIN_EFFECTS))
-const catalog = listEffects().sort((a, b) =>
+// Les entrées de sort sont gérées par la ligne « Sorts » (compteur de lancers) : jamais proposées ici (FR-009)
+const catalog = listEffects(e => e.spell === undefined).sort((a, b) =>
     Number(builtinIds.has(b.id)) - Number(builtinIds.has(a.id)) || a.name.localeCompare(b.name))
 
 const filtered = computed<EffectDefinition[]>(() => {

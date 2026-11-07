@@ -32,6 +32,17 @@
                     <EffectList side="right" placement="effects" :max="isMobile ? undefined : 5" with-add @add="openPicker('right')" />
                 </td>
             </tr>
+            <tr>
+                <td class="unit-column">
+                    <SpellList side="left" :max="isMobile ? undefined : 5" @add="openSpellPicker('left')" />
+                </td>
+                <td v-if="!isMobile" class="annex-column"></td>
+                <td class="text-center stat-column">Spells</td>
+                <td v-if="!isMobile" class="annex-column"></td>
+                <td class="unit-column">
+                    <SpellList side="right" :max="isMobile ? undefined : 5" @add="openSpellPicker('right')" />
+                </td>
+            </tr>
             <tr v-for="statistic in statistics" :key="statistic.path">
                 <td class="unit-column" v-if="baseLeft">
                     <div class="stat-cell">
@@ -75,6 +86,7 @@
         </tbody>
     </q-markup-table>
     <EffectPickerDialog v-model="pickerOpen" :version-id="pickerVersionId" @select="onPick" />
+    <SpellPickerDialog v-model="spellPickerOpen" :version-id="spellPickerVersionId" @select="onPickSpell" />
 </template>
 
 <script setup lang="ts">
@@ -89,6 +101,8 @@ import ValueDisplay from './ValueDisplay.vue'
 import EffectList from './EffectList.vue'
 import EffectDeltaBadge from './EffectDeltaBadge.vue'
 import EffectPickerDialog from './EffectPickerDialog.vue'
+import SpellList from './SpellList.vue'
+import SpellPickerDialog from './SpellPickerDialog.vue'
 import { useUnitStore } from '~/stores/unitStore'
 import { baseUnit, fullyEffectiveUnit } from '~/types/unit'
 import { clampNonNegative } from '@tww3-brawl/sdk/src/logic/clampStat'
@@ -141,6 +155,18 @@ function onPick(id: string) {
     unitStore.addEffect(pickerSide.value, id)
 }
 
+// Sélecteur de sorts (bouton « + » de la ligne Spells)
+const spellPickerOpen = ref(false)
+const spellPickerSide = ref<'left' | 'right'>('left')
+const spellPickerVersionId = computed(() => (spellPickerSide.value === 'left' ? props.leftUnit : props.rightUnit)?.selection?.version?.id ?? '')
+function openSpellPicker(side: 'left' | 'right') {
+    spellPickerSide.value = side
+    spellPickerOpen.value = true
+}
+function onPickSpell(id: string) {
+    unitStore.addSpell(spellPickerSide.value, id)
+}
+
 const emit = defineEmits<{
     update: [unit_side: 'left' | 'right', path: UnitBonusPathes, value: number]
 }>()
@@ -156,6 +182,7 @@ const leftUnitRef: Ref<Array<InstanceType<typeof ValueDisplay>>> = ref([])
 function onReset(unit_side: 'left' | 'right') {
     reset(unit_side)
     unitStore.resetEffects(unit_side)
+    unitStore.resetSpells(unit_side)
     for (const path of UnitBonusPathes) {
         emit('update', unit_side, path, 0)
     }
