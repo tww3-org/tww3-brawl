@@ -3,13 +3,14 @@ import {
   defaultEffectState,
   defaultUnitBonus,
   displayedEffects,
-  effectiveUnits,
+  duelPhases,
+  MAX_SPELL_CASTS,
   type UnitEffectState,
   type UnitBonus,
   type UnitWithEntityNumberAndBonus,
 } from '~/types/unit';
-import { getEffect } from '@tww3-brawl/sdk';
-import { calculateWinner } from '@tww3-brawl/sdk/src/logic/twoSideCalculations';
+import { getEffect, getSpell } from '@tww3-brawl/sdk';
+import { calculatePhasedWinner } from '@tww3-brawl/sdk/src/logic/twoSideCalculations';
 
 export const useUnitStore = defineStore('unit', {
   state: () => {
@@ -28,6 +29,8 @@ export const useUnitStore = defineStore('unit', {
           ...selection,
           bonus: selection.bonus ?? defaultUnitBonus(),
           effects: selection.effects ?? defaultEffectState(),
+          // Les lancers de sorts sont conservés tels quels (absents : aucune ligne à restaurer)
+          spells: selection.spells,
         };
       } else {
         this[unit_side] = null;
@@ -99,6 +102,39 @@ export const useUnitStore = defineStore('unit', {
       delete state.overrides[id];
       side.effects = state;
     },
+    /** Ajoute un sort du catalogue avec 1 lancer simple (sans effet s'il est déjà présent) */
+    addSpell(unit_side: 'left' | 'right', id: string) {
+      const side = this[unit_side];
+      if (!side || !getSpell(id) || side.spells?.casts[id]) {
+        return;
+      }
+      side.spells = { casts: { ...side.spells?.casts, [id]: { normal: 1, overcast: 0 } } };
+    },
+    /** Règle le compteur d'une version d'un sort (entier borné à 0..MAX_SPELL_CASTS) */
+    setSpellCasts(unit_side: 'left' | 'right', id: string, version: 'normal' | 'overcast', n: number) {
+      const side = this[unit_side];
+      const current = side?.spells?.casts[id];
+      if (!side || !current || !Number.isFinite(n)) {
+        return;
+      }
+      const value = Math.max(0, Math.min(MAX_SPELL_CASTS, Math.trunc(n)));
+      side.spells = { casts: { ...side.spells?.casts, [id]: { ...current, [version]: value } } };
+    },
+    /** Retire un sort de la ligne « Sorts » */
+    removeSpell(unit_side: 'left' | 'right', id: string) {
+      const side = this[unit_side];
+      if (!side?.spells) {
+        return;
+      }
+      const casts = { ...side.spells.casts };
+      delete casts[id];
+      side.spells = { casts };
+    },
+    resetSpells(unit_side: 'left' | 'right') {
+      if (this[unit_side]) {
+        this[unit_side].spells = { casts: {} };
+      }
+    },
     clearUnits() {
       this.left = null;
       this.right = null;
@@ -109,15 +145,12 @@ export const useUnitStore = defineStore('unit', {
      * Calculates the winner and combat statistics between the two selected units
      * @returns Object with winner, hits needed, and remaining health, or null if units are not selected
      */
-    combatResult(): ReturnType<typeof calculateWinner> | null {
+    combatResult(): ReturnType<typeof calculatePhasedWinner> | null {
       if (!this.left?.selection.unit || !this.right?.selection.unit) {
         return null;
       }
-      const { left, right } = effectiveUnits(this.left, this.right);
-      if (!left || !right) {
-        return null;
-      }
-      return calculateWinner(left, right);
+      const duel = duelPhases(this.left, this.right);
+      return duel ? calculatePhasedWinner(duel.units) : null;
     },
   },
   persist: {

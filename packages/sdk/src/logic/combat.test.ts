@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Unit } from '../types';
 import { regenerationBurst, regenerationPerHit } from './oneSideCalculations';
-import { calculateWinner, type UnitWithEntityNumber } from './twoSideCalculations';
+import { calculatePhasedWinner, calculateWinner, type UnitWithEntityNumber } from './twoSideCalculations';
 
 const makeUnit = (overrides: Partial<Unit> = {}): Unit => ({
   version: 'v',
@@ -92,5 +92,85 @@ describe('calculateWinner avec régénération', () => {
     const result = calculateWinner(side(strong), side(weak));
     expect(result.winner).toBe('right');
     expect(result.stalemate).toBe(false);
+  });
+});
+
+describe('calculatePhasedWinner', () => {
+  const strong = makeUnit({ damage: withDamage(60) });
+  const weak = makeUnit({ damage: withDamage(30) });
+  const tank = makeUnit({ damage: withDamage(30), regeneration: { per_second: 0.5, burst: 0 } });
+
+  it('C9 : calculateWinner est le cas « une seule phase infinie »', () => {
+    const direct = calculateWinner(side(strong), side(weak));
+    const phased = calculatePhasedWinner([{ hits: Infinity, left: side(strong), right: side(weak) }]);
+    expect(phased).toEqual(direct);
+    expect(direct.phases).toEqual([
+      { start: 0, end: Infinity, leftNetTaken: expect.any(Number), rightNetTaken: expect.any(Number) },
+    ]);
+  });
+
+  it('C10 : un sort couvrant plus de coups que le combat équivaut à un effet actif tout le combat', () => {
+    const buffed = makeUnit({ damage: withDamage(45) });
+    const always = calculateWinner(side(buffed), side(weak));
+    const phased = calculatePhasedWinner([
+      { hits: 1000, left: side(buffed), right: side(weak) },
+      { hits: Infinity, left: side(weak), right: side(weak) },
+    ]);
+    expect(phased.winner).toBe(always.winner);
+    expect(phased.hitsNeeded).toBeCloseTo(always.hitsNeeded, 10);
+    expect(phased.remainingHealth).toBeCloseTo(always.remainingHealth, 10);
+  });
+
+  it('C11 : mort pendant la première phase, les phases suivantes sont ignorées', () => {
+    const base = calculateWinner(side(strong), side(weak));
+    const firstEnd = Math.ceil(base.hitsNeeded) + 1;
+    const phased = calculatePhasedWinner([
+      { hits: firstEnd, left: side(strong), right: side(weak) },
+      // si ces phases étaient parcourues, le résultat changerait
+      { hits: 3, left: side(weak), right: side(strong) },
+      { hits: Infinity, left: side(weak), right: side(strong) },
+    ]);
+    expect(phased.hitsNeeded).toBeLessThan(firstEnd);
+    expect(phased.hitsNeeded).toBeCloseTo(base.hitsNeeded, 10);
+    expect(phased.winner).toBe('left');
+    expect(phased.remainingHealth).toBeCloseTo(base.remainingHealth, 10);
+  });
+
+  it('mort dans une phase intermédiaire : les coups et la vie restante traversent les phases', () => {
+    // Phase 1 : les deux côtés s'infligent des dégâts moyens ; phase 2 : le gauche tue le droit
+    const p1 = calculateWinner(side(weak), side(weak));
+    const half = p1.hitsNeeded / 2;
+    const result = calculatePhasedWinner([
+      { hits: half, left: side(weak), right: side(weak) },
+      { hits: Infinity, left: side(strong), right: side(weak) },
+    ]);
+    expect(result.winner).toBe('left');
+    // Moitié de la vie de droite perdue en phase 1 ; le reste à la vitesse de la phase 2
+    const fast = calculateWinner(side(strong), side(weak)).hitsNeeded;
+    expect(result.hitsNeeded).toBeCloseTo(half + fast / 2, 8);
+    // Le gauche subit les dégâts nets de chaque phase pendant les coups passés dedans
+    const net1 = p1.phases![0].leftNetTaken;
+    const net2 = calculateWinner(side(strong), side(weak)).phases![0].leftNetTaken;
+    expect(result.remainingHealth).toBeCloseTo(Math.min(1, 1 - net1 * half - net2 * (result.hitsNeeded - half)), 8);
+  });
+
+  it('C12 : dernière phase sans dégâts nets et vie non épuisée : impasse', () => {
+    const result = calculatePhasedWinner([
+      { hits: 0.5, left: side(strong), right: side(weak) },
+      { hits: Infinity, left: side(tank), right: side({ ...tank }) },
+    ]);
+    expect(result.stalemate).toBe(true);
+    expect(result.hitsNeeded).toBe(Infinity);
+    expect(result.remainingHealth).toBe(1);
+  });
+
+  it('C12 : pas d\'impasse si l\'autre côté finit par mourir', () => {
+    const result = calculatePhasedWinner([
+      { hits: 0.5, left: side(strong), right: side(weak) },
+      { hits: Infinity, left: side(tank), right: side(strong) },
+    ]);
+    expect(result.stalemate).toBe(false);
+    expect(result.winner).toBe('left');
+    expect(Number.isFinite(result.hitsNeeded)).toBe(true);
   });
 });

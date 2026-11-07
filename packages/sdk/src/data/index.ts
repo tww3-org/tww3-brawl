@@ -5,3 +5,4 @@ export * from './factions';
 export * from './factionUnits';
 export * from './searchUnits';
 export * from './effects';
+export * from './spells';

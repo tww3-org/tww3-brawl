@@ -24,7 +24,7 @@ spell?: { spell_id: string };
 | Champ | Type | Règle |
 |---|---|---|
 | `id` | `string` | id de la phase du jeu |
-| `duration` | `number` | secondes, > 0 |
+| `duration` | `number` | secondes, > 0 (durée de la phase, sinon repli `active_time` ÷ nombre de phases retenues de la version) |
 | `effects` | `string[]` | ids des `EffectDefinition` issues de cette phase dans `EFFECTS_CATALOG` (≥ 1 en 003 ; en 004, une phase de DoT pur peut en avoir 0) |
 
 ### `SpellDefinition`

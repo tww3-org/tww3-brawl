@@ -1,5 +1,6 @@
-import type { UnitWithEntityNumber } from '@tww3-brawl/sdk/src/logic/twoSideCalculations';
-import type { Unit, Version, Faction } from '@tww3-brawl/sdk/src/types'
+import type { DuelPhaseUnits, UnitWithEntityNumber } from '@tww3-brawl/sdk/src/logic/twoSideCalculations';
+import type { Unit, Version, Faction, SpellCasts } from '@tww3-brawl/sdk/src/types'
+import { buildDuelPhases, spellWindows, type DuelPhase } from '@tww3-brawl/sdk/src/logic/spellPhases';
 import type { Paths } from '~/shared/jsonpath';
 import { getNativeCardEffects } from '@tww3-brawl/sdk/src/logic/applyEffects';
 import {
@@ -10,7 +11,7 @@ import {
   type LayerContext,
   type UnitBonusPath,
 } from '@tww3-brawl/sdk/src/logic/unitLayers';
-import { getEffect } from '@tww3-brawl/sdk';
+import { getEffect, getSpell } from '@tww3-brawl/sdk';
 
 // Type for unit selection with version and faction
 export interface UnitSelection {
@@ -32,7 +33,17 @@ export interface UnitWithEntityNumberAndBonus {
   bonus: UnitBonus;
   /** Optionnel : absent des états persistés avant l'ajout des effets */
   effects?: UnitEffectState;
+  /** Optionnel : absent des états persistés avant l'ajout de la ligne « Sorts » */
+  spells?: UnitSpellState;
 }
+
+/** Lancers de sorts d'une carte (compteurs entiers 0..MAX_SPELL_CASTS par version) */
+export interface UnitSpellState {
+  casts: SpellCasts;
+}
+
+/** Borne haute d'un compteur de lancers */
+export const MAX_SPELL_CASTS = 9;
 
 /**
  * État des effets d'une carte :
@@ -114,6 +125,80 @@ export function effectiveUnits(
     };
   };
   return { left: build(left, right), right: build(right, left) };
+}
+
+/** Lancers de sorts d'un côté (vide si absent, ex. ancien état persisté) */
+export function spellCastsOf(side: SideData): SpellCasts {
+  return side?.spells?.casts ?? {};
+}
+
+/**
+ * Coups couverts par chaque phase d'un sort lancé (toutes versions confondues), dans l'ordre du catalogue.
+ * Les phases sont des sorts indépendants, empilés au début du combat : une entrée par phase.
+ */
+export function spellPhaseHits(spellId: string, casts: { normal: number; overcast: number }): { phaseId: string; version: 'normal' | 'overcast'; hits: number }[] {
+  return spellWindows({ [spellId]: casts }, {}).map(w => ({ phaseId: w.phaseId, version: w.version, hits: w.instances }));
+}
+
+/**
+ * Libellés « phase k : N hits » des phases d'un sort (numérotées par version ; préfixe « overcast » pour
+ * la version overcast). Un seul résultat (sort à une phase, ou aucun lancer : 0) : texte « N hits » sans libellé de phase.
+ */
+export function spellPhaseHitTexts(phases: ReturnType<typeof spellPhaseHits>): string[] {
+  if (phases.length === 0) return ['0.0 hits'];
+  if (phases.length === 1) return [`${phases[0].hits.toFixed(1)} hits`];
+  const counters = { normal: 0, overcast: 0 };
+  return phases.map(({ version, hits }) => {
+    const n = ++counters[version];
+    return `${version === 'overcast' ? 'overcast ' : ''}phase ${n}: ${hits.toFixed(1)} hits`;
+  });
+}
+
+/** Sorts lancés d'un côté (compteur total > 0, id connu du catalogue) avec leurs coups couverts */
+export function castSpells(side: SideData) {
+  return Object.entries(spellCastsOf(side)).flatMap(([id, casts]) => {
+    const spell = getSpell(id);
+    return spell && casts.normal + casts.overcast > 0
+      ? [{ spell, casts, phases: spellPhaseHits(id, casts) }]
+      : [];
+  });
+}
+
+/**
+ * Duel découpé en phases (sorts) : phases du SDK et unités effectives de chaque phase.
+ * Pour chaque phase, les effets de sort actifs (`leftCardEffects` / `rightCardEffects`) s'ajoutent aux
+ * `cardEffects` de la carte, puis les mêmes couches que `effectiveUnits` sont appliquées.
+ * Sans sort lancé, une seule phase `[0, ∞)` dont les unités valent celles de `effectiveUnits`.
+ */
+export function duelPhases(
+  left: SideData,
+  right: SideData
+): { phases: DuelPhase[]; units: DuelPhaseUnits[] } | null {
+  if (!left || !right) {
+    return null;
+  }
+  const phases = buildDuelPhases(spellWindows(spellCastsOf(left), spellCastsOf(right)));
+  const build = (side: NonNullable<SideData>, other: NonNullable<SideData>, own: string[], opposing: string[]): UnitWithEntityNumber => {
+    const ctx = layerContext(side, other);
+    return {
+      selection: {
+        unit: side.selection?.unit && runLayers(side.selection.unit, EFFECTIVE_UNIT_LAYERS, {
+          ...ctx,
+          cardEffects: [...(ctx.cardEffects ?? []), ...own],
+          opponentCardEffects: [...(ctx.opponentCardEffects ?? []), ...opposing],
+        }),
+        version: side.selection?.version,
+        faction: side.selection?.faction,
+      },
+      entityNumber: side.entityNumber,
+    };
+  };
+  const units = phases.map(p => ({
+    hits: p.end - p.start,
+    left: build(left, right, p.leftCardEffects, p.rightCardEffects),
+    right: build(right, left, p.rightCardEffects, p.leftCardEffects),
+  }));
+  return { phases, units };
 }
 
 /** Unité de base d'un côté (valeurs dérivées uniquement, sans bonus ni effets) */

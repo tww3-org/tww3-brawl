@@ -21,3 +21,13 @@ droite, par rapport à cette colonne.
 Toute modification d'un côté se vérifie de l'autre, sur desktop **et** mobile
 (`isMobile` = `$q.screen.lt.md`, 3 colonnes), par exemple avec Playwright en
 comparant les positions gauche/droite.
+
+## Lignes « Effects » et « Spells »
+
+Sous les en-têtes, deux lignes à 5 colonnes (3 sur mobile) ont le même
+alignement miroir : « Effects » (`EffectList`, on/off sur tout le combat) puis
+« Spells » (`SpellList` : un compteur de lancers par sort, puce overcast en bas
+à droite de l'icône, `SpellPickerDialog` via le bouton « + »). Les sorts ne
+sont jamais proposés par `EffectPickerDialog` (FR-009). Le calcul du duel passe
+par `duelPhases()` (`types/unit.ts`), qui découpe le combat en phases selon les
+durées des sorts des deux côtés (spec `003-spells-row`).
