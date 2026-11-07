@@ -202,4 +202,47 @@ export interface EffectDefinition {
   modifiers: BrawlModifiers;
   /** Clé de la capacité de base dont cette entrée est une partie (ennemi, alliés, après-effet, variante) */
   variant_of?: string;
+  /** Présent si l'effet est une partie d'un sort (ou de son overcast) : exclu de la ligne « Effets ». `spell_id` = id de la version */
+  spell?: { spell_id: string };
 }
+
+/**
+ * Phase d'un sort : effet indépendant avec sa propre durée (fenêtre d'instances propre).
+ */
+export interface SpellPhase {
+  /** Id de la phase du jeu */
+  id: string;
+  /** Durée en secondes (> 0) */
+  duration: number;
+  /** Ids des `EffectDefinition` issues de cette phase dans le catalogue d'effets */
+  effects: string[];
+}
+
+/**
+ * Version d'un sort : simple ou overcast
+ */
+export interface SpellVersion {
+  /** Clé de la capacité (simple ou overcast) */
+  id: string;
+  name: string;
+  phases: SpellPhase[];
+}
+
+/**
+ * Définition d'un sort du catalogue
+ */
+export interface SpellDefinition {
+  /** = `normal.id` */
+  id: string;
+  name: string;
+  description?: string;
+  /** Chemin brut du jeu, à passer à getImageUrl(version, icon) */
+  icon: string;
+  mana_cost: number;
+  normal: SpellVersion;
+  /** Version overcast ; absente = pas de puce */
+  overcast?: SpellVersion;
+}
+
+/** Lancers par sort pour un côté : compteurs entiers ≥ 0 */
+export type SpellCasts = Record<string /* spell id */, { normal: number; overcast: number }>;

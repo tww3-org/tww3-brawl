@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
  * Génère le catalogue d'effets de mêlée (packages/sdk/src/data/effects/catalog.generated.ts)
+ * et le catalogue de sorts (packages/sdk/src/data/spells/catalog.generated.ts)
  * à partir de l'API GraphQL twwstats.
  *
  * Usage : node scripts/generate-effects-catalog.mjs [versionId]
@@ -13,6 +14,10 @@ const ENDPOINT = 'https://broker.twwstats.com/graphql';
 const OUT_FILE = resolve(
   dirname(fileURLToPath(import.meta.url)),
   '../packages/sdk/src/data/effects/catalog.generated.ts'
+);
+const SPELLS_OUT_FILE = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '../packages/sdk/src/data/spells/catalog.generated.ts'
 );
 const ICON_DIR = 'ui/battle ui/ability_icons';
 
@@ -213,6 +218,17 @@ function commonTokenPrefix(ids) {
 
 const capitalize = (w) => w.charAt(0).toUpperCase() + w.slice(1);
 
+/** Nom lisible d'une capacité ; nom vide ou générique (ex. « Upgraded ») : repli sur la clé humanisée */
+function abilityBaseName(ability) {
+  const rawName = strip(ability.name);
+  return rawName && !/^upgraded$/i.test(rawName) ? rawName : humanizeKey(ability.key);
+}
+
+function abilityDescription(ability) {
+  const tooltip = strip(ability.tooltip);
+  return tooltip && (tooltip.length > 300 ? `${tooltip.slice(0, 297)}...` : tooltip);
+}
+
 /**
  * Entrées du catalogue pour une capacité. Les phases sont groupées par id sans étage : on ne garde
  * que l'étage le plus élevé (état final). Les groupes à rôle (ennemi, alliés, après-effet) et les
@@ -242,11 +258,8 @@ function abilityEntries(ability) {
     if (reachesEnemies && g.phase.effect_type === 'negative') return 'enemy';
     return 'self';
   };
-  const rawName = strip(ability.name);
-  // nom vide ou générique (ex. « Upgraded ») : repli sur la clé humanisée
-  const baseName = rawName && !/^upgraded$/i.test(rawName) ? rawName : humanizeKey(ability.key);
-  const tooltip = strip(ability.tooltip);
-  const description = tooltip && (tooltip.length > 300 ? `${tooltip.slice(0, 297)}...` : tooltip);
+  const baseName = abilityBaseName(ability);
+  const description = abilityDescription(ability);
 
   const make = ({ id, name, phase, target, polarity, passive, variantOf }) => {
     const mods = phaseModifiers(phase);
@@ -312,6 +325,116 @@ function abilityEntries(ability) {
   return result.filter(Boolean);
 }
 
+const isMiscast = (phase) => /_miscast$/.test(phase.id);
+
+/**
+ * Une version de sort (simple ou overcast) : une `SpellPhase` par phase de durée > 0, hors `*_miscast`.
+ * Hypothèses (constitution II, voir specs/003-spells-row/research.md R3) :
+ * - chaque phase du sort est un effet indépendant avec sa propre durée : contrairement aux capacités
+ *   (`abilityEntries` ne garde que l'étage le plus élevé), on ne fusionne PAS les étages `_1`…`_4`.
+ *   En jeu ces étages sont probablement successifs ; empilés au début du combat, ils agissent ensemble
+ *   (même total, concentré) : seule l'issue finale compte ;
+ * - une phase sans durée positive est ignorée (pas de repli sur `active_time`) ;
+ * - les phases `*_miscast` (échec du sort) n'ont pas de sens dans un calculateur de mêlée.
+ * Les entrées d'effet de chaque phase viennent de `abilityEntries` appelée sur cette seule phase, ce qui
+ * réutilise la whitelist de stats et le routage self/enemy. Avec plusieurs phases, les ids sont suffixés
+ * `__p<n>` pour rester uniques. Chaque entrée est marquée `spell: { spell_id }` (id de la version).
+ * Retourne null si aucune phase n'est retenue.
+ */
+function spellVersion(ability) {
+  const retained = (ability.phases ?? [])
+    .filter((p) => p.duration > 0 && !isMiscast(p))
+    .sort((a, b) => a.id.localeCompare(b.id));
+  if (!retained.length) return null;
+  const multi = retained.length > 1;
+  const entries = [];
+  const phases = retained.map((phase, i) => {
+    const list = abilityEntries({ ...ability, phases: [phase] }).map((e) => ({
+      ...e,
+      ...(multi && {
+        id: `${e.id}__p${i + 1}`,
+        name: `${e.name} (phase ${i + 1})`,
+        variant_of: e.variant_of ?? ability.key,
+      }),
+      spell: { spell_id: ability.key },
+    }));
+    entries.push(...list);
+    return { id: phase.id, duration: round(phase.duration), effects: list.map((e) => e.id) };
+  });
+  return { version: { id: ability.key, name: abilityBaseName(ability), phases }, entries };
+}
+
+/** Signature d'une version de sort pour le dédoublonnage R5 : durées et modificateurs de chaque phase */
+function versionSignature(v) {
+  if (!v) return '';
+  const byId = new Map(v.entries.map((e) => [e.id, e]));
+  return JSON.stringify(
+    v.version.phases.map((p) => [
+      p.duration,
+      p.effects.map((id) => {
+        const { modifiers, target, polarity, placement } = byId.get(id);
+        return [modifiers, target, polarity, placement];
+      }),
+    ])
+  );
+}
+
+/** Clé « de lore » (`*_spell_<lore>_*`), hors sorts liés (`*_spell_bound_*`) */
+const isLoreKey = (key) => /_spell_(?!bound_)[a-z]+_/.test(key);
+
+/**
+ * Sorts du catalogue (R1) : capacités avec `mana_cost > 0` qui ne sont pas la cible d'un `overpower_option`
+ * (les overcasts, traités comme des capacités complètes via `overpower_option`, R2). Les sorts sans phase
+ * retenue sont exclus. Dédoublonnage R5 : même nom + mêmes durées/modificateurs → on garde la clé de lore,
+ * sinon la plus courte.
+ * Retourne `{ spells, entries, owned }` : `owned` = clés d'abilities traitées comme sorts (simple + overcast).
+ */
+function buildSpells(abilities) {
+  const overcastKeys = new Set(abilities.map((a) => a.overpower_option?.key).filter(Boolean));
+  const candidates = [];
+  for (const ability of abilities) {
+    if (!(ability.unit_special_ability?.mana_cost > 0) || overcastKeys.has(ability.key)) continue;
+    const normal = spellVersion(ability);
+    if (!normal) continue;
+    const oc = ability.overpower_option;
+    const overcast = oc ? spellVersion(oc) : null;
+    candidates.push({ ability, normal, overcast });
+  }
+
+  const groups = new Map();
+  for (const c of candidates) {
+    const sig = `${abilityBaseName(c.ability)}|${versionSignature(c.normal)}|${versionSignature(c.overcast)}`;
+    (groups.get(sig) ?? groups.set(sig, []).get(sig)).push(c);
+  }
+  const spells = {};
+  const entries = {};
+  const owned = new Set();
+  for (const group of groups.values()) {
+    group.sort((a, b) =>
+      Number(isLoreKey(b.ability.key)) - Number(isLoreKey(a.ability.key)) ||
+      a.ability.key.length - b.ability.key.length ||
+      a.ability.key.localeCompare(b.ability.key));
+    const { ability, normal, overcast } = group[0];
+    // les doublons écartés restent « possédés » : ils ne retournent pas dans la ligne « Effets »
+    for (const c of group) {
+      owned.add(c.ability.key);
+      if (c.ability.overpower_option?.key) owned.add(c.ability.overpower_option.key);
+    }
+    for (const e of [...normal.entries, ...(overcast?.entries ?? [])]) entries[e.id] = e;
+    const description = abilityDescription(ability);
+    spells[ability.key] = {
+      id: ability.key,
+      name: abilityBaseName(ability),
+      ...(description && { description }),
+      icon: `${ICON_DIR}/${ability.icon_name}.png`,
+      mana_cost: ability.unit_special_ability.mana_cost,
+      normal: normal.version,
+      ...(overcast && { overcast: overcast.version }),
+    };
+  }
+  return { spells, entries, owned };
+}
+
 function attributeEntry(attr, immunities) {
   const [title, ...rest] = String(attr.bullet_text ?? '').split('||');
   return {
@@ -342,7 +465,10 @@ async function main() {
   const [abilitiesData, unitsData, attributesData] = await Promise.all([
     gql(`{ tww(tww_version:"${versionId}"){ abilities(offset:0,size:10000){
       key name icon_name is_hidden_in_ui tooltip type{key}
-      unit_special_ability{ passive affect_self target_enemies target_friends num_effected_friendly_units num_effected_enemy_units }
+      unit_special_ability{ passive mana_cost active_time affect_self target_enemies target_friends num_effected_friendly_units num_effected_enemy_units }
+      overpower_option{ key name icon_name tooltip
+        unit_special_ability{ passive mana_cost active_time affect_self target_enemies target_friends num_effected_friendly_units num_effected_enemy_units }
+        phases{ ${PHASE_FIELDS} imbue_contact{ ${PHASE_FIELDS} } } }
       phases{ ${PHASE_FIELDS} imbue_contact{ ${PHASE_FIELDS} } } } } }`),
     gql(`{ tww(tww_version:"${versionId}"){ units(offset:0,size:5000,includeSummoned:true){
       unit land_unit{ primary_melee_weapon{ contact_phase{ ${PHASE_FIELDS} } } } } } }`),
@@ -367,9 +493,14 @@ async function main() {
   }
   for (const phase of contactPhases.values()) entries[phase.id] = contactEntry(phase);
 
+  // Sorts : leurs effets restent dans le catalogue d'effets, marqués `spell`
+  const { spells, entries: spellEntries, owned: spellKeys } = buildSpells(abilities);
+  for (const e of Object.values(spellEntries)) entries[e.id] = e;
+
   // Capacités
   let excluded = 0;
   for (const ability of abilities) {
+    if (spellKeys.has(ability.key)) continue;
     if (ability.is_hidden_in_ui || entries[ability.key]) {
       excluded++;
       continue;
@@ -404,6 +535,18 @@ ${lines.join('\n')}
   mkdirSync(dirname(OUT_FILE), { recursive: true });
   writeFileSync(OUT_FILE, content);
 
+  const spellLines = Object.entries(sortKeys(spells)).map(([id, sp]) => `  ${JSON.stringify(id)}: ${JSON.stringify(sp)},`);
+  const spellsContent = `// Fichier généré par scripts/generate-effects-catalog.mjs : ne pas modifier à la main.
+// Version : ${versionName} (${versionId}) - généré le ${new Date().toISOString().slice(0, 10)}
+import type { SpellDefinition } from '../../types';
+
+export const SPELLS_CATALOG: Record<string, SpellDefinition> = {
+${spellLines.join('\n')}
+};
+`;
+  mkdirSync(dirname(SPELLS_OUT_FILE), { recursive: true });
+  writeFileSync(SPELLS_OUT_FILE, spellsContent);
+
   const count = (key) => {
     const c = {};
     for (const e of Object.values(sorted)) c[e[key]] = (c[e[key]] ?? 0) + 1;
@@ -415,6 +558,8 @@ ${lines.join('\n')}
   console.log('Par target:', count('target'));
   console.log(`Abilities exclues: ${excluded}`);
   console.log(`Écrit: ${OUT_FILE}`);
+  console.log(`Sorts: ${Object.keys(spells).length} (dont ${Object.values(spells).filter((sp) => sp.overcast).length} avec overcast)`);
+  console.log(`Écrit: ${SPELLS_OUT_FILE}`);
 }
 
 main().catch((err) => {

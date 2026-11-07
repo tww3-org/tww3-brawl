@@ -26,8 +26,8 @@ description: "Tasks for 003-spells-row"
 
 **Purpose**: types, données et moteur de phases, dont dépendent toutes les stories.
 
-- [ ] T002 Ajouter à `packages/sdk/src/types.ts` : `EffectDefinition.spell?: { spell_id: string }`, `SpellVersion`, `SpellDefinition`, `SpellCasts` (voir data-model.md).
-- [ ] T003 Étendre `scripts/generate-effects-catalog.mjs` :
+- [x] T002 Ajouter à `packages/sdk/src/types.ts` : `EffectDefinition.spell?: { spell_id: string }`, `SpellVersion`, `SpellDefinition`, `SpellCasts` (voir data-model.md).
+- [x] T003 Étendre `scripts/generate-effects-catalog.mjs` :
   - ajouter `mana_cost` et `active_time` à la requête `unit_special_ability`, plus `overpower_option{ key name icon_name tooltip unit_special_ability{…} phases{…} }` ;
   - un sort est une ability avec `mana_cost > 0` qui n'est pas la cible d'un `overpower_option` (R1) ;
   - ses `EffectDefinition` (et celles de son overcast) sont produites par `abilityEntries` et marquées `spell: { spell_id }` ;
@@ -36,17 +36,17 @@ description: "Tasks for 003-spells-row"
   - écrire `packages/sdk/src/data/spells/catalog.generated.ts` (`SPELLS_CATALOG`) ;
   - logs : nombre de sorts, nombre avec overcast ;
   - commenter les hypothèses (constitution II).
-- [ ] T004 Lancer `node scripts/generate-effects-catalog.mjs 4512102377651127604` pour régénérer les deux catalogues ; vérifier Glean Magic (23 s / overcast 46 s, sans sa phase miscast) et Heart of Winter (4 phases indépendantes) et l'absence de clés `*_upgraded` au premier niveau de `SPELLS_CATALOG`.
-- [ ] T005 [P] Créer `packages/sdk/src/data/spells/index.ts` (`getSpell`, `listSpells`, réexport) et l'exporter depuis `packages/sdk/src/index.ts`.
-- [ ] T006 [P] Dans `packages/sdk/src/logic/applyEffects.ts`, faire ignorer les entrées `spell` par `getNativeCardEffects`, et ajouter un test dans `unitLayers.test.ts` ou à côté.
-- [ ] T007 Créer `packages/sdk/src/logic/spellPhases.ts` :
+- [x] T004 Lancer `node scripts/generate-effects-catalog.mjs 4512102377651127604` pour régénérer les deux catalogues ; vérifier Glean Magic (23 s / overcast 46 s, sans sa phase miscast) et Heart of Winter (4 phases indépendantes) et l'absence de clés `*_upgraded` au premier niveau de `SPELLS_CATALOG`.
+- [x] T005 [P] Créer `packages/sdk/src/data/spells/index.ts` (`getSpell`, `listSpells`, réexport) et l'exporter depuis `packages/sdk/src/index.ts`.
+- [x] T006 [P] Dans `packages/sdk/src/logic/applyEffects.ts`, faire ignorer les entrées `spell` par `getNativeCardEffects`, et ajouter un test dans `unitLayers.test.ts` ou à côté.
+- [x] T007 Créer `packages/sdk/src/logic/spellPhases.ts` :
   - `spellWindows(left, right, spells?)` : `instances = lancers × phase.duration / SECONDS_PER_ATTACK`, une fenêtre par (côté, sort, version, phase), aucune à 0 ;
   - `buildDuelPhases(windows, effects?, spells?)` : bornes = union triée et dédoublonnée des instances, plus une phase finale `Infinity` ; `active = fenêtres avec instances > start` ;
   - `leftCardEffects` / `rightCardEffects` routés self/enemy selon `EffectDefinition.target` (R6) ;
   - commentaire décrivant l'algorithme et l'hypothèse « empilement au début » ;
   - catalogues injectables pour les tests.
-- [ ] T008 Créer `packages/sdk/src/logic/spellPhases.test.ts` couvrant C1 à C8 et C13 de `contracts/sdk-api.md`, avec un catalogue injecté.
-- [ ] T009 Dans `packages/sdk/src/logic/twoSideCalculations.ts`, ajouter `calculatePhasedWinner(phases)` :
+- [x] T008 Créer `packages/sdk/src/logic/spellPhases.test.ts` couvrant C1 à C8 et C13 de `contracts/sdk-api.md`, avec un catalogue injecté.
+- [x] T009 Dans `packages/sdk/src/logic/twoSideCalculations.ts`, ajouter `calculatePhasedWinner(phases)` :
   - par phase, mêmes dégâts bruts et régénération qu'aujourd'hui ;
   - parcours par côté selon la spec, règle 5 ;
   - `burst` pris sur la dernière phase ;
@@ -55,7 +55,7 @@ description: "Tasks for 003-spells-row"
   - champ optionnel `phases` dans `CombatResult`.
 
   `calculateWinner(l, r)` devient `calculatePhasedWinner([{ hits: Infinity, left: l, right: r }])`.
-- [ ] T010 Tests dans `packages/sdk/src/logic/combat.test.ts` : `combat.test.ts` existant inchangé et vert (C9) ; ajouter C10, C11 et C12.
+- [x] T010 Tests dans `packages/sdk/src/logic/combat.test.ts` : `combat.test.ts` existant inchangé et vert (C9) ; ajouter C10, C11 et C12.
 
 **Checkpoint**: le moteur est testé et sans régression. Lot livrable seul, sans UI.
 
