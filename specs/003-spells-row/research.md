@@ -14,11 +14,18 @@ Données observées sur `broker.twwstats.com`, version Patch 9.0.0 (`45121023776
 - **Rationale**: 193 sorts pointent vers un overcast. Les valeurs diffèrent souvent, et la durée aussi (ex. Glean Magic 23 s → Upgraded 46 s).
 - **Alternatives considered**: un overcast défini comme multiplicateur des valeurs simples (faux pour de nombreux sorts).
 
-## R3 — Durée d'un sort
+## R3 — Durée : par phase
 
-- **Decision**: la durée est le maximum des `phase.duration > 0` parmi les phases qui produisent des modificateurs retenus (whitelist 002, plus le DoT en 004). Repli : `unit_special_ability.active_time`. Un sort sans durée positive est exclu.
-- **Rationale**: 11 sorts ont plusieurs phases, de durées égales (ex. Heart of Winter Upgraded 4 × 8 s, Writhing Mist 2 × 24 s) ou proches (Pavane 10/14 s). Le maximum simplifie la règle sans erreur notable. On le documente comme hypothèse (principe II).
-- **Alternatives considered**: une durée par phase, chaque phase devenant un effet distinct ; c'est plus fidèle mais multiplie les effets. On le reporte, la structure le permet (voir data-model : `effects[]`).
+- **Decision**: **chaque phase d'un sort est un effet indépendant**, avec sa propre durée (`phase.duration > 0`) et ses propres `EffectDefinition`. Chaque phase forme une fenêtre de `lancers × durée_phase / 4` coups, empilée au début. Une phase sans durée positive est ignorée. On ignore aussi les phases `*_miscast` (effet d'un échec du sort). Pour les sorts, le générateur **ne fusionne pas** les étages (`_1`, `_2`…), contrairement aux capacités de la feature 002 qui ne gardent que l'étage le plus élevé.
+- **Rationale**:
+  - C'est une décision utilisateur.
+  - 11 sorts ont plusieurs phases :
+    - Heart of Winter : 4 phases de 8 s, `_1` à `_4`. Les stats montent et les DoT valent 2/4/6/8 par tick, ou 3/6/9/12 en overcast.
+    - Pavane : 10 s + 14 s.
+    - Writhing Mist : phase lanceur + phase ennemie de 24 s.
+    - Glean Magic et Soul Stealer : phase normale + phase `_miscast`.
+  - Point d'attention : en jeu, les étages `_1`…`_4` de Heart of Winter sont probablement **successifs** (montée en puissance sur 32 s). Avec des phases indépendantes empilées au début, les 4 étages agissent ensemble pendant 8 s : même total de dégâts, mais concentré. On le commente dans le code (principe II).
+- **Alternatives considered**: maximum des durées (ancienne proposition, rejetée) ; phases successives (rejeté pour l'instant).
 
 ## R4 — Catalogue global, pas sorts natifs
 

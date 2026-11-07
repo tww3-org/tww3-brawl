@@ -30,18 +30,18 @@ Données Patch 9.0.0 (`4512102377651127604`).
 
 ## R4 — Résistance
 
-- **Decision**: `rés = min(résistance_magique + ward_save, 90) / 100`, valeurs de l'unité effective de la phase (donc après buffs et debuffs). Une valeur négative (faiblesse) est permise et augmente les dégâts, comme en mêlée. L'armure, la résistance physique et la résistance au feu ne s'appliquent pas.
-- **Rationale**: demande explicite (« résistance magique + ward save, max 90 »). Une constante dédiée `SPELL_MAX_RESIST = 90` évite de toucher `calculateResistRatio` (plafond 95 en mêlée).
+- **Decision**: `rés = min(résistance_magique + ward_save, 95) / 100`, valeurs de l'unité effective de la phase (donc après buffs et debuffs). Une valeur négative (faiblesse) est permise et augmente les dégâts, comme en mêlée. L'armure, la résistance physique et la résistance au feu ne s'appliquent pas.
+- **Rationale**: décision utilisateur : même plafond que la mêlée (95). On **réutilise** `calculateResistRatio(attaquant magique non enflammé, défenseur)`, qui vaut exactement `min(95, ward + clamp(magie))`, au lieu de dupliquer la formule.
 
 ## R5 — Répartition sur les coups
 
-- **Decision**: `DoT_par_coup = DoT_par_lancer × SECONDS_PER_ATTACK / durée_du_sort`. Le DoT s'applique dans toutes les phases où la fenêtre de son sort est active. Le total sur k lancers vaut k × `DoT_par_lancer` (sauf mort avant).
-- **Rationale**: c'est cohérent avec l'empilement au début de 003. La fenêtre dure `k × durée / 4` coups.
+- **Decision**: `DoT_par_coup = DoT_par_lancer × SECONDS_PER_ATTACK / durée_phase`. Le DoT s'applique dans toutes les phases de duel où la fenêtre de sa phase de sort est active. Le total sur k lancers vaut k × `DoT_par_lancer` (sauf mort avant).
+- **Rationale**: c'est cohérent avec l'empilement au début de 003. La fenêtre dure `k × durée_phase / 4` coups.
 
 ## R6 — Sorts à plusieurs phases de DoT
 
-- **Decision**: les `DoT_par_lancer` des phases sont sommés. Chaque phase utilise sa propre durée pour ses ticks, et la répartition se fait sur la durée du sort (R3 de 003).
-- **Rationale**: Heart of Winter Upgraded (4 phases de 8 s, 3/6/12/9 par tick) ; on approxime les phases simultanées. L'approximation est documentée en commentaire.
+- **Decision**: chaque phase est indépendante (R3 de 003). Un `SpellDot` est rattaché à **une** `SpellPhase`, et sa fenêtre et sa répartition utilisent la durée de cette phase.
+- **Rationale**: décision utilisateur. Heart of Winter : 4 phases de 8 s, à 2/4/6/8 par tick (3/6/9/12 en overcast), toutes actives sur les 2 premiers coups. En jeu, ces étages sont probablement successifs ; on le commente (principe II).
 
 ## R7 — Ventilation des pertes (résumé)
 

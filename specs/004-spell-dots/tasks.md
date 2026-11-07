@@ -20,17 +20,17 @@ description: "Tasks for 004-spell-dots"
 
 ## Phase 2: Foundational
 
-- [ ] T002 Dans `packages/sdk/src/types.ts`, ajouter `SpellDot` et `SpellVersion.dots?` ; `SpellVersion.effects` peut être vide si `dots` est non vide.
+- [ ] T002 Dans `packages/sdk/src/types.ts`, ajouter `SpellDot` et `SpellPhase.dot?` ; `SpellPhase.effects` peut être vide si `dot` est défini.
 - [ ] T003 Dans `scripts/generate-effects-catalog.mjs` :
   - ajouter `damage_chance max_damaged_entities` à `PHASE_FIELDS` ;
-  - construire `dots` pour chaque version (R1 : `damage_amount > 0`, `effect_type !== 'positive'`) ;
+  - construire le `dot` de chaque `SpellPhase` (R1 : `damage_amount > 0`, `effect_type !== 'positive'`, hors `*_miscast`) ;
   - inclure les sorts de DoT purs, sans modificateur ;
   - inclure les DoT dans la clé de dédoublonnage ;
   - logs : nombre de versions avec DoT ;
   - commenter la sémantique supposée (constitution II).
 - [ ] T004 Régénérer le catalogue (`node scripts/generate-effects-catalog.mjs 4512102377651127604`) et vérifier Fate of Bjuna (quickstart §1).
-- [ ] T005 Créer `packages/sdk/src/logic/spellDots.ts` : `SPELL_MAX_RESIST`, `dotDamagePerHit` (R2 à R7), avec les sources et hypothèses en commentaire ; l'exporter.
-- [ ] T006 Créer `packages/sdk/src/logic/spellDots.test.ts` couvrant D1 à D7 et D11 (fixture Bjuna, unités minimales).
+- [ ] T005 Créer `packages/sdk/src/logic/spellDots.ts` : `dotDamagePerHit` (R2 à R7 ; résistance via `calculateResistRatio` d'une attaque magique non enflammée, plafond 95), avec les sources et hypothèses en commentaire ; l'exporter.
+- [ ] T006 Créer `packages/sdk/src/logic/spellDots.test.ts` couvrant D1 à D7, D11 et D12 (fixture Bjuna, unités minimales).
 - [ ] T007 Dans `packages/sdk/src/logic/spellPhases.ts`, ajouter `dotsOnLeft` / `dotsOnRight` dans `buildDuelPhases` (DoT des fenêtres actives de l'autre côté), avec tests.
 - [ ] T008 Dans `packages/sdk/src/logic/twoSideCalculations.ts`, faire ajouter les DoT reçus à `calculatePhasedWinner` dans les dégâts de chaque phase, en parallèle de la régénération ; renseigner `phases[].leftDotTaken/rightDotTaken`. Tests D8 à D10 dans `combat.test.ts`.
 

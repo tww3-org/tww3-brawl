@@ -17,8 +17,15 @@ spell?: { spell_id: string };
 |---|---|---|
 | `id` | `string` | clé de l'ability (simple ou overcast) |
 | `name` | `string` | nom lisible (même règle que `abilityEntries`) |
-| `duration` | `number` | secondes, > 0 (R3) |
-| `effects` | `string[]` | ids des `EffectDefinition` de cette version dans `EFFECTS_CATALOG` (≥ 1 en 003 ; en 004, un sort de DoT pur peut en avoir 0) |
+| `phases` | `SpellPhase[]` | ≥ 1 ; chaque phase est indépendante (R3) |
+
+### `SpellPhase`
+
+| Champ | Type | Règle |
+|---|---|---|
+| `id` | `string` | id de la phase du jeu |
+| `duration` | `number` | secondes, > 0 |
+| `effects` | `string[]` | ids des `EffectDefinition` issues de cette phase dans `EFFECTS_CATALOG` (≥ 1 en 003 ; en 004, une phase de DoT pur peut en avoir 0) |
 
 ### `SpellDefinition`
 
@@ -46,9 +53,10 @@ type SpellCasts = Record<string /* spell id */, { normal: number; overcast: numb
 | `side` | `'left' \| 'right'` | côté qui lance |
 | `spellId` | `string` | |
 | `version` | `'normal' \| 'overcast'` | |
-| `instances` | `number` | `lancers × duration / SECONDS_PER_ATTACK`, > 0 ; fractionnaire autorisé |
+| `phaseId` | `string` | phase du sort |
+| `instances` | `number` | `lancers × phase.duration / SECONDS_PER_ATTACK`, > 0 ; fractionnaire autorisé |
 
-On n'en crée aucune pour un compteur à 0. Les fenêtres sont uniques par (side, spellId, version), puisque les lancers additionnent leur durée.
+On n'en crée aucune pour un compteur à 0. Les fenêtres sont uniques par (side, spellId, version, phaseId), puisque les lancers additionnent leur durée.
 
 ### `DuelPhase`
 

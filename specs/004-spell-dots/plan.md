@@ -10,7 +10,7 @@ On ajoute les dégâts des sorts de DoT au duel par phases de 003.
 - Le générateur extrait les paramètres de DoT des phases de sort et ajoute au catalogue les sorts de DoT purs.
 - Le SDK calcule, pour chaque phase, les dégâts de DoT par coup subis par chaque côté :
   - moyenne par tick × ticks par lancer, plafonnée aux PV d'une entité ;
-  - × `min(N, E)` × `(1 − min(magie + ward, 90 %))` ;
+  - × `min(N, E)` × `(1 − min(magie + ward, 95 %))`, même plafond que la mêlée, via `calculateResistRatio` ;
   - réparti sur les coups couverts par un lancer.
 - Ces dégâts s'additionnent aux dégâts de mêlée de la phase, et la régénération est déduite du total.
 - Le résumé affiche la part de DoT perdue, ventilée en overkill et manque d'entités.
@@ -33,7 +33,7 @@ On ajoute les dégâts des sorts de DoT au duel par phases de 003.
 
 **Constraints**:
 - Sans DoT, résultats identiques à 003 (FR-009).
-- Plafond de résistance 90 % propre aux sorts. `calculateResistRatio` de la mêlée (plafond 95 %) n'est pas modifié.
+- Résistance des sorts : `calculateResistRatio` réutilisé avec une attaque magique non enflammée, soit ward + magie plafonnés à 95 % comme la mêlée.
 
 **Scale/Scope**: 45 sorts avec phase de dégâts (Patch 9.0.0), overcasts compris ; 1 fonction SDK, 1 extension du générateur, 1 bloc du résumé.
 
@@ -66,13 +66,13 @@ specs/004-spell-dots/
 ### Source Code (repository root)
 
 ```text
-scripts/generate-effects-catalog.mjs       # + damage_chance, max_damaged_entities ; SpellVersion.dots ; sorts DoT purs inclus
+scripts/generate-effects-catalog.mjs       # + damage_chance, max_damaged_entities ; SpellPhase.dot ; sorts DoT purs inclus
 packages/sdk/src/
-├── types.ts                               # + SpellDot ; SpellVersion.dots?
+├── types.ts                               # + SpellDot ; SpellPhase.dot?
 ├── data/spells/catalog.generated.ts       # régénéré
 ├── logic/
-│   ├── spellDots.ts                       # NOUVEAU : dotDamagePerHit(dot, attackerSpellCtx, defender, entityNumber)
-│   ├── spellDots.test.ts                  # NOUVEAU : Bjuna × cavalerie / infanterie / entité unique, plafonds, 90 %
+│   ├── spellDots.ts                       # NOUVEAU : dotDamagePerHit(dot, defender, entityNumber)
+│   ├── spellDots.test.ts                  # NOUVEAU : Bjuna × cavalerie / infanterie / entité unique, plafonds, résistance 95 %
 │   ├── spellPhases.ts                     # DuelPhase + dotsOnLeft / dotsOnRight
 │   └── twoSideCalculations.ts             # calculatePhasedWinner ajoute les DoT reçus par phase
 apps/responsive-app/

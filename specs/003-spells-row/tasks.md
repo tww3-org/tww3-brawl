@@ -31,21 +31,21 @@ description: "Tasks for 003-spells-row"
   - ajouter `mana_cost` et `active_time` à la requête `unit_special_ability`, plus `overpower_option{ key name icon_name tooltip unit_special_ability{…} phases{…} }` ;
   - un sort est une ability avec `mana_cost > 0` qui n'est pas la cible d'un `overpower_option` (R1) ;
   - ses `EffectDefinition` (et celles de son overcast) sont produites par `abilityEntries` et marquées `spell: { spell_id }` ;
-  - durée selon R3 ; exclure les sorts sans durée ou sans effet ;
+  - phases selon R3 : pour les sorts, ne pas fusionner les étages ; une `SpellPhase` par phase de durée > 0, hors `*_miscast`, avec les ids d'`EffectDefinition` qu'elle produit ; exclure les sorts sans aucune phase retenue ;
   - dédoublonnage R5 ;
   - écrire `packages/sdk/src/data/spells/catalog.generated.ts` (`SPELLS_CATALOG`) ;
   - logs : nombre de sorts, nombre avec overcast ;
   - commenter les hypothèses (constitution II).
-- [ ] T004 Lancer `node scripts/generate-effects-catalog.mjs 4512102377651127604` pour régénérer les deux catalogues ; vérifier Glean Magic (23 s / overcast 46 s) et l'absence de clés `*_upgraded` au premier niveau de `SPELLS_CATALOG`.
+- [ ] T004 Lancer `node scripts/generate-effects-catalog.mjs 4512102377651127604` pour régénérer les deux catalogues ; vérifier Glean Magic (23 s / overcast 46 s, sans sa phase miscast) et Heart of Winter (4 phases indépendantes) et l'absence de clés `*_upgraded` au premier niveau de `SPELLS_CATALOG`.
 - [ ] T005 [P] Créer `packages/sdk/src/data/spells/index.ts` (`getSpell`, `listSpells`, réexport) et l'exporter depuis `packages/sdk/src/index.ts`.
 - [ ] T006 [P] Dans `packages/sdk/src/logic/applyEffects.ts`, faire ignorer les entrées `spell` par `getNativeCardEffects`, et ajouter un test dans `unitLayers.test.ts` ou à côté.
 - [ ] T007 Créer `packages/sdk/src/logic/spellPhases.ts` :
-  - `spellWindows(left, right, spells?)` : `instances = lancers × duration / SECONDS_PER_ATTACK`, une fenêtre par (côté, sort, version), aucune à 0 ;
+  - `spellWindows(left, right, spells?)` : `instances = lancers × phase.duration / SECONDS_PER_ATTACK`, une fenêtre par (côté, sort, version, phase), aucune à 0 ;
   - `buildDuelPhases(windows, effects?, spells?)` : bornes = union triée et dédoublonnée des instances, plus une phase finale `Infinity` ; `active = fenêtres avec instances > start` ;
   - `leftCardEffects` / `rightCardEffects` routés self/enemy selon `EffectDefinition.target` (R6) ;
   - commentaire décrivant l'algorithme et l'hypothèse « empilement au début » ;
   - catalogues injectables pour les tests.
-- [ ] T008 Créer `packages/sdk/src/logic/spellPhases.test.ts` couvrant C1 à C8 de `contracts/sdk-api.md`, avec un catalogue injecté.
+- [ ] T008 Créer `packages/sdk/src/logic/spellPhases.test.ts` couvrant C1 à C8 et C13 de `contracts/sdk-api.md`, avec un catalogue injecté.
 - [ ] T009 Dans `packages/sdk/src/logic/twoSideCalculations.ts`, ajouter `calculatePhasedWinner(phases)` :
   - par phase, mêmes dégâts bruts et régénération qu'aujourd'hui ;
   - parcours par côté selon la spec, règle 5 ;

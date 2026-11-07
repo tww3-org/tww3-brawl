@@ -10,7 +10,7 @@
 | `frequency` | `number` | `phase.hp_change_frequency` | vide ou ≤ 0 = 1 s |
 | `duration` | `number` | `phase.duration` | > 0 |
 
-`SpellVersion.dots?: SpellDot[]` contient les phases de DoT de la version (R1, R6). Une version peut maintenant avoir `effects: []` si elle a au moins un `dots`.
+`SpellPhase.dot?: SpellDot` est le DoT de la phase (R1, R6). Une phase peut maintenant avoir `effects: []` si elle a un `dot`.
 
 `SpellDot` n'a pas de champ cible : seuls les sorts dont la phase de DoT est `negative` sont retenus, et ils visent l'adversaire du lanceur.
 
@@ -18,7 +18,7 @@
 
 | Champ | Type | Règle |
 |---|---|---|
-| `dotsOnLeft`, `dotsOnRight` | `{ spellId: string; version: 'normal' \| 'overcast'; dots: SpellDot[]; spellDuration: number }[]` | DoT des fenêtres actives lancées par l'**autre** côté |
+| `dotsOnLeft`, `dotsOnRight` | `{ spellId: string; version: 'normal' \| 'overcast'; phaseId: string; dot: SpellDot }[]` | DoT des fenêtres actives lancées par l'**autre** côté |
 
 ## `DotDamage` (sortie de `dotDamagePerHit`)
 
@@ -28,7 +28,7 @@
 | `gross` | `number` | dégâts bruts par lancer (PV), avant plafonds et résistance |
 | `lostOverkill` | `number` | PV perdus par plafond entité, par lancer |
 | `lostEntities` | `number` | PV perdus par manque d'entités, par lancer |
-| `resist` | `number` | ratio appliqué (≤ 0,9) |
+| `resist` | `number` | ratio appliqué (≤ 0,95) |
 
 ## `CombatResult.phases[]` (extension)
 

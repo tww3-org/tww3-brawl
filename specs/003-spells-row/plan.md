@@ -49,7 +49,7 @@ Approche technique :
 | Principe | Statut | Comment |
 |---|---|---|
 | I. Frontières du monorepo | ✅ | Phases, résolution et catalogue sont dans `sdk` (sans Vue). L'app ne fait que l'état, l'UI et l'assemblage. Dette existante non aggravée : imports `@tww3-brawl/sdk/src/...` déjà présents dans l'app ; les nouvelles API sont exportées par `packages/sdk/src/index.ts`. |
-| II. Fidélité au jeu rétro-ingéniéré | ✅ | `spellPhases.ts` et le générateur commentent les hypothèses : 1 coup / 4 s, empilement au début, durée = plus longue phase pertinente, `overpower_option` = overcast. |
+| II. Fidélité au jeu rétro-ingéniéré | ✅ | `spellPhases.ts` et le générateur commentent les hypothèses : 1 coup / 4 s, empilement au début, chaque phase de sort = fenêtre indépendante, `*_miscast` ignorées, `overpower_option` = overcast. |
 | III. Code généré en lecture seule | ✅ | Aucune modification de `packages/gql/src`. Le catalogue de sorts est généré par script. |
 | IV. Site statique | ✅ | Les données sont générées au build et embarquées ; aucun appel serveur nouveau. |
 | V. Typage strict & simplicité | ✅ | Les spells réutilisent `EffectDefinition` et les couches existantes plutôt qu'un second moteur de stats. Pas de `any`. |

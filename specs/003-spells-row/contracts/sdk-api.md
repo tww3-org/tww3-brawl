@@ -38,6 +38,7 @@ export function calculateWinner(left: UnitWithEntityNumber, right: UnitWithEntit
 | C5 | gauche 3, droite 5 | `[0,3)`, `[3,5)`, `[5,∞)` |
 | C6 | A simple 6 + A overcast 4 | 2 fenêtres distinctes, `[0,4)`, `[4,6)`, `[6,∞)` |
 | C7 | 10 s (2,5 coups) | borne fractionnaire 2,5 conservée |
+| C13 | sort à 2 phases (10 s et 14 s), 1 lancer | 2 fenêtres : `[0,2.5)` 2 phases, `[2.5,3.5)` phase 2, `[3.5,∞)` ∅ |
 | C8 | effet de sort `target: enemy` lancé par gauche | id dans `rightCardEffects` de la phase |
 | C9 | `calculateWinner(l,r)` vs avant la feature | même résultat sur tout `combat.test.ts` |
 | C10 | sort couvrant plus de coups que le combat | même résultat que l'effet actif tout le combat |

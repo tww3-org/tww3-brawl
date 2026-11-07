@@ -4,7 +4,7 @@
 **Created**: 2026-11-07
 **Status**: Draft — specify
 **Depends on**: 003-spells-row (ligne « Sorts », compteur de lancers, moteur par phases)
-**Input**: "Parcourir les effets des sorts pour les DoTs. Les dommages sont aléatoires : on prend la moyenne, capée par la santé maximum d'une entité de l'unité. Il y a un nombre d'entités affectées : si l'unité a au moins autant d'entités, tout porte, sinon on prend la proportion. Les DoTs s'appliquent en parallèle de la régénération et ne sont affectés que par la résistance magique + ward save (max 90 %), pas par l'armure."
+**Input**: "Parcourir les effets des sorts pour les DoTs. Les dommages sont aléatoires : on prend la moyenne, capée par la santé maximum d'une entité de l'unité. Il y a un nombre d'entités affectées : si l'unité a au moins autant d'entités, tout porte, sinon on prend la proportion. Les DoTs s'appliquent en parallèle de la régénération et ne sont affectés que par la résistance magique + ward save (max 90 %), pas par l'armure." Précisions ultérieures : plafond de 95 %, comme en mêlée ; chaque phase d'un sort est indépendante.
 
 ## Contexte
 
@@ -31,7 +31,7 @@ Constats sur Patch 9.0.0 :
 - 45 sorts ont une phase avec `damage_amount > 0` ; `damage_chance` y est toujours vide.
 - Les valeurs de N vont de 1 (sorts « mono-cible » à gros dégâts, ex. Death Frost : 67/tick) à 25 ou 75.
 - `hp_change_frequency` vaut 1 ou 2 s.
-- Certains overcasts ont plusieurs phases de DoT (ex. Heart of Winter Upgraded, 4 phases de 8 s).
+- Certains sorts ont plusieurs phases de DoT, par exemple Heart of Winter : 4 phases de 8 s, à 2/4/6/8 par tick (3/6/9/12 en overcast).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -47,7 +47,7 @@ L'utilisateur lance un sort de DoT (par exemple le Rire de Bjuna) sur l'ennemi d
 
 1. **Given** une cible de cavalerie (E ≥ N, PV par entité ≥ dégâts cumulés d'une instance), **When** le sort est lancé 1 fois, **Then** la cible perd au total `N × dégâts d'une instance × (1 − rés)` PV, répartis uniformément sur les coups couverts, en plus de la mêlée.
 2. **Given** le même sort, **When** l'utilisateur passe à 2 lancers, **Then** le DoT s'applique sur deux fois plus de coups.
-3. **Given** une cible ayant 40 % de résistance magique et 30 % de ward save, **When** le DoT s'applique, **Then** la réduction est de 70 %. Avec 60 % + 50 %, elle est plafonnée à 90 %.
+3. **Given** une cible ayant 40 % de résistance magique et 30 % de ward save, **When** le DoT s'applique, **Then** la réduction est de 70 %. Avec 60 % + 50 %, elle est plafonnée à 95 % (même plafond que la mêlée).
 4. **Given** une cible très armurée, **When** le DoT s'applique, **Then** l'armure ne réduit pas les dégâts du DoT.
 
 ---
@@ -111,17 +111,17 @@ Le résumé indique les dégâts du DoT par coup et le pourcentage perdu, avec l
 
 ## Règles de calcul
 
-Une **instance** de DoT est l'ensemble des dégâts qu'une entité touchée subit pendant **un lancer** du sort. Pour un effet de sort de DoT (version simple ou overcast) et pour la cible :
+Une **instance** de DoT est l'ensemble des dégâts qu'une entité touchée subit pendant **un lancer** d'une phase de sort. Pour chaque phase de DoT d'un sort (version simple ou overcast) et pour la cible :
 
 - `moyenne_tick = damage_amount × damage_chance`, avec `damage_chance` vide = 1. Les dégâts aléatoires sont ramenés à leur moyenne.
-- `ticks_par_lancer = durée / hp_change_frequency`
+- `ticks_par_lancer = durée_phase / hp_change_frequency`
 - `instance = min(moyenne_tick × ticks_par_lancer, PV_max_entité_cible)`. Le plafond overkill porte sur le **cumul d'un lancer** : une entité ne peut pas perdre plus que ses PV.
 - `instances_portées = min(N, E)`, où E est le nombre d'entités **de départ** de la cible. On ne suit pas les entités restantes. Cela revient à appliquer `N × min(1, E/N)`.
-- `rés = min(résistance_magique + ward_save, 90 %)`. L'armure et la résistance physique ne s'appliquent pas.
+- `rés = min(résistance_magique + ward_save, 95 %)`, le même plafond que la mêlée (`calculateResistRatio` avec une attaque magique non enflammée). L'armure et la résistance physique ne s'appliquent pas.
 - `DoT_par_lancer = instance × instances_portées × (1 − rés)`, exprimé dans la même unité de vie que les dégâts de mêlée du duel (fraction de la vie de l'unité).
-- **Répartition.** Un lancer couvre `durée / T` coups (T = 4 s, feature 003). Chaque coup couvert reçoit `DoT_par_coup = DoT_par_lancer / (durée / T)`. Avec k lancers empilés au début, le sort couvre `k × durée / T` coups, avec le même `DoT_par_coup`.
-- Les dégâts nets d'une phase pour la cible valent `mêlée + Σ DoT_par_coup (DoT actifs) − régénération`.
-- **Sort à plusieurs phases de DoT** (ex. Heart of Winter Upgraded) : on somme les `DoT_par_lancer` de ses phases, et la durée du sort est celle de sa plus longue phase.
+- **Répartition.** Un lancer couvre `durée_phase / T` coups (T = 4 s, feature 003). Chaque coup couvert reçoit `DoT_par_coup = DoT_par_lancer / (durée_phase / T)`. Avec k lancers empilés au début, la phase couvre `k × durée_phase / T` coups, avec le même `DoT_par_coup`.
+- Les dégâts nets d'une phase de duel pour la cible valent `mêlée + Σ DoT_par_coup (DoT actifs) − régénération`.
+- **Sort à plusieurs phases** (ex. Heart of Winter) : chaque phase est indépendante (feature 003). Elle a son propre DoT, sa propre durée et sa propre fenêtre de `lancers × durée_phase / T` coups. La « durée » des formules ci-dessus est celle de la phase.
 - Une phase de DoT dont `effect_type` est `positive` est ignorée : ce n'est pas un dégât sur l'ennemi. Exemple à vérifier : Omen of Spirits.
 
 ## Requirements *(mandatory)*
@@ -133,7 +133,7 @@ Une **instance** de DoT est l'ensemble des dégâts qu'une entité touchée subi
 - **FR-003**: Le calcul DOIT appliquer le DoT dans chaque phase active selon les règles de calcul ci-dessus.
 - **FR-004**: Les dégâts d'une instance (cumul sur une entité pendant un lancer) DOIVENT être la moyenne, plafonnée aux PV max d'une entité de la cible.
 - **FR-005**: Le nombre d'instances qui portent DOIT être `min(N, E)`.
-- **FR-006**: La réduction DOIT être `min(résistance magique + ward save, 90 %)`. L'armure et la résistance physique NE DOIVENT PAS s'appliquer.
+- **FR-006**: La réduction DOIT être `min(résistance magique + ward save, 95 %)`, le même plafond que la mêlée. L'armure et la résistance physique NE DOIVENT PAS s'appliquer.
 - **FR-007**: Le DoT DOIT s'appliquer en parallèle de la régénération de la cible.
 - **FR-008**: Le résumé DOIT afficher les dégâts du DoT par coup et le pourcentage perdu, ventilé entre overkill et manque d'entités.
 - **FR-009**: Sans sort de DoT lancé, le résultat DOIT être identique à celui de la feature 003.
@@ -150,7 +150,7 @@ Une **instance** de DoT est l'ensemble des dégâts qu'une entité touchée subi
 - **SC-001**: Pour le Rire de Bjuna contre trois cibles de référence (cavalerie, infanterie, entité unique), les dégâts du DoT par coup sont égaux au calcul à la main, à 0,1 % près.
 - **SC-002**: Les duels sans sort de DoT gardent 100 % de résultats identiques à la feature 003.
 - **SC-003**: L'utilisateur peut dire, depuis le résumé et sans calcul, si un sort de DoT est efficace contre la cible (pourcentage perdu visible).
-- **SC-004**: Toute la formule du DoT est couverte par des tests unitaires : les 2 plafonds, le plafond de résistance à 90 %, l'interaction avec la régénération et l'overcast.
+- **SC-004**: Toute la formule du DoT est couverte par des tests unitaires : les 2 plafonds, le plafond de résistance à 95 %, l'interaction avec la régénération et l'overcast.
 
 ## Assumptions
 

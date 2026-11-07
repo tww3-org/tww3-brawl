@@ -9,8 +9,8 @@ node scripts/generate-effects-catalog.mjs 4512102377651127604
 ```
 
 Vérifier :
-- `SPELLS_CATALOG` contient « The Fate of Bjuna », une seule fois, avec `normal.dots = [{ damage_per_tick: 10, chance: 1, max_entities: 25, frequency: 1, duration: 18 }]` et `effects: []` ;
-- environ 45 versions de sorts ont des `dots` ;
+- `SPELLS_CATALOG` contient « The Fate of Bjuna », une seule fois, avec une phase : `normal.phases[0].dot = { damage_per_tick: 10, chance: 1, max_entities: 25, frequency: 1, duration: 18 }` et `effects: []` ;
+- environ 45 versions de sorts ont au moins une phase avec `dot` ; Heart of Winter en a 4 ;
 - aucun DoT issu d'une phase `positive`.
 
 ## 2. Moteur

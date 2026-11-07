@@ -24,7 +24,8 @@ Tout vient de `broker.twwstats.com/graphql` (client `@tww3-brawl/gql`) :
 
 Constats sur Patch 9.0.0 :
 - Il y a 417 capacités avec coût en mana. 193 d'entre elles pointent vers un overcast (176 overcasts distincts, en général `*_upgraded`, jamais cachés dans l'UI).
-- 94 sorts simples ont des modificateurs de stats ; 11 ont plusieurs phases.
+- 94 sorts simples ont des modificateurs de stats.
+- 11 sorts ont plusieurs phases. Exemples : Heart of Winter, 4 phases `_1`…`_4` de 8 s ; Pavane of Slaanesh, 10 s + 14 s ; The Writhing Mist, phase lanceur + phase ennemie de 24 s. Certaines phases sont des `*_miscast` (échec du sort).
 - 190 sorts n'ont aucune phase avec durée (vortex, bombardements, projectiles) : ils sont hors périmètre.
 - Seules 11 unités sur 2658 listent leurs sorts dans `land_unit.abilities`. Les sorts d'un lanceur viennent de ses compétences de personnage, que le duel ne modélise pas. Le sélecteur de sorts propose donc **tout le catalogue de sorts**, comme le sélecteur d'effets de la feature 002, et non les seuls sorts de l'unité.
 
@@ -108,8 +109,10 @@ Le résumé du duel indique, pour chaque sort lancé, le nombre de coups couvert
 
 ## Règles de calcul
 
-1. **Instances couvertes.** Une instance de calcul = un coup, T = 4 s. Pour chaque effet de sort *e* (un sort dans une version donnée, simple ou overcast, chez un côté donné) :
-   `nₑ = (lancersₑ × duréeₑ) / T`. Plusieurs lancers du même effet additionnent leur durée.
+1. **Instances couvertes.** Une instance de calcul = un coup, T = 4 s. Pour chaque effet de sort *e*, c'est-à-dire **une phase** d'un sort, dans une version donnée (simple ou overcast), chez un côté donné :
+   `nₑ = (lancersₑ × durée_phaseₑ) / T`.
+   - Plusieurs lancers du même effet additionnent leur durée.
+   - Les phases d'un même sort sont des effets indépendants, chacun avec sa fenêtre.
 2. **Empilement au début.** Toutes les instances couvertes sont placées au début du combat. Il n'y a pas de simulation : on ne choisit pas de moment de lancement.
 3. **Bornes de phases.** On réunit les nₑ des deux côtés, on retire les doublons et on trie : `0 = b₀ < b₁ < … < b_m`, puis on ajoute une dernière phase `[b_m, ∞)`.
 4. **Stats par phase.** La phase `[bᵢ, bᵢ₊₁)` contient tous les effets tels que `nₑ > bᵢ`. On y construit les deux unités effectives : effets on/off de la ligne « Effets » + effets de sort actifs. Tous les modificateurs du sort s'appliquent, aussi bien les buffs sur le lanceur que les debuffs sur l'ennemi, et ils affectent toutes les valeurs du calcul de cette phase (coups donnés comme coups reçus). On en déduit pour chaque côté les dégâts nets par coup `dᵢ`, régénération déduite.
@@ -166,7 +169,8 @@ Le résumé du duel indique, pour chaque sort lancé, le nombre de coups couvert
 - Un coup toutes les 4 s, valeur déjà utilisée par le duel.
 - La ligne « Sorts » d'une unité contient les sorts lancés de son côté (par elle ou par un lanceur allié) : un buff vise cette unité, un debuff vise l'adversaire.
 - « Sort » = capacité avec coût en mana. Les capacités actives sans mana restent des effets on/off (périmètre élargissable plus tard).
-- La durée d'un sort est celle de sa phase. Pour un sort à plusieurs phases, on prend la plus longue phase qui porte des modificateurs pertinents, et ce cas est signalé en commentaire dans le code (principe II de la constitution).
+- **Chaque phase d'un sort est indépendante** : elle a sa propre durée et ses propres effets, et forme sa propre fenêtre d'instances, empilée au début comme les autres. Un sort à 4 phases de 8 s donne 4 fenêtres de 2 coups ; Pavane donne une fenêtre de 2,5 coups et une de 3,5 coups.
+- Les phases `*_miscast` (effet d'un échec du sort) sont ignorées.
 - Les sorts n'ont pas de limite de lancers (mana, recharge) : c'est l'utilisateur qui fixe le nombre.
 - Les compteurs de lancers suivent la même persistance que l'état des effets de la carte.
 - Les effets de dégâts directs des sorts (DoT) sont hors périmètre : feature 004.
