@@ -16,7 +16,7 @@ Données observées sur `broker.twwstats.com`, version Patch 9.0.0 (`45121023776
 
 ## R3 — Durée : par phase
 
-- **Decision**: **chaque phase d'un sort est un effet indépendant**, avec sa propre durée (`phase.duration > 0`) et ses propres `EffectDefinition`. Chaque phase forme une fenêtre de `lancers × durée_phase / 4` coups, empilée au début. Une phase sans durée positive est ignorée. On ignore aussi les phases `*_miscast` (effet d'un échec du sort). Pour les sorts, le générateur **ne fusionne pas** les étages (`_1`, `_2`…), contrairement aux capacités de la feature 002 qui ne gardent que l'étage le plus élevé.
+- **Decision**: **chaque phase d'un sort est un effet indépendant**, avec sa propre durée (`phase.duration > 0`) et ses propres `EffectDefinition`. Chaque phase forme une fenêtre de `lancers × durée_phase / 4` coups, empilée au début. Une phase sans durée positive est ignorée. Les phases `*_miscast` (effet d'un échec du sort) sont exclues, ce que l'utilisateur a validé : elles n'ont aucune réalité dans un calculateur de mêlée. Pour les sorts, le générateur **ne fusionne pas** les étages (`_1`, `_2`…), contrairement aux capacités de la feature 002 qui ne gardent que l'étage le plus élevé.
 - **Rationale**:
   - C'est une décision utilisateur.
   - 11 sorts ont plusieurs phases :
