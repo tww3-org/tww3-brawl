@@ -46,3 +46,4 @@ scripts/_temp
 
 # Cloudflare Wrangler
 .wrangler/
+__pycache__/
