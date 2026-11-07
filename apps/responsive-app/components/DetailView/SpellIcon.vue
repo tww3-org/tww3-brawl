@@ -7,6 +7,7 @@
             <q-tooltip class="spell-tooltip" anchor="top middle" self="bottom middle">
                 <div class="text-weight-bold">{{ spell.name }}</div>
                 <div v-if="spell.description" class="description">{{ spell.description }}</div>
+                <div v-for="text in dotTexts" :key="text">{{ text }}</div>
                 <div>Duration: {{ durationText(spell.normal) }}<template v-if="spell.overcast"> &middot; overcast {{ durationText(spell.overcast) }}</template></div>
                 <div v-if="hitTexts.length === 1">Covers {{ hitTexts[0] }}</div>
                 <template v-else>
@@ -72,6 +73,14 @@ const imageUrl = computed(() => getImageUrl(props.versionId, props.spell.icon))
 
 /** Durées des phases d'une version (ex. « 10s + 14s ») */
 const durationText = (version: SpellVersion) => version.phases.map(p => `${p.duration}s`).join(' + ')
+
+/** Une ligne « DoT : X/tick, N entities, duration » par phase de DoT (versions simple et overcast) */
+const dotTexts = computed(() => [
+    { label: '', version: props.spell.normal },
+    { label: 'Overcast ', version: props.spell.overcast },
+].flatMap(({ label, version }) => (version?.phases ?? []).flatMap(phase => phase.dot
+    ? [`${label}DoT: ${phase.dot.damage_per_tick}/tick, ${phase.dot.max_entities > 0 ? `${phase.dot.max_entities} entities` : 'all entities'}, ${phase.dot.duration}s`]
+    : [])))
 
 // Coups couverts par phase (les phases sont des sorts indépendants ; lancers × durée / 4 s)
 const hitTexts = computed(() => spellPhaseHitTexts(spellPhaseHits(props.spell.id, props.casts)))

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { EffectDefinition, SpellCasts, SpellDefinition, SpellVersion } from '../types';
+import type { EffectDefinition, SpellCasts, SpellDefinition, SpellDot, SpellVersion } from '../types';
 import { buildDuelPhases, spellWindows } from './spellPhases';
 
 const fx = (id: string, target: EffectDefinition['target'] = 'self'): EffectDefinition => ({
@@ -56,7 +56,7 @@ describe('spellWindows', () => {
 describe('buildDuelPhases', () => {
   it('C1 : aucun lancer, une seule phase [0, ∞)', () => {
     expect(phasesOf(none, none)).toEqual([
-      { start: 0, end: Infinity, active: [], leftCardEffects: [], rightCardEffects: [] },
+      { start: 0, end: Infinity, active: [], leftCardEffects: [], rightCardEffects: [], dotsOnLeft: [], dotsOnRight: [] },
     ]);
   });
 
@@ -120,5 +120,60 @@ describe('buildDuelPhases', () => {
     const phases = buildDuelPhases(spellWindows(cast('x'), none, broken), effects, broken);
     expect(bounds(phases)).toEqual([[0, 2], [2, Infinity]]);
     expect(phases[0].leftCardEffects).toEqual([]);
+  });
+});
+
+describe('buildDuelPhases : DoT (spec 004)', () => {
+  const dot = (damage_per_tick: number): SpellDot => ({ damage_per_tick, chance: 1, max_entities: 25, frequency: 1, duration: 8 });
+  const dotSpells: Record<string, SpellDefinition> = {
+    bjuna: spell('bjuna', { id: 'bjuna', name: 'bjuna', phases: [{ id: 'bjuna_p', duration: 18, effects: [], dot: { ...dot(10), duration: 18 } }] }),
+    // Heart of Winter : 4 phases de 8 s (2 coups chacune) à 2/4/6/8 par tick
+    winter: spell('winter', {
+      id: 'winter',
+      name: 'winter',
+      phases: [2, 4, 6, 8].map((d, i) => ({ id: `winter_${i + 1}`, duration: 8, effects: [], dot: dot(d) })),
+    }),
+    // DoT et modificateur de stats dans la même phase
+    both: spell('both', { id: 'both', name: 'both', phases: [{ id: 'both_p', duration: 8, effects: ['a_fx'], dot: dot(5) }] }),
+  };
+  const dotPhases = (left: SpellCasts, right: SpellCasts) =>
+    buildDuelPhases(spellWindows(left, right, dotSpells), effects, dotSpells);
+
+  it('sans DoT, dotsOnLeft et dotsOnRight sont vides', () => {
+    const phases = phasesOf(cast('a'), cast('b'));
+    expect(phases.every(p => p.dotsOnLeft.length === 0 && p.dotsOnRight.length === 0)).toBe(true);
+  });
+
+  it('le DoT du lanceur de gauche va sur la droite, pendant la fenêtre uniquement', () => {
+    const phases = dotPhases(cast('bjuna'), none);
+    expect(bounds(phases)).toEqual([[0, 4.5], [4.5, Infinity]]);
+    expect(phases[0].dotsOnRight.map(d => [d.spellId, d.version, d.phaseId, d.dot.damage_per_tick])).toEqual([['bjuna', 'normal', 'bjuna_p', 10]]);
+    expect(phases[0].dotsOnLeft).toEqual([]);
+    expect(phases[1].dotsOnRight).toEqual([]);
+  });
+
+  it('le DoT du lanceur de droite va sur la gauche', () => {
+    const phases = dotPhases(none, cast('bjuna'));
+    expect(phases[0].dotsOnLeft).toHaveLength(1);
+    expect(phases[0].dotsOnRight).toEqual([]);
+  });
+
+  it('D8 : 2 lancers = une fenêtre de 9 coups, même DoT', () => {
+    const phases = dotPhases(cast('bjuna', 2), none);
+    expect(bounds(phases)).toEqual([[0, 9], [9, Infinity]]);
+    expect(phases[0].dotsOnRight[0].dot.damage_per_tick).toBe(10);
+  });
+
+  it('D12 : Heart of Winter, 4 fenêtres indépendantes de 2 coups, DoT sommables sur [0,2)', () => {
+    const phases = dotPhases(cast('winter'), none);
+    expect(bounds(phases)).toEqual([[0, 2], [2, Infinity]]);
+    expect(phases[0].dotsOnRight.map(d => d.dot.damage_per_tick)).toEqual([2, 4, 6, 8]);
+    expect(phases[1].dotsOnRight).toEqual([]);
+  });
+
+  it('un sort avec DoT et modificateur : les deux s\'appliquent dans les mêmes phases', () => {
+    const phases = dotPhases(cast('both'), none);
+    expect(phases[0].leftCardEffects).toEqual(['a_fx']);
+    expect(phases[0].dotsOnRight).toHaveLength(1);
   });
 });

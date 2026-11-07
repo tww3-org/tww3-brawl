@@ -19,13 +19,13 @@ export function listSpells(
 }
 
 /**
- * Un sort est proposable s'il produit au moins un effet : le catalogue généré contient aussi des sorts dont toutes
- * les phases ont `effects: []` (stats hors whitelist corps à corps), sans impact sur le duel (spec 003, cas limites).
- * Vérifie la version simple et l'overcast : un overcast seul porteur d'effets rend le sort utile.
+ * Un sort est proposable s'il produit au moins un effet ou un DoT (spec 004) : le catalogue généré contient aussi des
+ * sorts dont toutes les phases ont `effects: []` et pas de `dot` (stats hors whitelist corps à corps), sans impact
+ * sur le duel (spec 003, cas limites). Vérifie la version simple et l'overcast : un overcast seul porteur d'effets rend le sort utile.
  */
 export function hasSpellEffects(spell: SpellDefinition): boolean {
   return [spell.normal, spell.overcast].some(
-    version => version?.phases.some(phase => phase.effects.length > 0)
+    version => version?.phases.some(phase => phase.effects.length > 0 || phase.dot !== undefined)
   );
 }
 

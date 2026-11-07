@@ -1,6 +1,8 @@
 import type { Faction, Unit, Version } from '../types'
 import { averageHealthLostPerUnitPerHit, regenerationBurst, regenerationPerHit } from './oneSideCalculations'
 import { getMaxEntities } from '../utils/getMaxEntities'
+import { dotDamagePerHit, type DotDamage } from './spellDots'
+import type { ActiveDot } from './spellPhases'
 
 /**
  * Type for unit with entity number information
@@ -29,6 +31,15 @@ export interface CombatResult {
     phases?: PhaseBreakdown[]
 }
 
+/** Dégâts d'un DoT de sort subis par un côté dans une phase du duel (spec 004) */
+export interface DotTaken {
+  spellId: string
+  version: 'normal' | 'overcast'
+  /** Id de la phase du sort */
+  phaseId: string
+  damage: DotDamage
+}
+
 /**
  * Détail d'une phase d'un duel : `[start, end)` en coups (`end` = Infinity pour la dernière),
  * dégâts nets subis par coup de chaque côté dans cette phase (régénération déduite)
@@ -38,6 +49,12 @@ export interface PhaseBreakdown {
   end: number
   leftNetTaken: number
   rightNetTaken: number
+  /** Dégâts de DoT par coup subis par chaque côté (déjà inclus dans les dégâts nets) */
+  leftDotTaken: number
+  rightDotTaken: number
+  /** Détail par DoT actif de la phase (ventilation des pertes pour le résumé) */
+  leftDots: DotTaken[]
+  rightDots: DotTaken[]
 }
 
 /**
@@ -48,6 +65,10 @@ export interface DuelPhaseUnits {
   hits: number
   left: UnitWithEntityNumber
   right: UnitWithEntityNumber
+  /** DoT subis par l'unité de gauche pendant la phase (absent = aucun) */
+  dotsOnLeft?: ActiveDot[]
+  /** DoT subis par l'unité de droite pendant la phase (absent = aucun) */
+  dotsOnRight?: ActiveDot[]
 }
 
 /**
@@ -101,8 +122,22 @@ export function calculateGoldDamage(
   }
 }
 
+/** Dégâts de chaque DoT actif subis par `target` (unité effective de la phase) et leur somme par coup */
+function dotsTaken(dots: ActiveDot[], target: UnitWithEntityNumber) {
+    const unit = target.selection.unit!
+    const taken: DotTaken[] = dots.map(({ spellId, version, phaseId, dot }) => ({
+        spellId, version, phaseId, damage: dotDamagePerHit(dot, unit, target.entityNumber),
+    }))
+    return { taken, perHit: taken.reduce((sum, d) => sum + d.damage.perHit, 0) }
+}
+
 /** Dégâts nets par coup et soins à durée limitée d'une phase, pour chaque côté */
-function phaseFigures(leftUnit: UnitWithEntityNumber, rightUnit: UnitWithEntityNumber) {
+function phaseFigures(
+    leftUnit: UnitWithEntityNumber,
+    rightUnit: UnitWithEntityNumber,
+    leftDotsActive: ActiveDot[] = [],
+    rightDotsActive: ActiveDot[] = []
+) {
     const left = leftUnit.selection.unit!
     const right = rightUnit.selection.unit!
 
@@ -114,10 +149,16 @@ function phaseFigures(leftUnit: UnitWithEntityNumber, rightUnit: UnitWithEntityN
     const leftRegen = regenerationPerHit(right, left)
     const rightRegen = regenerationPerHit(left, right)
 
+    // DoT de sorts : s'ajoutent à la mêlée, en parallèle de la régénération (qui se déduit du total)
+    const leftDots = dotsTaken(leftDotsActive, leftUnit)
+    const rightDots = dotsTaken(rightDotsActive, rightUnit)
+
     return {
         // Dégâts nets : ce que subit réellement chaque côté par coup
-        leftNetTaken: Math.max(0, rightGross - leftRegen),
-        rightNetTaken: Math.max(0, leftGross - rightRegen),
+        leftNetTaken: Math.max(0, rightGross + leftDots.perHit - leftRegen),
+        rightNetTaken: Math.max(0, leftGross + rightDots.perHit - rightRegen),
+        leftDots,
+        rightDots,
         leftRegen,
         rightRegen,
         // Vie à épuiser pour tuer chaque côté
@@ -161,13 +202,14 @@ function damageTakenOver(hits: number, damages: number[], lengths: number[]): nu
  * et la régénération sont ceux de `calculateWinner`, sur les unités effectives de la phase. Pour chaque côté,
  * on parcourt les phases en retirant `dégâts nets × coups de la phase` à la vie de l'adversaire jusqu'à ce
  * qu'elle soit épuisée. Le soin limité (`burst`) vient des unités de la dernière phase (il ne dépend que des
- * effets on/off). Le côté qui a besoin de moins de coups gagne (égalité : gauche) ; si aucun côté ne meurt,
+ * effets on/off). Les DoT de sorts (spec 004) de chaque phase s'ajoutent aux dégâts de mêlée subis, en parallèle
+ * de la régénération qui se déduit du total (`mêlée + DoT − régénération`, borné à 0). Le côté qui a besoin de moins de coups gagne (égalité : gauche) ; si aucun côté ne meurt,
  * le résultat est une impasse.
  *
  * @param phases - Phases contiguës, de la première à la dernière (`hits` = Infinity)
  */
 export function calculatePhasedWinner(phases: DuelPhaseUnits[]): CombatResult {
-    const figures = phases.map(p => phaseFigures(p.left, p.right))
+    const figures = phases.map(p => phaseFigures(p.left, p.right, p.dotsOnLeft, p.dotsOnRight))
     const lengths = phases.map(p => p.hits)
     const leftNets = figures.map(f => f.leftNetTaken)
     const rightNets = figures.map(f => f.rightNetTaken)
@@ -175,7 +217,17 @@ export function calculatePhasedWinner(phases: DuelPhaseUnits[]): CombatResult {
 
     let start = 0
     const breakdown: PhaseBreakdown[] = phases.map((p, i) => {
-        const phase = { start, end: start + p.hits, leftNetTaken: leftNets[i], rightNetTaken: rightNets[i] }
+        const f = figures[i]
+        const phase = {
+            start,
+            end: start + p.hits,
+            leftNetTaken: leftNets[i],
+            rightNetTaken: rightNets[i],
+            leftDotTaken: f.leftDots.perHit,
+            rightDotTaken: f.rightDots.perHit,
+            leftDots: f.leftDots.taken,
+            rightDots: f.rightDots.taken,
+        }
         start = phase.end
         return phase
     })

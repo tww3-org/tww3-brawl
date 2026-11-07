@@ -1,4 +1,4 @@
-import type { EffectDefinition, SpellCasts, SpellDefinition } from '../types';
+import type { EffectDefinition, SpellCasts, SpellDefinition, SpellDot } from '../types';
 import { EFFECTS_CATALOG } from '../data/effects';
 import { SPELLS_CATALOG } from '../data/spells';
 import { SECONDS_PER_ATTACK } from './oneSideCalculations';
@@ -20,6 +20,11 @@ import { SECONDS_PER_ATTACK } from './oneSideCalculations';
  * 4. Les modificateurs d'un sort viennent des `EffectDefinition` de la phase (R6) : ceux qui visent
  *    `self` vont sur la carte du lanceur, ceux qui visent `enemy` sur celle de l'adversaire.
  *
+ * 5. Les DoT (spec 004-spell-dots) suivent les mêmes fenêtres : le DoT d'une phase de sort s'applique, par coup,
+ *    à l'adversaire du lanceur dans toutes les phases du duel où la fenêtre est active (`dotsOnLeft` /
+ *    `dotsOnRight`). Chaque phase de sort a son propre DoT, indépendant des autres (ex. Heart of Winter : 4 DoT
+ *    sommés sur ses premiers coups, voir research R6).
+ *
  * Les catalogues sont injectables pour les tests.
  */
 
@@ -37,6 +42,15 @@ export interface SpellWindow {
   instances: number;
 }
 
+/** DoT d'une phase de sort actif dans une phase du duel, subi par le côté visé */
+export interface ActiveDot {
+  spellId: string;
+  version: 'normal' | 'overcast';
+  /** Id de la phase du sort */
+  phaseId: string;
+  dot: SpellDot;
+}
+
 /** Une phase du duel : intervalle `[start, end)` en coups et effets de sort actifs */
 export interface DuelPhase {
   /** Borne incluse, en coups */
@@ -49,6 +63,10 @@ export interface DuelPhase {
   leftCardEffects: string[];
   /** Ids d'effets de sort à ajouter aux `cardEffects` de l'unité de droite */
   rightCardEffects: string[];
+  /** DoT subis par l'unité de gauche (fenêtres actives lancées par la droite) */
+  dotsOnLeft: ActiveDot[];
+  /** DoT subis par l'unité de droite (fenêtres actives lancées par la gauche) */
+  dotsOnRight: ActiveDot[];
 }
 
 const VERSIONS = ['normal', 'overcast'] as const;
@@ -98,10 +116,15 @@ export function buildDuelPhases(
     const active = windows.filter(w => w.instances > start);
     const left = new Set<string>();
     const right = new Set<string>();
+    const dotsOnLeft: ActiveDot[] = [];
+    const dotsOnRight: ActiveDot[] = [];
     for (const w of active) {
       const phase = spells[w.spellId]?.[w.version]?.phases.find(p => p.id === w.phaseId);
       const opposite = w.side === 'left' ? right : left;
       const own = w.side === 'left' ? left : right;
+      if (phase?.dot) {
+        (w.side === 'left' ? dotsOnRight : dotsOnLeft).push({ spellId: w.spellId, version: w.version, phaseId: w.phaseId, dot: phase.dot });
+      }
       for (const id of phase?.effects ?? []) {
         const def = effects[id];
         if (!def) continue;
@@ -114,6 +137,8 @@ export function buildDuelPhases(
       active,
       leftCardEffects: [...left],
       rightCardEffects: [...right],
+      dotsOnLeft,
+      dotsOnRight,
     };
   });
 }
