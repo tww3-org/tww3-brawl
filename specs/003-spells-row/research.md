@@ -24,7 +24,7 @@ Données observées sur `broker.twwstats.com`, version Patch 9.0.0 (`45121023776
     - Pavane : 10 s + 14 s.
     - Writhing Mist : phase lanceur + phase ennemie de 24 s.
     - Glean Magic et Soul Stealer : phase normale + phase `_miscast`.
-  - Point d'attention : en jeu, les étages `_1`…`_4` de Heart of Winter sont probablement **successifs** (montée en puissance sur 32 s). Avec des phases indépendantes empilées au début, les 4 étages agissent ensemble pendant 8 s : même total de dégâts, mais concentré. On le commente dans le code (principe II).
+  - Point d'attention : en jeu, les étages `_1`…`_4` de Heart of Winter sont probablement **successifs** (montée en puissance sur 32 s). Avec des phases indépendantes empilées au début, les 4 étages agissent ensemble pendant 8 s : même total de dégâts, mais concentré. **Validé par l'utilisateur** : seule l'issue finale compte, pas la chronologie coup par coup. On le commente dans le code (principe II).
 - **Alternatives considered**: maximum des durées (ancienne proposition, rejetée) ; phases successives (rejeté pour l'instant).
 
 ## R4 — Catalogue global, pas sorts natifs

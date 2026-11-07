@@ -41,7 +41,7 @@ Données Patch 9.0.0 (`4512102377651127604`).
 ## R6 — Sorts à plusieurs phases de DoT
 
 - **Decision**: chaque phase est indépendante (R3 de 003). Un `SpellDot` est rattaché à **une** `SpellPhase`, et sa fenêtre et sa répartition utilisent la durée de cette phase.
-- **Rationale**: décision utilisateur. Heart of Winter : 4 phases de 8 s, à 2/4/6/8 par tick (3/6/9/12 en overcast), toutes actives sur les 2 premiers coups. En jeu, ces étages sont probablement successifs ; on le commente (principe II).
+- **Rationale**: décision utilisateur. Heart of Winter : 4 phases de 8 s, à 2/4/6/8 par tick (3/6/9/12 en overcast), toutes actives sur les 2 premiers coups. En jeu, ces étages sont probablement successifs. La concentration au début est **validée par l'utilisateur** (seule l'issue finale compte), et on la commente dans le code (principe II).
 
 ## R7 — Ventilation des pertes (résumé)
 
