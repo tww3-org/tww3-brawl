@@ -133,11 +133,25 @@ export function spellCastsOf(side: SideData): SpellCasts {
 }
 
 /**
- * Coups couverts par un sort lancé : fenêtre la plus longue parmi ses phases et ses versions
- * (les phases sont indépendantes et empilées au début du combat, donc elles se recouvrent).
+ * Coups couverts par chaque phase d'un sort lancé (toutes versions confondues), dans l'ordre du catalogue.
+ * Les phases sont des sorts indépendants, empilés au début du combat : une entrée par phase.
  */
-export function spellCoveredHits(spellId: string, casts: { normal: number; overcast: number }): number {
-  return Math.max(0, ...spellWindows({ [spellId]: casts }, {}).map(w => w.instances));
+export function spellPhaseHits(spellId: string, casts: { normal: number; overcast: number }): { phaseId: string; version: 'normal' | 'overcast'; hits: number }[] {
+  return spellWindows({ [spellId]: casts }, {}).map(w => ({ phaseId: w.phaseId, version: w.version, hits: w.instances }));
+}
+
+/**
+ * Libellés « phase k : N hits » des phases d'un sort (numérotées par version ; préfixe « overcast » pour
+ * la version overcast). Un seul résultat (sort à une phase, ou aucun lancer : 0) : texte « N hits » sans libellé de phase.
+ */
+export function spellPhaseHitTexts(phases: ReturnType<typeof spellPhaseHits>): string[] {
+  if (phases.length === 0) return ['0.0 hits'];
+  if (phases.length === 1) return [`${phases[0].hits.toFixed(1)} hits`];
+  const counters = { normal: 0, overcast: 0 };
+  return phases.map(({ version, hits }) => {
+    const n = ++counters[version];
+    return `${version === 'overcast' ? 'overcast ' : ''}phase ${n}: ${hits.toFixed(1)} hits`;
+  });
 }
 
 /** Sorts lancés d'un côté (compteur total > 0, id connu du catalogue) avec leurs coups couverts */
@@ -145,7 +159,7 @@ export function castSpells(side: SideData) {
   return Object.entries(spellCastsOf(side)).flatMap(([id, casts]) => {
     const spell = getSpell(id);
     return spell && casts.normal + casts.overcast > 0
-      ? [{ spell, casts, hits: spellCoveredHits(id, casts) }]
+      ? [{ spell, casts, phases: spellPhaseHits(id, casts) }]
       : [];
   });
 }

@@ -18,7 +18,7 @@ Tout vient de `broker.twwstats.com/graphql` (client `@tww3-brawl/gql`) :
 | Liste des sorts | `abilities` (catalogue global de la version) |
 | Est-ce un sort ? | `ability.unit_special_ability.mana_cost > 0` |
 | Version overcast | `ability.overpower_option` (un `ability` complet, avec ses propres phases et sa propre durée) |
-| Durée | `phase.duration` (repli : `special_ability.active_time`) |
+| Durée | `phase.duration` ; repli pour une phase sans durée : `special_ability.active_time` ÷ nombre de phases retenues de la version (phases à durée explicite + phases sans durée ayant un effet) |
 | Effets sur les stats | `phase.stat_effects`, `imbue_*` — même traduction que la whitelist de la feature 002 |
 | Cible | `special_ability.affect_self`, `target_friends`, `target_enemies` |
 

@@ -9,6 +9,7 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { resolvePhaseDurations } from './spell-durations.mjs';
 
 const ENDPOINT = 'https://broker.twwstats.com/graphql';
 const OUT_FILE = resolve(
@@ -334,7 +335,9 @@ const isMiscast = (phase) => /_miscast$/.test(phase.id);
  *   (`abilityEntries` ne garde que l'étage le plus élevé), on ne fusionne PAS les étages `_1`…`_4`.
  *   En jeu ces étages sont probablement successifs ; empilés au début du combat, ils agissent ensemble
  *   (même total, concentré) : seule l'issue finale compte ;
- * - une phase sans durée positive est ignorée (pas de repli sur `active_time`) ;
+ * - une phase sans durée positive reprend `special_ability.active_time` divisé par le nombre de phases
+ *   retenues de la version (phases à durée explicite + phases sans durée ayant un effet), faute
+ *   d'indication plus précise (`resolvePhaseDurations`) ; elle reste ignorée si `active_time` n'est pas > 0 ;
  * - les phases `*_miscast` (échec du sort) n'ont pas de sens dans un calculateur de mêlée.
  * Les entrées d'effet de chaque phase viennent de `abilityEntries` appelée sur cette seule phase, ce qui
  * réutilise la whitelist de stats et le routage self/enemy. Avec plusieurs phases, les ids sont suffixés
@@ -342,14 +345,19 @@ const isMiscast = (phase) => /_miscast$/.test(phase.id);
  * Retourne null si aucune phase n'est retenue.
  */
 function spellVersion(ability) {
-  const retained = (ability.phases ?? [])
-    .filter((p) => p.duration > 0 && !isMiscast(p))
+  const candidates = (ability.phases ?? [])
+    .filter((p) => !isMiscast(p))
     .sort((a, b) => a.id.localeCompare(b.id));
+  const retained = resolvePhaseDurations(
+    candidates,
+    ability.unit_special_ability?.active_time,
+    (p) => abilityEntries({ ...ability, phases: [p] }).length > 0
+  );
   if (!retained.length) return null;
   const multi = retained.length > 1;
   const entries = [];
-  const phases = retained.map((phase, i) => {
-    const list = abilityEntries({ ...ability, phases: [phase] }).map((e) => ({
+  const phases = retained.map(({ phase, duration }, i) => {
+    const list = abilityEntries({ ...ability, phases: [{ ...phase, duration }] }).map((e) => ({
       ...e,
       ...(multi && {
         id: `${e.id}__p${i + 1}`,
@@ -359,7 +367,7 @@ function spellVersion(ability) {
       spell: { spell_id: ability.key },
     }));
     entries.push(...list);
-    return { id: phase.id, duration: round(phase.duration), effects: list.map((e) => e.id) };
+    return { id: phase.id, duration: round(duration), effects: list.map((e) => e.id) };
   });
   return { version: { id: ability.key, name: abilityBaseName(ability), phases }, entries };
 }

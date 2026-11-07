@@ -8,7 +8,11 @@
                 <div class="text-weight-bold">{{ spell.name }}</div>
                 <div v-if="spell.description" class="description">{{ spell.description }}</div>
                 <div>Duration: {{ durationText(spell.normal) }}<template v-if="spell.overcast"> &middot; overcast {{ durationText(spell.overcast) }}</template></div>
-                <div>Covers {{ coveredHits.toFixed(1) }} hits</div>
+                <div v-if="hitTexts.length === 1">Covers {{ hitTexts[0] }}</div>
+                <template v-else>
+                    <div>Covers:</div>
+                    <div v-for="text in hitTexts" :key="text" class="phase-hits">{{ text }}</div>
+                </template>
                 <div class="state">Click: +1 &middot; right-click / long press: &minus;1</div>
             </q-tooltip>
         </button>
@@ -48,7 +52,7 @@
 import { computed } from 'vue'
 import type { SpellDefinition, SpellVersion } from '@tww3-brawl/sdk/src/types'
 import { getImageUrl } from '@tww3-brawl/sdk/src/utils/getImageUrl'
-import { MAX_SPELL_CASTS, spellCoveredHits } from '~/types/unit'
+import { MAX_SPELL_CASTS, spellPhaseHitTexts, spellPhaseHits } from '~/types/unit'
 import EffectImage from './EffectImage.vue'
 
 const props = defineProps<{
@@ -69,8 +73,8 @@ const imageUrl = computed(() => getImageUrl(props.versionId, props.spell.icon))
 /** Durées des phases d'une version (ex. « 10s + 14s ») */
 const durationText = (version: SpellVersion) => version.phases.map(p => `${p.duration}s`).join(' + ')
 
-// Coups couverts : fenêtre la plus longue des phases (lancers × durée / 4 s)
-const coveredHits = computed(() => spellCoveredHits(props.spell.id, props.casts))
+// Coups couverts par phase (les phases sont des sorts indépendants ; lancers × durée / 4 s)
+const hitTexts = computed(() => spellPhaseHitTexts(spellPhaseHits(props.spell.id, props.casts)))
 
 // Appui long tactile : -1 (le click qui suit le relâchement ne doit pas faire +1)
 const LONG_PRESS_MS = 450

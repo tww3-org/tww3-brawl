@@ -71,7 +71,7 @@ import { useUnitStore } from '~/stores/unitStore';
 import { computed } from 'vue';
 import { calculateGoldDamage } from '@tww3-brawl/sdk/src/logic/twoSideCalculations';
 import { getUnitDisplayName } from '@tww3-brawl/sdk/src/utils/getUnitDisplayName';
-import { castSpells, effectiveUnits } from '~/types/unit';
+import { castSpells, effectiveUnits, spellPhaseHitTexts } from '~/types/unit';
 
 const unitStore = useUnitStore();
 
@@ -122,11 +122,11 @@ const regenerationText = computed(() => {
   return parts.length > 0 ? `Regeneration per hit: ${parts.join(' / ')}` : '';
 });
 
-// Une ligne par sort lancé, pour chaque côté : « Nom (×k, overcast ×j) : couvre N coups »
+// Une ligne par sort lancé, pour chaque côté : « Nom (×k, overcast ×j) : couvre N coups » (une valeur par phase si plusieurs)
 const spellLines = computed(() => (['left', 'right'] as const).flatMap(side =>
-  castSpells(unitStore[side]).map(({ spell, casts, hits }) => ({
+  castSpells(unitStore[side]).map(({ spell, casts, phases }) => ({
     key: `${side}-${spell.id}`,
-    text: `${getSideName(side)} - ${spell.name} (×${casts.normal}${casts.overcast > 0 ? `, overcast ×${casts.overcast}` : ''}): covers ${hits.toFixed(1)} hits`,
+    text: `${getSideName(side)} - ${spell.name} (×${casts.normal}${casts.overcast > 0 ? `, overcast ×${casts.overcast}` : ''}): covers ${spellPhaseHitTexts(phases).join(' / ')}`,
   }))
 ));
 
