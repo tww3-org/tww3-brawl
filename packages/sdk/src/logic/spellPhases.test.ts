@@ -114,11 +114,35 @@ describe('buildDuelPhases', () => {
     expect(mirrored[0].leftCardEffects).toEqual([]);
   });
 
-  it('C9 : le porteur reçoit les effets self et enemy de ses sorts', () => {
+  it('C9 : sort offensif (effet enemy + effet self) : seul l\'effet enemy va sur le porteur', () => {
     const both = { ...spells, mix: spell('mix', version('mix', [['mix_p', 8, ['a_fx', 'hex_fx']]])) };
     const phases = buildDuelPhases(spellWindows(none, cast('mix'), both), effects, both);
-    expect(phases[0].rightCardEffects).toEqual(['a_fx', 'hex_fx']);
+    expect(phases[0].rightCardEffects).toEqual(['hex_fx']);
     expect(phases[0].leftCardEffects).toEqual([]);
+  });
+
+  it('C10 : sort purement self : tous ses effets restent sur le porteur', () => {
+    const pure = { ...spells, pure: spell('pure', version('pure', [['pure_p', 8, ['a_fx', 'b_fx']]])) };
+    const phases = buildDuelPhases(spellWindows(cast('pure'), none, pure), effects, pure);
+    expect(phases[0].leftCardEffects).toEqual(['a_fx', 'b_fx']);
+  });
+
+  it('C11 : la règle offensif est évaluée par version (normal self, overcast avec DoT)', () => {
+    const dotOc: SpellDot = { damage_per_tick: 3, chance: 1, max_entities: 25, frequency: 1, duration: 8 };
+    const mixed = {
+      ...spells,
+      m: spell(
+        'm',
+        version('m', [['m_p', 8, ['a_fx']]]),
+        { id: 'm_up', name: 'm_up', phases: [{ id: 'm_up_p', duration: 8, effects: ['b_fx'], dot: dotOc }] }
+      ),
+    };
+    const normal = buildDuelPhases(spellWindows(cast('m', 1, 0), none, mixed), effects, mixed);
+    expect(normal[0].leftCardEffects).toEqual(['a_fx']);
+    expect(normal[0].dotsOnLeft).toEqual([]);
+    const overcast = buildDuelPhases(spellWindows(cast('m', 0, 1), none, mixed), effects, mixed);
+    expect(overcast[0].leftCardEffects).toEqual([]);
+    expect(overcast[0].dotsOnLeft).toHaveLength(1);
   });
 
   it('ignore les ids d\'effets absents du catalogue', () => {
@@ -164,9 +188,9 @@ describe('buildDuelPhases : DoT (spec 004)', () => {
     expect(phases[0].dotsOnLeft).toEqual([]);
   });
 
-  it('le porteur reçoit le DoT et tous les effets de son sort', () => {
+  it('sort offensif (DoT + effet self) : le porteur reçoit seulement le DoT, pas l\'effet self', () => {
     const phases = dotPhases(none, cast('both'));
-    expect(phases[0].rightCardEffects).toEqual(['a_fx']);
+    expect(phases[0].rightCardEffects).toEqual([]);
     expect(phases[0].dotsOnRight).toHaveLength(1);
     expect(phases[0].leftCardEffects).toEqual([]);
     expect(phases[0].dotsOnLeft).toEqual([]);
@@ -185,9 +209,9 @@ describe('buildDuelPhases : DoT (spec 004)', () => {
     expect(phases[1].dotsOnLeft).toEqual([]);
   });
 
-  it('un sort avec DoT et modificateur : les deux s\'appliquent dans les mêmes phases', () => {
+  it('un sort avec DoT et effet self : seul le DoT s\'applique', () => {
     const phases = dotPhases(cast('both'), none);
-    expect(phases[0].leftCardEffects).toEqual(['a_fx']);
+    expect(phases[0].leftCardEffects).toEqual([]);
     expect(phases[0].dotsOnLeft).toHaveLength(1);
   });
 });

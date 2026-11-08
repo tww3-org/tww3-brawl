@@ -1,4 +1,4 @@
-import type { EffectDefinition, SpellCasts, SpellDefinition, SpellDot } from '../types';
+import type { EffectDefinition, SpellCasts, SpellDefinition, SpellDot, SpellVersion } from '../types';
 import { EFFECTS_CATALOG } from '../data/effects';
 import { SPELLS_CATALOG } from '../data/spells';
 import { SECONDS_PER_ATTACK } from './oneSideCalculations';
@@ -18,8 +18,10 @@ import { SECONDS_PER_ATTACK } from './oneSideCalculations';
  * 3. Bornes de phases = union triée et dédoublonnée des nₑ des deux côtés, précédée de 0 ; la dernière
  *    phase `[max nₑ, ∞)` n'a aucun sort. La phase `[bᵢ, bᵢ₊₁)` contient les fenêtres telles que nₑ > bᵢ.
  * 4. Les modificateurs d'un sort viennent des `EffectDefinition` de la phase (R6). Révision : un sort placé dans
- *    la colonne Sorts d'un côté s'applique à CE côté (le porteur) : tous ses effets vont sur la carte du porteur,
- *    quelle que soit la cible (`self` / `enemy`) de l'`EffectDefinition`.
+ *    la colonne Sorts d'un côté s'applique à CE côté (le porteur) : DoT et effets vont sur la carte du porteur.
+ *    Sort « offensif » (par version normal/overcast, toutes phases confondues : au moins un DoT ou un effet de
+ *    cible `enemy`) : seul ce qui est infligé aux ennemis est conservé, les effets de cible `self` (soins, buffs
+ *    du lanceur) sont ignorés. Une version purement `self` garde tous ses effets sur le porteur.
  *
  * 5. Les DoT (spec 004-spell-dots) suivent les mêmes fenêtres : le DoT d'une phase de sort s'applique, par coup,
  *    au porteur du sort dans toutes les phases du duel où la fenêtre est active (`dotsOnLeft` /
@@ -73,6 +75,17 @@ export interface DuelPhase {
 const VERSIONS = ['normal', 'overcast'] as const;
 
 /**
+ * Une version de sort est « offensive » si au moins une de ses phases (toutes confondues) porte un DoT
+ * ou un effet dont la cible est `enemy`. Les effets non `enemy` (soins, buffs du lanceur) sont alors ignorés.
+ */
+function isOffensiveVersion(
+  version: SpellVersion | undefined,
+  effects: Record<string, EffectDefinition>
+): boolean {
+  return !!version?.phases.some(p => p.dot || p.effects.some(id => effects[id]?.target === 'enemy'));
+}
+
+/**
  * Fenêtres (instances couvertes) des sorts lancés par les deux côtés. Les sorts inconnus du catalogue,
  * les versions absentes (overcast inexistant) et les compteurs ≤ 0 sont ignorés.
  */
@@ -120,14 +133,17 @@ export function buildDuelPhases(
     const dotsOnLeft: ActiveDot[] = [];
     const dotsOnRight: ActiveDot[] = [];
     for (const w of active) {
-      const phase = spells[w.spellId]?.[w.version]?.phases.find(p => p.id === w.phaseId);
+      const versionDef = spells[w.spellId]?.[w.version];
+      const phase = versionDef?.phases.find(p => p.id === w.phaseId);
       const own = w.side === 'left' ? left : right;
       if (phase?.dot) {
         (w.side === 'left' ? dotsOnLeft : dotsOnRight).push({ spellId: w.spellId, version: w.version, phaseId: w.phaseId, dot: phase.dot });
       }
+      const offensive = isOffensiveVersion(versionDef, effects);
       for (const id of phase?.effects ?? []) {
         const def = effects[id];
         if (!def) continue;
+        if (offensive && def.target !== 'enemy') continue;
         own.add(id);
       }
     }

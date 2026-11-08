@@ -178,4 +178,6 @@ Le résumé du duel indique, pour chaque sort lancé, le nombre de coups couvert
 
 ## Révision : sort porté par son côté
 
-Un sort placé dans la colonne Sorts d'un côté s'applique à ce côté (le porteur) : son DoT et tous ses effets, quelle que soit la cible (`self` / `enemy`) de l'effet. Les DoT plafonnent les dégâts par entité à `health.unit / max(1, entités)` (bonus de PV et montures compris), et non à `health.entity`. Le résumé affiche les PV perdus du porteur et leur % de la vie de son unité.
+Un sort placé dans la colonne Sorts d'un côté s'applique à ce côté (le porteur) : son DoT et ses effets (sous réserve de la règle « offensif » ci-dessous). Les DoT plafonnent les dégâts par entité à `health.unit / max(1, entités)` (bonus de PV et montures compris), et non à `health.entity`. Le résumé affiche les PV perdus du porteur et leur % de la vie de son unité.
+
+Sort « offensif » (par version normal/overcast, toutes phases confondues : au moins un DoT ou un effet de cible `enemy`) : seul ce qui est infligé aux ennemis est conservé, donc les effets de cible `self` (soins, buffs du lanceur) sont ignorés ; le DoT et les effets `enemy` restent sur le porteur. Une version purement `self` (ex. Curse of the Leper) garde tous ses effets sur le porteur.
