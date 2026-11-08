@@ -11,6 +11,8 @@ import { clampNonNegative } from './clampStat'
  *   vide = 1 ; les dégâts aléatoires sont ramenés à leur moyenne `damage_amount × damage_chance` ;
  * - `max_damaged_entities` (N) = nombre d'entités touchées ; le jeu est supposé frapper les mêmes N entités
  *   pendant tout le lancer, donc le plafond de PV s'applique par entité et par lancer (cumul de la phase) ;
+ *   les PV d'une entité sont ceux de l'unité entière (bonus de PV et montures compris) divisés par son nombre
+ *   d'entités (`health.unit / max(1, entités)`), et non `health.entity` (PV de base de l'entité de combat) ;
  * - E = entités de départ de la cible (on ne suit pas les pertes en cours de combat) : `min(N, E)` instances
  *   portent ; N absent ou <= 0 = toutes les entités ;
  * - seules la résistance magique et le ward save réduisent un DoT, plafonnés à 95 % comme en mêlée
@@ -33,6 +35,10 @@ export interface DotDamage {
     lostEntities: number
     /** Ratio de résistance appliqué (<= 0,95) */
     resist: number
+    /** PV réellement perdus par lancer, après plafonds et résistance */
+    perLaunch: number
+    /** PV de l'unité défenseuse utilisés pour le calcul (`health.unit`, borné à >= 0) */
+    targetHealth: number
 }
 
 /**
@@ -49,7 +55,10 @@ export function dotDamagePerHit(dot: SpellDot, defender: Unit, entityNumber: num
 
     const ticks = dot.duration / (dot.frequency > 0 ? dot.frequency : 1)
     const meanPerEntity = dot.damage_per_tick * dot.chance * ticks
-    const instance = Math.min(meanPerEntity, clampNonNegative(defender.health?.entity || 0))
+    const unitHealth = clampNonNegative(defender.health?.unit || 0)
+    // PV moyens d'une entité de l'unité entière (bonus de PV et montures compris) ; entité unique : toute la vie
+    const entityHealth = unitHealth / Math.max(1, getMaxEntities(defender))
+    const instance = Math.min(meanPerEntity, entityHealth)
 
     // Attaque magique non enflammée : ward save + résistance magique, plafonnés à 95 % comme la mêlée
     const resist = calculateResistRatio(
@@ -61,12 +70,13 @@ export function dotDamagePerHit(dot: SpellDot, defender: Unit, entityNumber: num
     )
 
     const perLaunch = instance * carried * (1 - resist)
-    const unitHealth = clampNonNegative(defender.health?.unit || 0)
     return {
         perHit: unitHealth > 0 && dot.duration > 0 ? (perLaunch * SECONDS_PER_ATTACK) / dot.duration / unitHealth : 0,
         gross: meanPerEntity * targeted,
         lostOverkill: (meanPerEntity - instance) * carried,
         lostEntities: meanPerEntity * (targeted - carried),
         resist,
+        perLaunch,
+        targetHealth: unitHealth,
     }
 }

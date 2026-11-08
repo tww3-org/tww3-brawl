@@ -131,25 +131,24 @@ const spellLines = computed(() => (['left', 'right'] as const).flatMap(side =>
   }))
 ));
 
-// Une ligne par sort de DoT lancé : dégâts par coup sur la cible et part perdue (overkill / manque d'entités).
-// Tous les DoT d'un sort débutent au coup 0 : la première phase du duel les contient tous. Les pourcentages sont
-// rapportés aux dégâts bruts du sort (avant résistance), toutes phases du sort confondues.
+// Une ligne par sort de DoT porté : dégâts infligés au porteur par le DoT, en PV et en % de la vie de son unité.
+// Total sur tous les lancers : somme, sur les phases de DoT du sort, des PV perdus par lancer (après résistance)
+// × nombre de lancers de la version (normale / overcast). Tous les DoT d'un sort débutent au coup 0 : la première
+// phase du duel les contient tous.
 const dotLines = computed(() => {
   const first = combatResult.value?.phases?.[0];
   if (!first) return [];
   return (['left', 'right'] as const).flatMap(side => {
-    const target = side === 'left' ? 'right' : 'left';
-    const taken = target === 'right' ? first.rightDots : first.leftDots;
+    const taken = side === 'left' ? first.leftDots : first.rightDots;
     return castSpells(unitStore[side]).flatMap(({ spell, casts }) => {
       const dots = taken.filter(d => d.spellId === spell.id && (d.version === 'normal' ? casts.normal : casts.overcast) > 0);
       if (dots.length === 0) return [];
-      const sum = (pick: (d: typeof dots[number]) => number) => dots.reduce((total, d) => total + pick(d), 0);
-      const gross = sum(d => d.damage.gross);
-      const percent = (lost: number) => (gross > 0 ? (lost / gross) * 100 : 0).toFixed(0);
+      const health = dots.reduce((total, d) => total + d.damage.perLaunch * (d.version === 'normal' ? casts.normal : casts.overcast), 0);
+      const targetHealth = dots[0].damage.targetHealth;
+      const percent = targetHealth > 0 ? (health / targetHealth) * 100 : 0;
       return [{
         key: `dot-${side}-${spell.id}`,
-        text: `${getSideName(side)} - ${spell.name} DoT: ${(sum(d => d.damage.perHit) * 100).toFixed(2)}% of ${getSideName(target)} health per hit, `
-          + `${percent(sum(d => d.damage.lostOverkill))}% lost to overkill, ${percent(sum(d => d.damage.lostEntities))}% lost to missing entities`,
+        text: `${getSideName(side)} - ${spell.name} DoT: ${Math.round(health)} health (${percent.toFixed(1)}%)`,
       }];
     });
   });

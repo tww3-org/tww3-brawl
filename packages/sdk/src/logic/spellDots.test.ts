@@ -104,6 +104,33 @@ describe('dotDamagePerHit (Fate of Bjuna)', () => {
   });
 });
 
+describe('dotDamagePerHit (plafond de PV par entité)', () => {
+  it('seigneur à une entité : battle_entity.hit_points minuscule mais health.unit élevé, aucun overkill', () => {
+    const lord: Unit = {
+      ...makeUnit(1, 5000, { caste: 'Lord' }),
+      land_unit: { ...single.land_unit!, battle_entity: { hit_points: 100, size: 'small', type: '' } },
+      health: { unit: 6836, entity: 100 },
+    };
+    const spirit: SpellDot = { damage_per_tick: 67, chance: 1, max_entities: 1, frequency: 1, duration: 13 };
+    const d = dotDamagePerHit(spirit, lord, 1);
+    expect(d.lostOverkill).toBe(0);
+    expect(d.perLaunch).toBe(871);
+    expect(d.targetHealth).toBe(6836);
+  });
+
+  it('le plafond par entité vaut health.unit / entités', () => {
+    const d = dotDamagePerHit(bjuna, { ...infantry, health: { unit: 120 * 100, entity: 1 } }, 120);
+    // 180 par entité plafonnés à 100
+    expect(d.lostOverkill).toBe(25 * 80);
+    expect(d.perLaunch).toBe(2500);
+  });
+
+  it('perLaunch tient compte de la résistance', () => {
+    const d = dotDamagePerHit(bjuna, makeUnit(30, 400, { resistance: { magic: 40, ward_save: 30 } }), 30);
+    expect(d.perLaunch).toBeCloseTo(4500 * 0.3, 10);
+  });
+});
+
 describe('dotDamagePerHit (cas limites)', () => {
   it('chance < 1 : moyenne des dégâts', () => {
     const d = dotDamagePerHit({ ...bjuna, chance: 0.5 }, cavalry, 30);

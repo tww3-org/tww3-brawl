@@ -105,14 +105,44 @@ describe('buildDuelPhases', () => {
     expect(phases.map(p => p.leftCardEffects)).toEqual([['pav_1', 'pav_2'], ['pav_2'], []]);
   });
 
-  it('C8 : un effet de sort ciblant l\'ennemi, lancé par la gauche, va sur la carte de droite', () => {
+  it('C8 : un effet de sort ciblant l\'ennemi va aussi sur la carte du porteur (gauche puis droite)', () => {
     const phases = phasesOf(cast('hex'), none);
+    expect(phases[0].leftCardEffects).toEqual(['hex_fx']);
+    expect(phases[0].rightCardEffects).toEqual([]);
+    const mirrored = phasesOf(none, cast('hex'));
+    expect(mirrored[0].rightCardEffects).toEqual(['hex_fx']);
+    expect(mirrored[0].leftCardEffects).toEqual([]);
+  });
+
+  it('C9 : sort offensif (effet enemy + effet self) : seul l\'effet enemy va sur le porteur', () => {
+    const both = { ...spells, mix: spell('mix', version('mix', [['mix_p', 8, ['a_fx', 'hex_fx']]])) };
+    const phases = buildDuelPhases(spellWindows(none, cast('mix'), both), effects, both);
     expect(phases[0].rightCardEffects).toEqual(['hex_fx']);
     expect(phases[0].leftCardEffects).toEqual([]);
-    // et inversement pour un sort lancé par la droite
-    const mirrored = phasesOf(none, cast('hex'));
-    expect(mirrored[0].leftCardEffects).toEqual(['hex_fx']);
-    expect(mirrored[0].rightCardEffects).toEqual([]);
+  });
+
+  it('C10 : sort purement self : tous ses effets restent sur le porteur', () => {
+    const pure = { ...spells, pure: spell('pure', version('pure', [['pure_p', 8, ['a_fx', 'b_fx']]])) };
+    const phases = buildDuelPhases(spellWindows(cast('pure'), none, pure), effects, pure);
+    expect(phases[0].leftCardEffects).toEqual(['a_fx', 'b_fx']);
+  });
+
+  it('C11 : la règle offensif est évaluée par version (normal self, overcast avec DoT)', () => {
+    const dotOc: SpellDot = { damage_per_tick: 3, chance: 1, max_entities: 25, frequency: 1, duration: 8 };
+    const mixed = {
+      ...spells,
+      m: spell(
+        'm',
+        version('m', [['m_p', 8, ['a_fx']]]),
+        { id: 'm_up', name: 'm_up', phases: [{ id: 'm_up_p', duration: 8, effects: ['b_fx'], dot: dotOc }] }
+      ),
+    };
+    const normal = buildDuelPhases(spellWindows(cast('m', 1, 0), none, mixed), effects, mixed);
+    expect(normal[0].leftCardEffects).toEqual(['a_fx']);
+    expect(normal[0].dotsOnLeft).toEqual([]);
+    const overcast = buildDuelPhases(spellWindows(cast('m', 0, 1), none, mixed), effects, mixed);
+    expect(overcast[0].leftCardEffects).toEqual([]);
+    expect(overcast[0].dotsOnLeft).toHaveLength(1);
   });
 
   it('ignore les ids d\'effets absents du catalogue', () => {
@@ -144,36 +174,44 @@ describe('buildDuelPhases : DoT (spec 004)', () => {
     expect(phases.every(p => p.dotsOnLeft.length === 0 && p.dotsOnRight.length === 0)).toBe(true);
   });
 
-  it('le DoT du lanceur de gauche va sur la droite, pendant la fenêtre uniquement', () => {
+  it('le DoT d\'un sort porté par la droite va sur la droite', () => {
     const phases = dotPhases(cast('bjuna'), none);
     expect(bounds(phases)).toEqual([[0, 4.5], [4.5, Infinity]]);
-    expect(phases[0].dotsOnRight.map(d => [d.spellId, d.version, d.phaseId, d.dot.damage_per_tick])).toEqual([['bjuna', 'normal', 'bjuna_p', 10]]);
-    expect(phases[0].dotsOnLeft).toEqual([]);
-    expect(phases[1].dotsOnRight).toEqual([]);
+    expect(phases[0].dotsOnLeft.map(d => [d.spellId, d.version, d.phaseId, d.dot.damage_per_tick])).toEqual([['bjuna', 'normal', 'bjuna_p', 10]]);
+    expect(phases[0].dotsOnRight).toEqual([]);
+    expect(phases[1].dotsOnLeft).toEqual([]);
   });
 
-  it('le DoT du lanceur de droite va sur la gauche', () => {
+  it('le DoT d\'un sort porté par la droite va sur la droite', () => {
     const phases = dotPhases(none, cast('bjuna'));
-    expect(phases[0].dotsOnLeft).toHaveLength(1);
-    expect(phases[0].dotsOnRight).toEqual([]);
+    expect(phases[0].dotsOnRight).toHaveLength(1);
+    expect(phases[0].dotsOnLeft).toEqual([]);
+  });
+
+  it('sort offensif (DoT + effet self) : le porteur reçoit seulement le DoT, pas l\'effet self', () => {
+    const phases = dotPhases(none, cast('both'));
+    expect(phases[0].rightCardEffects).toEqual([]);
+    expect(phases[0].dotsOnRight).toHaveLength(1);
+    expect(phases[0].leftCardEffects).toEqual([]);
+    expect(phases[0].dotsOnLeft).toEqual([]);
   });
 
   it('D8 : 2 lancers = une fenêtre de 9 coups, même DoT', () => {
     const phases = dotPhases(cast('bjuna', 2), none);
     expect(bounds(phases)).toEqual([[0, 9], [9, Infinity]]);
-    expect(phases[0].dotsOnRight[0].dot.damage_per_tick).toBe(10);
+    expect(phases[0].dotsOnLeft[0].dot.damage_per_tick).toBe(10);
   });
 
   it('D12 : Heart of Winter, 4 fenêtres indépendantes de 2 coups, DoT sommables sur [0,2)', () => {
     const phases = dotPhases(cast('winter'), none);
     expect(bounds(phases)).toEqual([[0, 2], [2, Infinity]]);
-    expect(phases[0].dotsOnRight.map(d => d.dot.damage_per_tick)).toEqual([2, 4, 6, 8]);
-    expect(phases[1].dotsOnRight).toEqual([]);
+    expect(phases[0].dotsOnLeft.map(d => d.dot.damage_per_tick)).toEqual([2, 4, 6, 8]);
+    expect(phases[1].dotsOnLeft).toEqual([]);
   });
 
-  it('un sort avec DoT et modificateur : les deux s\'appliquent dans les mêmes phases', () => {
+  it('un sort avec DoT et effet self : seul le DoT s\'applique', () => {
     const phases = dotPhases(cast('both'), none);
-    expect(phases[0].leftCardEffects).toEqual(['a_fx']);
-    expect(phases[0].dotsOnRight).toHaveLength(1);
+    expect(phases[0].leftCardEffects).toEqual([]);
+    expect(phases[0].dotsOnLeft).toHaveLength(1);
   });
 });
