@@ -202,4 +202,68 @@ export interface EffectDefinition {
   modifiers: BrawlModifiers;
   /** Clé de la capacité de base dont cette entrée est une partie (ennemi, alliés, après-effet, variante) */
   variant_of?: string;
+  /** Présent si l'effet est une partie d'un sort (ou de son overcast) : exclu de la ligne « Effets ». `spell_id` = id de la version */
+  spell?: { spell_id: string };
 }
+
+/**
+ * Dégâts sur la durée (DoT) d'une phase de sort (spec 004-spell-dots).
+ * Sémantique supposée des champs du jeu (non documentée, constitution II) : `damage_amount` = dégâts par
+ * entité touchée et par tick ; `damage_chance` = probabilité par tick (vide = 1) ; `max_damaged_entities` = N,
+ * nombre d'entités touchées ; `hp_change_frequency` = secondes entre deux ticks.
+ */
+export interface SpellDot {
+  /** Dégâts par entité touchée et par tick (`damage_amount`), > 0 */
+  damage_per_tick: number;
+  /** Probabilité de dégâts par tick (`damage_chance`), entre 0 et 1 ; vide = 1 */
+  chance: number;
+  /** Entités touchées N (`max_damaged_entities`) ; vide ou <= 0 = toutes les entités de la cible (0 ici) */
+  max_entities: number;
+  /** Secondes entre deux ticks (`hp_change_frequency`) ; vide ou <= 0 = 1 s */
+  frequency: number;
+  /** Durée de la phase en secondes (`duration`), > 0 */
+  duration: number;
+}
+
+/**
+ * Phase d'un sort : effet indépendant avec sa propre durée (fenêtre d'instances propre).
+ */
+export interface SpellPhase {
+  /** Id de la phase du jeu */
+  id: string;
+  /** Durée en secondes (> 0) */
+  duration: number;
+  /** Ids des `EffectDefinition` issues de cette phase dans le catalogue d'effets (vide si la phase n'a qu'un `dot`) */
+  effects: string[];
+  /** DoT infligé à l'adversaire du lanceur par cette phase */
+  dot?: SpellDot;
+}
+
+/**
+ * Version d'un sort : simple ou overcast
+ */
+export interface SpellVersion {
+  /** Clé de la capacité (simple ou overcast) */
+  id: string;
+  name: string;
+  phases: SpellPhase[];
+}
+
+/**
+ * Définition d'un sort du catalogue
+ */
+export interface SpellDefinition {
+  /** = `normal.id` */
+  id: string;
+  name: string;
+  description?: string;
+  /** Chemin brut du jeu, à passer à getImageUrl(version, icon) */
+  icon: string;
+  mana_cost: number;
+  normal: SpellVersion;
+  /** Version overcast ; absente = pas de puce */
+  overcast?: SpellVersion;
+}
+
+/** Lancers par sort pour un côté : compteurs entiers ≥ 0 */
+export type SpellCasts = Record<string /* spell id */, { normal: number; overcast: number }>;

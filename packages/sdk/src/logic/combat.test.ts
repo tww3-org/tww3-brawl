@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { Unit } from '../types';
 import { regenerationBurst, regenerationPerHit } from './oneSideCalculations';
-import { calculateWinner, type UnitWithEntityNumber } from './twoSideCalculations';
+import type { ActiveDot } from './spellPhases';
+import { calculatePhasedWinner, calculateWinner, type UnitWithEntityNumber } from './twoSideCalculations';
 
 const makeUnit = (overrides: Partial<Unit> = {}): Unit => ({
   version: 'v',
@@ -92,5 +93,181 @@ describe('calculateWinner avec régénération', () => {
     const result = calculateWinner(side(strong), side(weak));
     expect(result.winner).toBe('right');
     expect(result.stalemate).toBe(false);
+  });
+});
+
+describe('calculatePhasedWinner', () => {
+  const strong = makeUnit({ damage: withDamage(60) });
+  const weak = makeUnit({ damage: withDamage(30) });
+  const tank = makeUnit({ damage: withDamage(30), regeneration: { per_second: 0.5, burst: 0 } });
+
+  it('C9 : calculateWinner est le cas « une seule phase infinie »', () => {
+    const direct = calculateWinner(side(strong), side(weak));
+    const phased = calculatePhasedWinner([{ hits: Infinity, left: side(strong), right: side(weak) }]);
+    expect(phased).toEqual(direct);
+    expect(direct.phases).toEqual([
+      {
+        start: 0, end: Infinity, leftNetTaken: expect.any(Number), rightNetTaken: expect.any(Number),
+        leftDotTaken: 0, rightDotTaken: 0, leftDots: [], rightDots: [],
+      },
+    ]);
+  });
+
+  it('C10 : un sort couvrant plus de coups que le combat équivaut à un effet actif tout le combat', () => {
+    const buffed = makeUnit({ damage: withDamage(45) });
+    const always = calculateWinner(side(buffed), side(weak));
+    const phased = calculatePhasedWinner([
+      { hits: 1000, left: side(buffed), right: side(weak) },
+      { hits: Infinity, left: side(weak), right: side(weak) },
+    ]);
+    expect(phased.winner).toBe(always.winner);
+    expect(phased.hitsNeeded).toBeCloseTo(always.hitsNeeded, 10);
+    expect(phased.remainingHealth).toBeCloseTo(always.remainingHealth, 10);
+  });
+
+  it('C11 : mort pendant la première phase, les phases suivantes sont ignorées', () => {
+    const base = calculateWinner(side(strong), side(weak));
+    const firstEnd = Math.ceil(base.hitsNeeded) + 1;
+    const phased = calculatePhasedWinner([
+      { hits: firstEnd, left: side(strong), right: side(weak) },
+      // si ces phases étaient parcourues, le résultat changerait
+      { hits: 3, left: side(weak), right: side(strong) },
+      { hits: Infinity, left: side(weak), right: side(strong) },
+    ]);
+    expect(phased.hitsNeeded).toBeLessThan(firstEnd);
+    expect(phased.hitsNeeded).toBeCloseTo(base.hitsNeeded, 10);
+    expect(phased.winner).toBe('left');
+    expect(phased.remainingHealth).toBeCloseTo(base.remainingHealth, 10);
+  });
+
+  it('mort dans une phase intermédiaire : les coups et la vie restante traversent les phases', () => {
+    // Phase 1 : les deux côtés s'infligent des dégâts moyens ; phase 2 : le gauche tue le droit
+    const p1 = calculateWinner(side(weak), side(weak));
+    const half = p1.hitsNeeded / 2;
+    const result = calculatePhasedWinner([
+      { hits: half, left: side(weak), right: side(weak) },
+      { hits: Infinity, left: side(strong), right: side(weak) },
+    ]);
+    expect(result.winner).toBe('left');
+    // Moitié de la vie de droite perdue en phase 1 ; le reste à la vitesse de la phase 2
+    const fast = calculateWinner(side(strong), side(weak)).hitsNeeded;
+    expect(result.hitsNeeded).toBeCloseTo(half + fast / 2, 8);
+    // Le gauche subit les dégâts nets de chaque phase pendant les coups passés dedans
+    const net1 = p1.phases![0].leftNetTaken;
+    const net2 = calculateWinner(side(strong), side(weak)).phases![0].leftNetTaken;
+    expect(result.remainingHealth).toBeCloseTo(Math.min(1, 1 - net1 * half - net2 * (result.hitsNeeded - half)), 8);
+  });
+
+  it('C12 : dernière phase sans dégâts nets et vie non épuisée : impasse', () => {
+    const result = calculatePhasedWinner([
+      { hits: 0.5, left: side(strong), right: side(weak) },
+      { hits: Infinity, left: side(tank), right: side({ ...tank }) },
+    ]);
+    expect(result.stalemate).toBe(true);
+    expect(result.hitsNeeded).toBe(Infinity);
+    expect(result.remainingHealth).toBe(1);
+  });
+
+  it('C12 : pas d\'impasse si l\'autre côté finit par mourir', () => {
+    const result = calculatePhasedWinner([
+      { hits: 0.5, left: side(strong), right: side(weak) },
+      { hits: Infinity, left: side(tank), right: side(strong) },
+    ]);
+    expect(result.stalemate).toBe(false);
+    expect(result.winner).toBe('left');
+    expect(Number.isFinite(result.hitsNeeded)).toBe(true);
+  });
+});
+
+describe('calculatePhasedWinner avec DoT de sorts (spec 004)', () => {
+  const bjuna: ActiveDot = {
+    spellId: 'bjuna',
+    version: 'normal',
+    phaseId: 'bjuna_p',
+    dot: { damage_per_tick: 10, chance: 1, max_entities: 25, frequency: 1, duration: 18 },
+  };
+  // Cible : 100 entités de 100 PV ; instance plafonnée à 100, porté 25 × 100, par coup : 2500 × 4 / 18 / 10000
+  const dotPerHit = (2500 * 4) / 18 / 10000;
+  const attacker = makeUnit({ damage: withDamage(30) });
+  const target = makeUnit({ damage: withDamage(30) });
+  // Régénération (0,2 par coup) supérieure à la mêlée (0,18 par coup) : impasse sans DoT
+  const regenerating = makeUnit({ damage: withDamage(30), regeneration: { per_second: 0.05, burst: 0 } });
+
+  it('D10 : sans DoT, listes absentes ou vides donnent le même résultat', () => {
+    const plain = calculatePhasedWinner([{ hits: Infinity, left: side(attacker), right: side(target) }]);
+    const empty = calculatePhasedWinner([
+      { hits: Infinity, left: side(attacker), right: side(target), dotsOnLeft: [], dotsOnRight: [] },
+    ]);
+    expect(empty).toEqual(plain);
+  });
+
+  it('le DoT s\'ajoute à la mêlée sur la cible et détaille la perte', () => {
+    const base = calculateWinner(side(attacker), side(target)).phases![0];
+    const result = calculatePhasedWinner([
+      { hits: Infinity, left: side(attacker), right: side(target), dotsOnRight: [bjuna] },
+    ]);
+    const phase = result.phases![0];
+    expect(phase.rightDotTaken).toBeCloseTo(dotPerHit, 10);
+    expect(phase.leftDotTaken).toBe(0);
+    expect(phase.rightNetTaken).toBeCloseTo(base.rightNetTaken + dotPerHit, 10);
+    expect(phase.leftNetTaken).toBeCloseTo(base.leftNetTaken, 10);
+    expect(phase.rightDots).toHaveLength(1);
+    expect(phase.rightDots[0].damage.lostOverkill).toBeCloseTo(25 * 80, 10);
+    expect(result.winner).toBe('left');
+  });
+
+  it('D9 : sur une cible qui régénère, net = mêlée + DoT − régénération', () => {
+    const regen = regenerationPerHit(attacker, makeUnit({ regeneration: { per_second: 0.01, burst: 0 } }));
+    const slow = makeUnit({ damage: withDamage(30), regeneration: { per_second: 0.01, burst: 0 } });
+    const melee = calculateWinner(side(attacker), side(slow)).phases![0].rightNetTaken + regen; // mêlée brute
+    const result = calculatePhasedWinner([
+      { hits: Infinity, left: side(attacker), right: side(slow), dotsOnRight: [bjuna] },
+    ]);
+    expect(result.phases![0].rightNetTaken).toBeCloseTo(melee + dotPerHit - regen, 10);
+  });
+
+  it('D8 : deux lancers couvrent deux fois plus de coups avec le même DoT par coup', () => {
+    // DoT faible (2 par tick) pour que la cible survive à la première fenêtre
+    const weakDot: ActiveDot = { ...bjuna, dot: { ...bjuna.dot, damage_per_tick: 2 } };
+    const run = (hits: number) => calculatePhasedWinner([
+      { hits, left: side(attacker), right: side(target), dotsOnRight: [weakDot] },
+      { hits: Infinity, left: side(attacker), right: side(target) },
+    ]);
+    const one = run(4.5);
+    const two = run(9);
+    expect(one.phases![0].rightDotTaken).toBeCloseTo(two.phases![0].rightDotTaken, 12);
+    expect(two.hitsNeeded).toBeLessThan(one.hitsNeeded);
+  });
+
+  it('US3 : cible en stalemate, le DoT réduit la vie sur quelques coups puis le stalemate reprend', () => {
+    const result = calculatePhasedWinner([
+      { hits: 2, left: side(regenerating), right: side(regenerating), dotsOnRight: [bjuna] },
+      { hits: Infinity, left: side(regenerating), right: side(regenerating) },
+    ]);
+    // Pendant le DoT : mêlée 0,18 + DoT 0,0556 − régénération 0,2 > 0 ; ensuite : 0
+    expect(result.phases![0].rightNetTaken).toBeCloseTo(0.18 + dotPerHit - 0.2, 10);
+    expect(result.phases![1].rightNetTaken).toBe(0);
+    expect(result.stalemate).toBe(true);
+  });
+
+  it('US3 : un DoT assez fort tue la cible en stalemate pendant sa fenêtre', () => {
+    const strongDot: ActiveDot = { ...bjuna, dot: { ...bjuna.dot, damage_per_tick: 1000 } };
+    const result = calculatePhasedWinner([
+      { hits: 50, left: side(regenerating), right: side(regenerating), dotsOnRight: [strongDot] },
+      { hits: Infinity, left: side(regenerating), right: side(regenerating) },
+    ]);
+    expect(result.stalemate).toBe(false);
+    expect(result.winner).toBe('left');
+    expect(result.hitsNeeded).toBeLessThan(50);
+  });
+
+  it('une résistance magique de la cible réduit le DoT, pas l\'armure', () => {
+    const resistant = makeUnit({ damage: withDamage(30), resistance: { physical: 0, magic: 50, fire: 0, ward_save: 0 } });
+    const armored = makeUnit({ damage: withDamage(30), armor: 300 });
+    const dot = (t: Unit) => calculatePhasedWinner([
+      { hits: Infinity, left: side(attacker), right: side(t), dotsOnRight: [bjuna] },
+    ]).phases![0].rightDotTaken;
+    expect(dot(resistant)).toBeCloseTo(dotPerHit / 2, 10);
+    expect(dot(armored)).toBeCloseTo(dotPerHit, 10);
   });
 });

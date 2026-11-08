@@ -1,10 +1,10 @@
 import { watch } from 'vue'
 import { useQueryClient } from '@tanstack/vue-query'
 import { useUnitStore } from '~/stores/unitStore'
-import { fetchUnit, fetchFactions, getEffect, type Faction } from '@tww3-brawl/sdk'
+import { fetchUnit, fetchFactions, getEffect, getSpell, type Faction, type SpellCasts } from '@tww3-brawl/sdk'
 import { useGraphQLClient } from './useGraphQLClient'
 import type { UnitWithEntityNumberAndBonus, UnitBonus, UnitEffectState } from '~/types/unit'
-import { defaultEffectState, defaultUnitBonus, UnitBonusPathes } from '~/types/unit'
+import { defaultEffectState, defaultUnitBonus, UnitBonusPathes, MAX_SPELL_CASTS } from '~/types/unit'
 import { getMaxEntities } from '@tww3-brawl/sdk/src/utils/getMaxEntities'
 import { useVersions } from './useVersions'
 
@@ -53,7 +53,20 @@ export function useUrlSync() {
       parts.push(`fa=${added.join(',')}`)
     }
 
+    // Sorts : un segment `s=<id>~<normal>~<overcast>` par sort ayant au moins un compteur non nul
+    for (const [id, casts] of Object.entries(unit.spells?.casts ?? {})) {
+      if (casts.normal > 0 || casts.overcast > 0) {
+        parts.push(`s=${id}~${casts.normal}~${casts.overcast}`)
+      }
+    }
+
     return parts.join('|')
+  }
+
+  /** Compteur d'URL borné à 0..MAX_SPELL_CASTS (entier ; valeur invalide : 0) */
+  function parseCastCount(value: string | undefined): number {
+    const n = Number.parseInt(value ?? '', 10)
+    return Number.isFinite(n) ? Math.max(0, Math.min(MAX_SPELL_CASTS, n)) : 0
   }
 
   /**
@@ -61,7 +74,7 @@ export function useUrlSync() {
    */
   function decodeUnitParams(
     param: string | undefined
-  ): { unit_id: string; version: string; bonus: UnitBonus; entityNumber?: number; factionKey?: string; effects: UnitEffectState } | null {
+  ): { unit_id: string; version: string; bonus: UnitBonus; entityNumber?: number; factionKey?: string; effects: UnitEffectState; spells: SpellCasts } | null {
     if (!param || typeof param !== 'string') {
       return null
     }
@@ -80,6 +93,7 @@ export function useUrlSync() {
     let entityNumber: number | undefined
     let factionKey: string | undefined
     const effects = defaultEffectState()
+    const spells: SpellCasts = {}
     for (const bonusPart of bonusParts) {
       const [key, valueStr] = bonusPart.split('=')
       if (key === 'f') {
@@ -106,6 +120,14 @@ export function useUrlSync() {
         }
         continue
       }
+      if (key === 's' && valueStr) {
+        // Les ids inconnus du catalogue sont ignorés ; les compteurs sont bornés à 0..MAX_SPELL_CASTS
+        const [id, normal, overcast] = valueStr.split('~')
+        if (id && getSpell(id)) {
+          spells[id] = { normal: parseCastCount(normal), overcast: parseCastCount(overcast) }
+        }
+        continue
+      }
       if (key === 'n' && valueStr !== undefined) {
         const n = Number.parseInt(valueStr, 10)
         if (Number.isFinite(n) && n > 0) {
@@ -121,7 +143,7 @@ export function useUrlSync() {
       }
     }
     
-    return { unit_id, version, bonus, entityNumber, factionKey, effects }
+    return { unit_id, version, bonus, entityNumber, factionKey, effects, spells }
   }
 
   /**
@@ -218,6 +240,7 @@ export function useUrlSync() {
         bonus: decoded.bonus,
         // Décodé depuis l'URL ; les overrides sont par id, donc valides même avant le chargement de l'autre unité
         effects: decoded.effects,
+        spells: { casts: decoded.spells },
       }
     } catch (error) {
       console.error('Error loading unit from URL:', error)
@@ -276,12 +299,14 @@ export function useUrlSync() {
         unitStore.left?.entityNumber,
         unitStore.left?.bonus,
         unitStore.left?.effects,
+        unitStore.left?.spells,
         unitStore.right?.selection?.unit?.unit,
         unitStore.right?.selection?.version?.id,
         unitStore.right?.selection?.faction?.key,
         unitStore.right?.entityNumber,
         unitStore.right?.bonus,
         unitStore.right?.effects,
+        unitStore.right?.spells,
       ],
       () => {
         updateUrl()

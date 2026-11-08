@@ -13,9 +13,12 @@ export interface NativeCardEffect {
 /** Sort d'une unité qui s'applique à l'ennemi (ex. hex) : affiché sur la carte de celui qui le reçoit */
 const isEnemyAbility = (e: EffectDefinition): boolean => e.kind === 'ability' && e.target === 'enemy';
 
+/** Entrée d'un sort : gérée par la ligne « Sorts » (compteur de lancers), jamais comme effet on/off */
+const isSpellEntry = (e: EffectDefinition): boolean => e.spell !== undefined;
+
 /**
  * Effets natifs affichés sur la carte d'une unité, avec leur état par défaut :
- * ses propres effets (hors sorts ciblant l'ennemi) + les sorts ciblant l'ennemi de l'adversaire.
+ * ses propres effets (hors sorts ciblant l'ennemi, et hors entrées de la ligne « Sorts ») + les sorts ciblant l'ennemi de l'adversaire.
  * Actif par défaut si `default_active`, sinon si l'effet est passif.
  */
 export function getNativeCardEffects(
@@ -31,10 +34,10 @@ export function getNativeCardEffects(
     }
   };
   for (const id of unit.effects ?? []) {
-    if (has(catalog, id) && !isEnemyAbility(catalog[id])) add(id, 'own');
+    if (has(catalog, id) && !isSpellEntry(catalog[id]) && !isEnemyAbility(catalog[id])) add(id, 'own');
   }
   for (const id of opponent?.effects ?? []) {
-    if (has(catalog, id) && isEnemyAbility(catalog[id])) add(id, 'opponent');
+    if (has(catalog, id) && !isSpellEntry(catalog[id]) && isEnemyAbility(catalog[id])) add(id, 'opponent');
   }
   return [...result.values()];
 }

@@ -56,7 +56,12 @@
       </div>
     </div>
 
-    <div v-else class="no-combat">
+    <div v-if="combatResult && spellLines.length > 0" class="spell-summary">
+      <p v-for="line in spellLines" :key="line.key" class="hits-info">{{ line.text }}</p>
+      <p v-for="line in dotLines" :key="line.key" class="hits-info">{{ line.text }}</p>
+    </div>
+
+    <div v-if="!combatResult" class="no-combat">
       <p>Select two units to see combat results</p>
     </div>
   </div>
@@ -67,7 +72,7 @@ import { useUnitStore } from '~/stores/unitStore';
 import { computed } from 'vue';
 import { calculateGoldDamage } from '@tww3-brawl/sdk/src/logic/twoSideCalculations';
 import { getUnitDisplayName } from '@tww3-brawl/sdk/src/utils/getUnitDisplayName';
-import { effectiveUnits } from '~/types/unit';
+import { castSpells, effectiveUnits, spellPhaseHitTexts } from '~/types/unit';
 
 const unitStore = useUnitStore();
 
@@ -116,6 +121,38 @@ const regenerationText = computed(() => {
     .filter(side => regen[side] > 0)
     .map(side => `${getSideName(side)} ${(regen[side] * 100).toFixed(2)}%`);
   return parts.length > 0 ? `Regeneration per hit: ${parts.join(' / ')}` : '';
+});
+
+// Une ligne par sort lancé, pour chaque côté : « Nom (×k, overcast ×j) : couvre N coups » (une valeur par phase si plusieurs)
+const spellLines = computed(() => (['left', 'right'] as const).flatMap(side =>
+  castSpells(unitStore[side]).map(({ spell, casts, phases }) => ({
+    key: `${side}-${spell.id}`,
+    text: `${getSideName(side)} - ${spell.name} (×${casts.normal}${casts.overcast > 0 ? `, overcast ×${casts.overcast}` : ''}): covers ${spellPhaseHitTexts(phases).join(' / ')}`,
+  }))
+));
+
+// Une ligne par sort de DoT lancé : dégâts par coup sur la cible et part perdue (overkill / manque d'entités).
+// Tous les DoT d'un sort débutent au coup 0 : la première phase du duel les contient tous. Les pourcentages sont
+// rapportés aux dégâts bruts du sort (avant résistance), toutes phases du sort confondues.
+const dotLines = computed(() => {
+  const first = combatResult.value?.phases?.[0];
+  if (!first) return [];
+  return (['left', 'right'] as const).flatMap(side => {
+    const target = side === 'left' ? 'right' : 'left';
+    const taken = target === 'right' ? first.rightDots : first.leftDots;
+    return castSpells(unitStore[side]).flatMap(({ spell, casts }) => {
+      const dots = taken.filter(d => d.spellId === spell.id && (d.version === 'normal' ? casts.normal : casts.overcast) > 0);
+      if (dots.length === 0) return [];
+      const sum = (pick: (d: typeof dots[number]) => number) => dots.reduce((total, d) => total + pick(d), 0);
+      const gross = sum(d => d.damage.gross);
+      const percent = (lost: number) => (gross > 0 ? (lost / gross) * 100 : 0).toFixed(0);
+      return [{
+        key: `dot-${side}-${spell.id}`,
+        text: `${getSideName(side)} - ${spell.name} DoT: ${(sum(d => d.damage.perHit) * 100).toFixed(2)}% of ${getSideName(target)} health per hit, `
+          + `${percent(sum(d => d.damage.lostOverkill))}% lost to overkill, ${percent(sum(d => d.damage.lostEntities))}% lost to missing entities`,
+      }];
+    });
+  });
 });
 
 // Health color based on percentage with 5 tiers
@@ -236,6 +273,10 @@ const goldWinnerClass = computed(() => (goldWinner.value?.side === 'left' ? 'bg-
 .health-label {
   font-size: 0.9rem;
   color: #666;
+}
+
+.spell-summary {
+  margin-top: 12px;
 }
 
 .no-combat {
