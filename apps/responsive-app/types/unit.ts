@@ -167,8 +167,8 @@ export function castSpells(side: SideData) {
 /**
  * Duel découpé en phases (sorts) : phases du SDK et unités effectives de chaque phase.
  * Pour chaque phase, les effets de sort actifs (`leftCardEffects` / `rightCardEffects`) s'ajoutent aux
- * `cardEffects` de la carte, puis les mêmes couches que `effectiveUnits` sont appliquées.
- * Les DoT actifs de chaque phase (`dotsOnLeft` / `dotsOnRight`) sont transmis tels quels au calcul du SDK.
+ * `cardEffects` de la carte qui porte le sort (colonne Sorts du côté), quelle que soit leur cible, puis les mêmes couches que `effectiveUnits` sont appliquées.
+ * Les DoT actifs de chaque phase (`dotsOnLeft` / `dotsOnRight`, subis par le porteur) sont transmis tels quels au calcul du SDK.
  * Sans sort lancé, une seule phase `[0, ∞)` dont les unités valent celles de `effectiveUnits`.
  */
 export function duelPhases(

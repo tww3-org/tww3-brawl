@@ -17,11 +17,12 @@ import { SECONDS_PER_ATTACK } from './oneSideCalculations';
  *    ensemble au lieu de s'enchaîner ; seul le résultat final du duel compte.
  * 3. Bornes de phases = union triée et dédoublonnée des nₑ des deux côtés, précédée de 0 ; la dernière
  *    phase `[max nₑ, ∞)` n'a aucun sort. La phase `[bᵢ, bᵢ₊₁)` contient les fenêtres telles que nₑ > bᵢ.
- * 4. Les modificateurs d'un sort viennent des `EffectDefinition` de la phase (R6) : ceux qui visent
- *    `self` vont sur la carte du lanceur, ceux qui visent `enemy` sur celle de l'adversaire.
+ * 4. Les modificateurs d'un sort viennent des `EffectDefinition` de la phase (R6). Révision : un sort placé dans
+ *    la colonne Sorts d'un côté s'applique à CE côté (le porteur) : tous ses effets vont sur la carte du porteur,
+ *    quelle que soit la cible (`self` / `enemy`) de l'`EffectDefinition`.
  *
  * 5. Les DoT (spec 004-spell-dots) suivent les mêmes fenêtres : le DoT d'une phase de sort s'applique, par coup,
- *    à l'adversaire du lanceur dans toutes les phases du duel où la fenêtre est active (`dotsOnLeft` /
+ *    au porteur du sort dans toutes les phases du duel où la fenêtre est active (`dotsOnLeft` /
  *    `dotsOnRight`). Chaque phase de sort a son propre DoT, indépendant des autres (ex. Heart of Winter : 4 DoT
  *    sommés sur ses premiers coups, voir research R6).
  *
@@ -30,9 +31,9 @@ import { SECONDS_PER_ATTACK } from './oneSideCalculations';
 
 export type SpellSide = 'left' | 'right';
 
-/** Instances de calcul couvertes par une phase d'un sort lancé par un côté */
+/** Instances de calcul couvertes par une phase d'un sort porté par un côté */
 export interface SpellWindow {
-  /** Côté qui lance */
+  /** Côté qui porte (et subit) le sort */
   side: SpellSide;
   spellId: string;
   version: 'normal' | 'overcast';
@@ -42,7 +43,7 @@ export interface SpellWindow {
   instances: number;
 }
 
-/** DoT d'une phase de sort actif dans une phase du duel, subi par le côté visé */
+/** DoT d'une phase de sort actif dans une phase du duel, subi par le côté porteur */
 export interface ActiveDot {
   spellId: string;
   version: 'normal' | 'overcast';
@@ -59,13 +60,13 @@ export interface DuelPhase {
   end: number;
   /** Fenêtres actives (instances > start) */
   active: SpellWindow[];
-  /** Ids d'effets de sort à ajouter aux `cardEffects` de l'unité de gauche (routage self/enemy) */
+  /** Ids d'effets de sort à ajouter aux `cardEffects` de l'unité de gauche (sorts portés par la gauche) */
   leftCardEffects: string[];
-  /** Ids d'effets de sort à ajouter aux `cardEffects` de l'unité de droite */
+  /** Ids d'effets de sort à ajouter aux `cardEffects` de l'unité de droite (sorts portés par la droite) */
   rightCardEffects: string[];
-  /** DoT subis par l'unité de gauche (fenêtres actives lancées par la droite) */
+  /** DoT subis par l'unité de gauche (fenêtres actives portées par la gauche) */
   dotsOnLeft: ActiveDot[];
-  /** DoT subis par l'unité de droite (fenêtres actives lancées par la gauche) */
+  /** DoT subis par l'unité de droite (fenêtres actives portées par la droite) */
   dotsOnRight: ActiveDot[];
 }
 
@@ -120,15 +121,14 @@ export function buildDuelPhases(
     const dotsOnRight: ActiveDot[] = [];
     for (const w of active) {
       const phase = spells[w.spellId]?.[w.version]?.phases.find(p => p.id === w.phaseId);
-      const opposite = w.side === 'left' ? right : left;
       const own = w.side === 'left' ? left : right;
       if (phase?.dot) {
-        (w.side === 'left' ? dotsOnRight : dotsOnLeft).push({ spellId: w.spellId, version: w.version, phaseId: w.phaseId, dot: phase.dot });
+        (w.side === 'left' ? dotsOnLeft : dotsOnRight).push({ spellId: w.spellId, version: w.version, phaseId: w.phaseId, dot: phase.dot });
       }
       for (const id of phase?.effects ?? []) {
         const def = effects[id];
         if (!def) continue;
-        (def.target === 'enemy' ? opposite : own).add(id);
+        own.add(id);
       }
     }
     return {

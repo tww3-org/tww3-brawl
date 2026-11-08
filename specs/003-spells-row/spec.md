@@ -175,3 +175,7 @@ Le résumé du duel indique, pour chaque sort lancé, le nombre de coups couvert
 - Les compteurs de lancers suivent la même persistance que l'état des effets de la carte.
 - Les effets de dégâts directs des sorts (DoT) sont hors périmètre : feature 004.
 - Les vortex, bombardements et projectiles sont hors périmètre.
+
+## Révision : sort porté par son côté
+
+Un sort placé dans la colonne Sorts d'un côté s'applique à ce côté (le porteur) : son DoT et tous ses effets, quelle que soit la cible (`self` / `enemy`) de l'effet. Les DoT plafonnent les dégâts par entité à `health.unit / max(1, entités)` (bonus de PV et montures compris), et non à `health.entity`. Le résumé affiche les PV perdus du porteur et leur % de la vie de son unité.

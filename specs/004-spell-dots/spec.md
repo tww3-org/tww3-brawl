@@ -159,3 +159,7 @@ Une **instance** de DoT est l'ensemble des dégâts qu'une entité touchée subi
 - Le nombre d'entités E est celui de départ ; on ne suit pas les pertes en cours de combat (modèle non simulationniste).
 - Les dégâts des vortex, bombardements, projectiles et explosions sont hors périmètre.
 - Les DoT qui ne viennent pas d'un sort (effets de contact, capacités on/off) sont hors périmètre.
+
+## Révision : sort porté par son côté
+
+Un sort placé dans la colonne Sorts d'un côté s'applique à ce côté (le porteur) : son DoT et tous ses effets, quelle que soit la cible (`self` / `enemy`) de l'effet. Les DoT plafonnent les dégâts par entité à `health.unit / max(1, entités)` (bonus de PV et montures compris), et non à `health.entity`. Le résumé affiche les PV perdus du porteur et leur % de la vie de son unité.
