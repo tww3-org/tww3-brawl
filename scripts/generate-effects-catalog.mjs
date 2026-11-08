@@ -53,7 +53,7 @@ const OVERRIDES = {
 };
 
 const PHASE_FIELDS = `id onscreen_name duration effect_type imbue_magical imbue_ignition damage_amount
-  hp_change_frequency heal_amount
+  hp_change_frequency heal_amount damage_chance max_damaged_entities
   stat_effects{stat value how} attribute_effects{attribute attribute_type}`;
 
 async function gql(query) {
@@ -329,6 +329,27 @@ function abilityEntries(ability) {
 const isMiscast = (phase) => /_miscast$/.test(phase.id);
 
 /**
+ * DoT d'une phase de sort (spec 004-spell-dots, research R1), ou null. Hypothèses (constitution II) :
+ * - `damage_amount` = dégâts par entité touchée et par tick (pas un total) ; seules les phases à
+ *   `damage_amount > 0` et `effect_type !== 'positive'` comptent (une phase `positive` avec dégâts, ex. Omen of
+ *   Spirits, n'est pas un dégât sur l'ennemi : ignorée) ; les phases `*_miscast` sont déjà écartées en amont ;
+ * - `damage_chance` = probabilité par tick, vide = 1 (toujours vide en Patch 9.0.0) ;
+ * - `max_damaged_entities` = N entités touchées ; vide ou <= 0 -> 0 = toutes les entités de la cible ;
+ * - `hp_change_frequency` = secondes entre deux ticks ; vide ou <= 0 -> 1 s (même convention que la régénération) ;
+ * - la durée est celle de la phase (`duration`, éventuellement reprise de `active_time` par `resolvePhaseDurations`).
+ */
+function phaseDot(phase, duration) {
+  if (!(phase.damage_amount > 0) || phase.effect_type === 'positive' || !(duration > 0)) return null;
+  return {
+    damage_per_tick: round(phase.damage_amount),
+    chance: phase.damage_chance > 0 ? round(phase.damage_chance) : 1,
+    max_entities: phase.max_damaged_entities > 0 ? phase.max_damaged_entities : 0,
+    frequency: phase.hp_change_frequency > 0 ? round(phase.hp_change_frequency) : 1,
+    duration: round(duration),
+  };
+}
+
+/**
  * Une version de sort (simple ou overcast) : une `SpellPhase` par phase de durée > 0, hors `*_miscast`.
  * Hypothèses (constitution II, voir specs/003-spells-row/research.md R3) :
  * - chaque phase du sort est un effet indépendant avec sa propre durée : contrairement aux capacités
@@ -338,7 +359,8 @@ const isMiscast = (phase) => /_miscast$/.test(phase.id);
  * - une phase sans durée positive reprend `special_ability.active_time` divisé par le nombre de phases
  *   retenues de la version (phases à durée explicite + phases sans durée ayant un effet), faute
  *   d'indication plus précise (`resolvePhaseDurations`) ; elle reste ignorée si `active_time` n'est pas > 0 ;
- * - les phases `*_miscast` (échec du sort) n'ont pas de sens dans un calculateur de mêlée.
+ * - les phases `*_miscast` (échec du sort) n'ont pas de sens dans un calculateur de mêlée ;
+ * - une phase de DoT (`phaseDot`) est retenue même sans modificateur de stats : `effects: []` et `dot`.
  * Les entrées d'effet de chaque phase viennent de `abilityEntries` appelée sur cette seule phase, ce qui
  * réutilise la whitelist de stats et le routage self/enemy. Avec plusieurs phases, les ids sont suffixés
  * `__p<n>` pour rester uniques. Chaque entrée est marquée `spell: { spell_id }` (id de la version).
@@ -351,7 +373,7 @@ function spellVersion(ability) {
   const retained = resolvePhaseDurations(
     candidates,
     ability.unit_special_ability?.active_time,
-    (p) => abilityEntries({ ...ability, phases: [p] }).length > 0
+    (p) => abilityEntries({ ...ability, phases: [p] }).length > 0 || phaseDot(p, 1) !== null
   );
   if (!retained.length) return null;
   const multi = retained.length > 1;
@@ -367,18 +389,20 @@ function spellVersion(ability) {
       spell: { spell_id: ability.key },
     }));
     entries.push(...list);
-    return { id: phase.id, duration: round(duration), effects: list.map((e) => e.id) };
+    const dot = phaseDot(phase, duration);
+    return { id: phase.id, duration: round(duration), effects: list.map((e) => e.id), ...(dot && { dot }) };
   });
   return { version: { id: ability.key, name: abilityBaseName(ability), phases }, entries };
 }
 
-/** Signature d'une version de sort pour le dédoublonnage R5 : durées et modificateurs de chaque phase */
+/** Signature d'une version de sort pour le dédoublonnage R5 : durées, DoT et modificateurs de chaque phase */
 function versionSignature(v) {
   if (!v) return '';
   const byId = new Map(v.entries.map((e) => [e.id, e]));
   return JSON.stringify(
     v.version.phases.map((p) => [
       p.duration,
+      p.dot ?? null,
       p.effects.map((id) => {
         const { modifiers, target, polarity, placement } = byId.get(id);
         return [modifiers, target, polarity, placement];
@@ -567,6 +591,8 @@ ${spellLines.join('\n')}
   console.log(`Abilities exclues: ${excluded}`);
   console.log(`Écrit: ${OUT_FILE}`);
   console.log(`Sorts: ${Object.keys(spells).length} (dont ${Object.values(spells).filter((sp) => sp.overcast).length} avec overcast)`);
+  const spellVersions = Object.values(spells).flatMap((sp) => [sp.normal, sp.overcast].filter(Boolean));
+  console.log(`Versions de sort avec DoT: ${spellVersions.filter((v) => v.phases.some((p) => p.dot)).length}`);
   console.log(`Écrit: ${SPELLS_OUT_FILE}`);
 }
 
