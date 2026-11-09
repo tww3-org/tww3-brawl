@@ -116,6 +116,7 @@ Une **instance** de DoT est l'ensemble des dégâts qu'une entité touchée subi
 - `moyenne_tick = damage_amount × damage_chance`, avec `damage_chance` vide = 1. Les dégâts aléatoires sont ramenés à leur moyenne.
 - `ticks_par_lancer = durée_phase / hp_change_frequency`
 - `instance = min(moyenne_tick × ticks_par_lancer, PV_max_entité_cible)`. Le plafond overkill porte sur le **cumul d'un lancer** : une entité ne peut pas perdre plus que ses PV.
+- *(Révision)* Les PV courants `h` de l'entité touchée sont supposés uniformes sur `[0, H]` (H = PV max d'une entité) : `instance = E[min(D, h)]` = `H / 2` si `D ≥ H`, sinon `D − D² / (2H)` (ex. D = 70, H = 100 → 45,5). Calcul déterministe, appliqué à tous les DoT.
 - `instances_portées = min(N, E)`, où E est le nombre d'entités **de départ** de la cible. On ne suit pas les entités restantes. Cela revient à appliquer `N × min(1, E/N)`.
 - `rés = min(résistance_magique + ward_save, 95 %)`, le même plafond que la mêlée (`calculateResistRatio` avec une attaque magique non enflammée). L'armure et la résistance physique ne s'appliquent pas.
 - `DoT_par_lancer = instance × instances_portées × (1 − rés)`, exprimé dans la même unité de vie que les dégâts de mêlée du duel (fraction de la vie de l'unité).
