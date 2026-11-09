@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { SpellDot, Unit } from '../types';
-import { dotDamagePerHit } from './spellDots';
+import { dotDamagePerHit, expectedDotInstance } from './spellDots';
 
 /** Fate of Bjuna : 10 par tick, N = 25, 1 tick/s pendant 18 s, soit 180 par entité et par lancer */
 const bjuna: SpellDot = { damage_per_tick: 10, chance: 1, max_entities: 25, frequency: 1, duration: 18 };
@@ -34,30 +34,44 @@ const infantry = makeUnit(120, 80, { caste: 'melee_infantry' });
 const single = makeUnit(1, 5000, { caste: 'Lord' });
 
 describe('dotDamagePerHit (Fate of Bjuna)', () => {
-  it('D1 : cavalerie (30, 400 PV), tout porte, aucune perte', () => {
+  it('D1 : cavalerie (30, 400 PV), tout porte, overkill espéré : instance 139,5, perdu 25 × 40,5', () => {
     const d = dotDamagePerHit(bjuna, cavalry, 30);
     expect(d.gross).toBe(4500);
-    expect(d.lostOverkill).toBe(0);
+    expect(d.lostOverkill).toBeCloseTo(1012.5, 10);
     expect(d.lostEntities).toBe(0);
     expect(d.resist).toBe(0);
   });
 
-  it('D2 : infanterie (120, 80 PV), overkill : porté 25 × 80, perdu 25 × 100', () => {
+  it('D2 : infanterie (120, 80 PV), D >= H : instance 40, porté 25 × 40, perdu 25 × 140', () => {
     const d = dotDamagePerHit(bjuna, infantry, 120);
     expect(d.gross).toBe(4500);
-    expect(d.lostOverkill).toBe(2500);
+    expect(d.lostOverkill).toBe(3500);
     expect(d.lostEntities).toBe(0);
-    // 2500 / 4500 ≈ 56 % perdus
-    expect(d.lostOverkill / d.gross).toBeCloseTo(0.5556, 3);
-    expect(d.perHit).toBeCloseTo((2000 * 4) / 18 / 9600, 10);
+    // 3500 / 4500 ≈ 78 % perdus
+    expect(d.lostOverkill / d.gross).toBeCloseTo(0.7778, 3);
+    expect(d.perHit).toBeCloseTo((1000 * 4) / 18 / 9600, 10);
   });
 
-  it('D3 : entité unique (1, 5000 PV), 1 instance sur 25 porte : perdu 24 × 180', () => {
+  it('D3 : entité unique (1, 5000 PV) supposée à pleine vie, 1 instance sur 25 porte : instance 180, perdu 24 × 180', () => {
     const d = dotDamagePerHit(bjuna, single, 1);
     expect(d.lostEntities).toBe(4320);
+    // D = 180 < H = 5000 : instance = min(D, H) = 180, pas d'overkill
     expect(d.lostOverkill).toBe(0);
     expect(d.lostEntities / d.gross).toBeCloseTo(0.96, 10);
     expect(d.perHit).toBeCloseTo((180 * 4) / 18 / 5000, 10);
+  });
+
+  it('entité unique avec D > H : instance plafonnée à H (pleine vie), le reste est perdu', () => {
+    const d = dotDamagePerHit(bjuna, makeUnit(1, 100), 1);
+    expect(d.perLaunch).toBe(100);
+    expect(d.lostOverkill).toBe(80);
+  });
+
+  it('unité à 2 entités : l\'espérance à PV uniformes s\'applique encore (D >= H : instance H / 2)', () => {
+    const d = dotDamagePerHit(bjuna, makeUnit(2, 100), 2);
+    // instance = 50 sur 2 entités portantes
+    expect(d.perLaunch).toBe(100);
+    expect(d.lostOverkill).toBe(2 * 130);
   });
 
   it('E est le plus petit de l\'effectif de départ et du nombre d\'entités de l\'unité', () => {
@@ -100,12 +114,12 @@ describe('dotDamagePerHit (Fate of Bjuna)', () => {
   it('D7 : perHit = porté × (1 − rés) × 4 / 18 / vie de l\'unité', () => {
     const target = makeUnit(30, 400, { resistance: { magic: 40, ward_save: 30 } });
     const d = dotDamagePerHit(bjuna, target, 30);
-    expect(d.perHit).toBeCloseTo((4500 * 0.3 * 4) / 18 / target.health!.unit, 10);
+    expect(d.perHit).toBeCloseTo((3487.5 * 0.3 * 4) / 18 / target.health!.unit, 10);
   });
 });
 
 describe('dotDamagePerHit (plafond de PV par entité)', () => {
-  it('seigneur à une entité : battle_entity.hit_points minuscule mais health.unit élevé, aucun overkill', () => {
+  it('seigneur à une entité : battle_entity.hit_points minuscule mais health.unit élevé, pleine vie : pas d\'overkill', () => {
     const lord: Unit = {
       ...makeUnit(1, 5000, { caste: 'Lord' }),
       land_unit: { ...single.land_unit!, battle_entity: { hit_points: 100, size: 'small', type: '' } },
@@ -113,6 +127,7 @@ describe('dotDamagePerHit (plafond de PV par entité)', () => {
     };
     const spirit: SpellDot = { damage_per_tick: 67, chance: 1, max_entities: 1, frequency: 1, duration: 13 };
     const d = dotDamagePerHit(spirit, lord, 1);
+    // D = 871 < H = 6836 : instance = 871 (entité unique à pleine vie)
     expect(d.lostOverkill).toBe(0);
     expect(d.perLaunch).toBe(871);
     expect(d.targetHealth).toBe(6836);
@@ -120,14 +135,14 @@ describe('dotDamagePerHit (plafond de PV par entité)', () => {
 
   it('le plafond par entité vaut health.unit / entités', () => {
     const d = dotDamagePerHit(bjuna, { ...infantry, health: { unit: 120 * 100, entity: 1 } }, 120);
-    // 180 par entité plafonnés à 100
-    expect(d.lostOverkill).toBe(25 * 80);
-    expect(d.perLaunch).toBe(2500);
+    // D = 180 >= H = 100 : instance = 50
+    expect(d.lostOverkill).toBe(25 * 130);
+    expect(d.perLaunch).toBe(1250);
   });
 
   it('perLaunch tient compte de la résistance', () => {
     const d = dotDamagePerHit(bjuna, makeUnit(30, 400, { resistance: { magic: 40, ward_save: 30 } }), 30);
-    expect(d.perLaunch).toBeCloseTo(4500 * 0.3, 10);
+    expect(d.perLaunch).toBeCloseTo(3487.5 * 0.3, 10);
   });
 });
 
@@ -155,5 +170,30 @@ describe('dotDamagePerHit (cas limites)', () => {
   it('cible sans vie d\'unité : aucun dégât par coup', () => {
     const d = dotDamagePerHit(bjuna, { ...cavalry, health: { unit: 0, entity: 0 } }, 30);
     expect(d.perHit).toBe(0);
+  });
+});
+
+describe('expectedDotInstance', () => {
+  it('D = 70, H = 100 : 70 − 70² / 200 = 45,5', () => {
+    expect(expectedDotInstance(70, 100)).toBeCloseTo(45.5, 10);
+  });
+
+  it('D >= H : H / 2', () => {
+    expect(expectedDotInstance(180, 100)).toBe(50);
+    expect(expectedDotInstance(1000, 80)).toBe(40);
+  });
+
+  it('continuité à la frontière D = H', () => {
+    expect(expectedDotInstance(100, 100)).toBe(50);
+    expect(expectedDotInstance(100 - 1e-9, 100)).toBeCloseTo(50, 6);
+  });
+
+  it('H <= 0 : 0', () => {
+    expect(expectedDotInstance(50, 0)).toBe(0);
+    expect(expectedDotInstance(50, -10)).toBe(0);
+  });
+
+  it('D = 0 : 0', () => {
+    expect(expectedDotInstance(0, 100)).toBe(0);
   });
 });

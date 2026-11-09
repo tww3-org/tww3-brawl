@@ -186,8 +186,8 @@ describe('calculatePhasedWinner avec DoT de sorts (spec 004)', () => {
     phaseId: 'bjuna_p',
     dot: { damage_per_tick: 10, chance: 1, max_entities: 25, frequency: 1, duration: 18 },
   };
-  // Cible : 100 entités de 100 PV ; instance plafonnée à 100, porté 25 × 100, par coup : 2500 × 4 / 18 / 10000
-  const dotPerHit = (2500 * 4) / 18 / 10000;
+  // Cible : 100 entités de 100 PV ; D = 180 ≥ H = 100 : instance = H / 2 = 50, porté 25 × 50, par coup : 1250 × 4 / 18 / 10000
+  const dotPerHit = (1250 * 4) / 18 / 10000;
   const attacker = makeUnit({ damage: withDamage(30) });
   const target = makeUnit({ damage: withDamage(30) });
   // Régénération (0,2 par coup) supérieure à la mêlée (0,18 par coup) : impasse sans DoT
@@ -212,7 +212,7 @@ describe('calculatePhasedWinner avec DoT de sorts (spec 004)', () => {
     expect(phase.rightNetTaken).toBeCloseTo(base.rightNetTaken + dotPerHit, 10);
     expect(phase.leftNetTaken).toBeCloseTo(base.leftNetTaken, 10);
     expect(phase.rightDots).toHaveLength(1);
-    expect(phase.rightDots[0].damage.lostOverkill).toBeCloseTo(25 * 80, 10);
+    expect(phase.rightDots[0].damage.lostOverkill).toBeCloseTo(25 * 130, 10);
     expect(result.winner).toBe('left');
   });
 
@@ -244,14 +244,15 @@ describe('calculatePhasedWinner avec DoT de sorts (spec 004)', () => {
       { hits: 2, left: side(regenerating), right: side(regenerating), dotsOnRight: [bjuna] },
       { hits: Infinity, left: side(regenerating), right: side(regenerating) },
     ]);
-    // Pendant le DoT : mêlée 0,18 + DoT 0,0556 − régénération 0,2 > 0 ; ensuite : 0
+    // Pendant le DoT : mêlée 0,18 + DoT 0,0278 − régénération 0,2 > 0 ; ensuite : 0
     expect(result.phases![0].rightNetTaken).toBeCloseTo(0.18 + dotPerHit - 0.2, 10);
     expect(result.phases![1].rightNetTaken).toBe(0);
     expect(result.stalemate).toBe(true);
   });
 
   it('US3 : un DoT assez fort tue la cible en stalemate pendant sa fenêtre', () => {
-    const strongDot: ActiveDot = { ...bjuna, dot: { ...bjuna.dot, damage_per_tick: 1000 } };
+    const strongDot: ActiveDot = { ...bjuna, dot: { ...bjuna.dot, damage_per_tick: 1000, max_entities: 100 } };
+    // D >= H : instance = 50 sur chacune des 100 entités (le plafond de PV rend damage_per_tick seul insuffisant)
     const result = calculatePhasedWinner([
       { hits: 50, left: side(regenerating), right: side(regenerating), dotsOnRight: [strongDot] },
       { hits: Infinity, left: side(regenerating), right: side(regenerating) },

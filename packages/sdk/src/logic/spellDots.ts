@@ -13,6 +13,10 @@ import { clampNonNegative } from './clampStat'
  *   pendant tout le lancer, donc le plafond de PV s'applique par entité et par lancer (cumul de la phase) ;
  *   les PV d'une entité sont ceux de l'unité entière (bonus de PV et montures compris) divisés par son nombre
  *   d'entités (`health.unit / max(1, entités)`), et non `health.entity` (PV de base de l'entité de combat) ;
+ * - les PV courants `h` de l'entité touchée sont supposés uniformément répartis sur [0, H] (H = PV d'une entité) :
+ *   les dégâts délivrés par instance sont l'espérance `E[min(D, h)]` (voir `expectedDotInstance`) ; exception :
+ *   une unité à entité unique (`getMaxEntities <= 1`) est supposée toujours à pleine vie, l'instance vaut alors
+ *   `min(D, H)` (plafond de PV complet) ;
  * - E = entités de départ de la cible (on ne suit pas les pertes en cours de combat) : `min(N, E)` instances
  *   portent ; N absent ou <= 0 = toutes les entités ;
  * - seules la résistance magique et le ward save réduisent un DoT, plafonnés à 95 % comme en mêlée
@@ -29,7 +33,11 @@ export interface DotDamage {
     perHit: number
     /** Dégâts bruts par lancer (PV), avant plafonds et résistance : moyenne par entité × N */
     gross: number
-    /** PV perdus par plafond de PV d'une entité (overkill), par lancer, avant résistance */
+    /**
+     * PV perdus par plafond de PV d'une entité (overkill), par lancer, avant résistance :
+     * (moyenne par entité − espérance `E[min(D, h)]` avec `h` uniforme sur [0, H]) × entités portantes ;
+     * pour une unité à entité unique (supposée à pleine vie) : (moyenne − `min(D, H)`) × entités portantes
+     */
     lostOverkill: number
     /** PV perdus faute d'entités (E < N), par lancer, avant résistance */
     lostEntities: number
@@ -39,6 +47,22 @@ export interface DotDamage {
     perLaunch: number
     /** PV de l'unité défenseuse utilisés pour le calcul (`health.unit`, borné à >= 0) */
     targetHealth: number
+}
+
+/**
+ * Dégâts délivrés par une instance de DoT sur une entité dont les PV courants `h` sont supposés uniformément
+ * répartis sur [0, H] : espérance `E[min(D, h)]`, en forme fermée.
+ * - H <= 0 : 0 ;
+ * - D >= H : H / 2 ;
+ * - sinon : D − D² / (2H).
+ *
+ * @param damage - Dégâts moyens D de l'instance sur le lancer (par entité)
+ * @param entityHealth - PV maximaux H d'une entité
+ */
+export function expectedDotInstance(damage: number, entityHealth: number): number {
+    if (entityHealth <= 0) return 0
+    if (damage >= entityHealth) return entityHealth / 2
+    return damage - (damage * damage) / (2 * entityHealth)
 }
 
 /**
@@ -58,7 +82,11 @@ export function dotDamagePerHit(dot: SpellDot, defender: Unit, entityNumber: num
     const unitHealth = clampNonNegative(defender.health?.unit || 0)
     // PV moyens d'une entité de l'unité entière (bonus de PV et montures compris) ; entité unique : toute la vie
     const entityHealth = unitHealth / Math.max(1, getMaxEntities(defender))
-    const instance = Math.min(meanPerEntity, entityHealth)
+    // Entité unique : supposée à pleine vie (plafond complet) ; sinon PV courants uniformes sur [0, H]
+    const instance =
+        getMaxEntities(defender) <= 1
+            ? Math.min(meanPerEntity, entityHealth)
+            : expectedDotInstance(meanPerEntity, entityHealth)
 
     // Attaque magique non enflammée : ward save + résistance magique, plafonnés à 95 % comme la mêlée
     const resist = calculateResistRatio(
