@@ -52,13 +52,26 @@ describe('dotDamagePerHit (Fate of Bjuna)', () => {
     expect(d.perHit).toBeCloseTo((1000 * 4) / 18 / 9600, 10);
   });
 
-  it('D3 : entité unique (1, 5000 PV), 1 instance sur 25 porte : perdu 24 × 180', () => {
+  it('D3 : entité unique (1, 5000 PV) supposée à pleine vie, 1 instance sur 25 porte : instance 180, perdu 24 × 180', () => {
     const d = dotDamagePerHit(bjuna, single, 1);
     expect(d.lostEntities).toBe(4320);
-    // instance = 180 − 180² / (2 × 5000) = 176,76 ; overkill espéré = 3,24
-    expect(d.lostOverkill).toBeCloseTo(3.24, 10);
+    // D = 180 < H = 5000 : instance = min(D, H) = 180, pas d'overkill
+    expect(d.lostOverkill).toBe(0);
     expect(d.lostEntities / d.gross).toBeCloseTo(0.96, 10);
-    expect(d.perHit).toBeCloseTo((176.76 * 4) / 18 / 5000, 10);
+    expect(d.perHit).toBeCloseTo((180 * 4) / 18 / 5000, 10);
+  });
+
+  it('entité unique avec D > H : instance plafonnée à H (pleine vie), le reste est perdu', () => {
+    const d = dotDamagePerHit(bjuna, makeUnit(1, 100), 1);
+    expect(d.perLaunch).toBe(100);
+    expect(d.lostOverkill).toBe(80);
+  });
+
+  it('unité à 2 entités : l\'espérance à PV uniformes s\'applique encore (D >= H : instance H / 2)', () => {
+    const d = dotDamagePerHit(bjuna, makeUnit(2, 100), 2);
+    // instance = 50 sur 2 entités portantes
+    expect(d.perLaunch).toBe(100);
+    expect(d.lostOverkill).toBe(2 * 130);
   });
 
   it('E est le plus petit de l\'effectif de départ et du nombre d\'entités de l\'unité', () => {
@@ -106,7 +119,7 @@ describe('dotDamagePerHit (Fate of Bjuna)', () => {
 });
 
 describe('dotDamagePerHit (plafond de PV par entité)', () => {
-  it('seigneur à une entité : battle_entity.hit_points minuscule mais health.unit élevé, overkill espéré sur toute la vie de l\'unité', () => {
+  it('seigneur à une entité : battle_entity.hit_points minuscule mais health.unit élevé, pleine vie : pas d\'overkill', () => {
     const lord: Unit = {
       ...makeUnit(1, 5000, { caste: 'Lord' }),
       land_unit: { ...single.land_unit!, battle_entity: { hit_points: 100, size: 'small', type: '' } },
@@ -114,9 +127,9 @@ describe('dotDamagePerHit (plafond de PV par entité)', () => {
     };
     const spirit: SpellDot = { damage_per_tick: 67, chance: 1, max_entities: 1, frequency: 1, duration: 13 };
     const d = dotDamagePerHit(spirit, lord, 1);
-    // D = 871, H = 6836 : instance = 871 − 871² / 13672
-    expect(d.lostOverkill).toBeCloseTo(871 ** 2 / 13672, 10);
-    expect(d.perLaunch).toBeCloseTo(871 - 871 ** 2 / 13672, 10);
+    // D = 871 < H = 6836 : instance = 871 (entité unique à pleine vie)
+    expect(d.lostOverkill).toBe(0);
+    expect(d.perLaunch).toBe(871);
     expect(d.targetHealth).toBe(6836);
   });
 
