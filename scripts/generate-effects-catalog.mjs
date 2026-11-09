@@ -155,6 +155,9 @@ function contactEntry(phase) {
   return entry;
 }
 
+/** Clés `additional_ui_effects` marquant une capacité dont l'issue est tirée au hasard parmi ses étages */
+const RANDOM_OUTCOME_UI_EFFECTS = new Set(['wh3_dlc23_crooked_dice']);
+
 const ROLES = new Set(['self', 'enemy', 'enemies', 'allies', 'ally', 'debuff']);
 const ROLE_ALIASES = { ally: 'allies' };
 const STAGE_RE = /_(upgraded|i|ii|iii|iv|v|vi|\d+)$/;
@@ -232,19 +235,33 @@ function abilityDescription(ability) {
 
 /**
  * Entrées du catalogue pour une capacité. Les phases sont groupées par id sans étage : on ne garde
- * que l'étage le plus élevé (état final). Les groupes à rôle (ennemi, alliés, après-effet) et les
- * variantes aléatoires donnent des entrées supplémentaires `variant_of`. La cible d'une phase
- * principale est `enemy` si elle touche des ennemis (aura passive, ou phase négative d'une capacité
- * mixte), sinon `self`.
+ * que l'étage le plus élevé (état final) parmi ceux qui ont des modificateurs (un étage final vide,
+ * ex. morale seul, n'efface pas l'effet des étages précédents) ; si tous les étages sont vides, on
+ * garde le plus élevé (l'entrée sera filtrée). Exception : une capacité à issue aléatoire (clé
+ * `additional_ui_effects` dans `RANDOM_OUTCOME_UI_EFFECTS`, plusieurs phases) accorde UN seul de ses
+ * étages au hasard : chaque étage donne alors sa propre entrée `${key}__<étage>` (`variant_of`).
+ * Les groupes à rôle (ennemi, alliés, après-effet) et les variantes donnent des entrées
+ * supplémentaires `variant_of`. La cible d'une phase principale est `enemy` si elle touche des
+ * ennemis (aura passive, ou phase négative d'une capacité mixte), sinon `self`.
  */
 function abilityEntries(ability) {
   const phases = ability.phases ?? [];
+  const isRandomOutcome = phases.length > 1 &&
+    (ability.additional_ui_effects ?? []).some((e) => RANDOM_OUTCOME_UI_EFFECTS.has(e?.key));
   const groups = new Map();
+  const randomStages = [];
   for (const phase of phases) {
     const { role, stage, base } = parsePhaseId(phase.id);
+    if (isRandomOutcome && role === '') {
+      randomStages.push({ role, base, stage, phase, suffix: String(phase.id).match(STAGE_RE)?.[1] ?? String(stage) });
+      continue;
+    }
     const gk = `${role}|${base}`;
     const cur = groups.get(gk);
-    if (!cur || stage > cur.stage) groups.set(gk, { role, base, stage, phase });
+    const filled = !isEmpty(phaseModifiers(phase));
+    // étage le plus élevé non vide ; à défaut (tout vide), le plus élevé
+    const better = !cur || (filled && !cur.filled) || (filled === cur.filled && stage > cur.stage);
+    if (better) groups.set(gk, { role, base, stage, phase, filled });
   }
   const list = [...groups.values()];
   const sa = ability.unit_special_ability ?? {};
@@ -313,6 +330,18 @@ function abilityEntries(ability) {
         variantOf: key,
       }));
     }
+  }
+  // issue aléatoire : une entrée par étage, triées par étage pour des ids déterministes
+  randomStages.sort((a, b) => a.stage - b.stage || a.suffix.localeCompare(b.suffix));
+  for (const g of randomStages) {
+    result.push(make({
+      id: `${key}__${g.suffix}`,
+      name: `${baseName} (${g.suffix.toUpperCase()})`,
+      phase: g.phase,
+      target: phaseTarget(g),
+      passive,
+      variantOf: key,
+    }));
   }
   for (const g of list) {
     if (g.role === 'enemy' || g.role === 'enemies') {
@@ -497,8 +526,10 @@ async function main() {
   const [abilitiesData, unitsData, attributesData] = await Promise.all([
     gql(`{ tww(tww_version:"${versionId}"){ abilities(offset:0,size:10000){
       key name icon_name is_hidden_in_ui tooltip type{key}
+      additional_ui_effects{ key }
       unit_special_ability{ passive mana_cost active_time affect_self target_enemies target_friends num_effected_friendly_units num_effected_enemy_units }
       overpower_option{ key name icon_name tooltip
+        additional_ui_effects{ key }
         unit_special_ability{ passive mana_cost active_time affect_self target_enemies target_friends num_effected_friendly_units num_effected_enemy_units }
         phases{ ${PHASE_FIELDS} imbue_contact{ ${PHASE_FIELDS} } } }
       phases{ ${PHASE_FIELDS} imbue_contact{ ${PHASE_FIELDS} } } } } }`),
